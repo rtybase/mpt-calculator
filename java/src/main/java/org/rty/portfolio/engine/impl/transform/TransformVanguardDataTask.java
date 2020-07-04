@@ -67,7 +67,8 @@ public class TransformVanguardDataTask extends AbstractTask {
 	}
 
 	private static boolean isValidMarketPriceEntry(JsonNode dataNode) {
-		return dataNode.has("name") && dataNode.has("navOrMktPrice")
+		return dataNode.has("name")
+				&& dataNode.has("navOrMktPrice")
 				&& dataNode.has("navOrMktPriceAsOfDate")
 				&& dataNode.has("navOrMktPercentChange");
 	}

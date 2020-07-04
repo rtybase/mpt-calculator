@@ -8,18 +8,20 @@ import java.io.InputStreamReader;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 
 public class RtyHttpClient {
 	private static final int HTTP_OK = 200;
-	private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36";
+	private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36";
 
 	public HttpResponse get(String url, String outFile) throws Exception {
 		return get(url, outFile, null);
 	}
 
 	public HttpResponse get(String url, String outFile, Header[] headers) throws Exception {
-		DefaultHttpClient client = new DefaultHttpClient();
+		CloseableHttpClient client = HttpClientBuilder.create().build();
+
 		HttpGet request = new HttpGet(url);
 		request.addHeader("User-Agent", USER_AGENT);
 		if (headers != null) {
@@ -41,6 +43,7 @@ public class RtyHttpClient {
 	private static void saveToFile(String outFile, HttpResponse response) throws Exception {
 		BufferedReader rd = null;
 		FileWriter fw = null;
+
 		try {
 			rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
 

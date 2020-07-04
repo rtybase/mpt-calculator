@@ -17,17 +17,23 @@ import org.rty.portfolio.io.CsvWriter;
 import au.com.bytecode.opencsv.CSVReader;
 
 /**
- * A general purpose CSV loader. The format must be 
- * assetName, price, change, rate, date
+ * A general purpose CSV loader. The format must be assetName, price, change,
+ * rate, date
  * 
  * date is in format of yyyy-MM-dd
  *
  */
 public class LoadCsvToDbTask extends AbstractDbTask {
-	protected static final SimpleDateFormat REP_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private static final int DATE_COLUMN = 4;
+	private static final int RATE_OF_CHANGE_COLUMN = 3;
+	private static final int PRICE_CHANGE_COLUMN = 2;
+	private static final int PRICE_COLUMN = 1;
+	private static final int NAME_COLUMN = 0;
+
+	private static final SimpleDateFormat REP_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	private static final int NO_OF_COLUMNS = 5;
 
-	protected final HashSet<String> errorAssets = new HashSet<String>();
+	private final HashSet<String> errorAssets = new HashSet<String>();
 
 	public LoadCsvToDbTask(DbManager dbManager) {
 		super(dbManager);
@@ -43,20 +49,23 @@ public class LoadCsvToDbTask extends AbstractDbTask {
 		say("Load data... ");
 		int total = 0;
 		int failed = 0;
+
 		while ((nextLine = reader.readNext()) != null) {
 			if (nextLine.length == NO_OF_COLUMNS) {
 				boolean res = false;
 				++total;
-				String assetName = nextLine[0].trim();
+				String assetName = nextLine[NAME_COLUMN].trim();
+
 				try {
-					double price = Double.parseDouble(nextLine[1].trim());
-					double change = Double.parseDouble(nextLine[2].trim());
-					double rate = Double.parseDouble(nextLine[3].trim());
-					Date date = CsvWriter.SCAN_DATE_FORMAT.parse(nextLine[4].trim(), new ParsePosition(0));
+					double price = Double.parseDouble(nextLine[PRICE_COLUMN].trim());
+					double change = Double.parseDouble(nextLine[PRICE_CHANGE_COLUMN].trim());
+					double rate = Double.parseDouble(nextLine[RATE_OF_CHANGE_COLUMN].trim());
+					Date date = CsvWriter.SCAN_DATE_FORMAT.parse(nextLine[DATE_COLUMN].trim(), new ParsePosition(0));
 					res = dbManager.addNewPrice(assetName, price, change, rate, date);
 				} catch (Exception e) {
 					say(e.toString());
 				}
+
 				if (!res) {
 					errorAssets.add(assetName);
 					++failed;
@@ -73,6 +82,7 @@ public class LoadCsvToDbTask extends AbstractDbTask {
 
 	private void reportErrors() throws IOException {
 		say("Number of failed assets " + errorAssets.size());
+
 		if (errorAssets.size() > 0) {
 			Calendar cal = Calendar.getInstance();
 			FileWriter fw = new FileWriter(ERROR_REPORT_FILE, true);
