@@ -11,7 +11,8 @@ import org.rty.portfolio.io.CsvWriter;
 
 import au.com.bytecode.opencsv.CSVReader;
 
-public class TransformStdLifeDataTask extends AbstractTask {
+@Deprecated
+public class TransformStdLifeCsvDataTask extends AbstractTask {
 	private static final SimpleDateFormat SCAN_DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy");
 
 	@Override

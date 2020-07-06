@@ -38,4 +38,14 @@ public class AssetPriceInfo {
 		return date;
 	}
 
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder("{ assetName: ");
+		sb.append(assetName).append(", ");
+		sb.append("price: ").append(price).append(", ");
+		sb.append("change: ").append(change).append(", ");
+		sb.append("rate: ").append(rate).append(", ");
+		sb.append("date: ").append(date).append(" }");
+		return sb.toString();
+	}
 }

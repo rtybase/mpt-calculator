@@ -1,12 +1,17 @@
 rem "Standard Life data"
 ParseTable.exe "-link=https://funds.standardlifeinvestments.com/uk-ifa/filter.html?search_type=pension&share_type=PS3" -format=CSV
 del *.tmp
-java -jar portfolio-0.0.1-SNAPSHOT.jar TransformStdLifeDataTask -file=out.csv -outfile=std-life.csv
+java -jar portfolio-0.0.1-SNAPSHOT.jar TransformStdLifeCsvDataTask -file=out.csv -outfile=std-life.csv
 del out.csv
+
+java -jar portfolio-0.0.1-SNAPSHOT.jar DownloadTask "-url=https://www.standardlife.co.uk/secure/fundfilter/rest/results/funds/GROUP_PENSIONS/GPP/null/existingcustomer?_=1593858680454" -outfile=std-life.json
+java -jar portfolio-0.0.1-SNAPSHOT.jar TransformStdLifeJsonDataTask -file=std-life.json -outfile=std-life.csv
+del std-life.json
 java -jar portfolio-0.0.1-SNAPSHOT.jar LoadCsvToDbTask -file=std-life.csv
 del std-life.csv
 
-ParseTable.exe "-link=http://lbma.datanauts.co.uk/table?metal=gold&year=2019&type=daily" -format=CSV
+rem "GOLD prices"
+ParseTable.exe "-link=http://lbma.datanauts.co.uk/table?metal=gold&year=2020&type=daily" -format=CSV
 del *.tmp
 java -jar portfolio-0.0.1-SNAPSHOT.jar TransformLbmaDataTask -file=out.csv -outfile=gold.csv -out_symbol=GOLD
 del out.csv
@@ -45,6 +50,31 @@ java -jar portfolio-0.0.1-SNAPSHOT.jar TransformYFDataTask "-in_symbol=%%5EGSPC"
 del "S&P500.csv"
 java -jar portfolio-0.0.1-SNAPSHOT.jar LoadCsvToDbTask -file=t-SandP.csv
 del t-SandP.csv
+
+java -jar portfolio-0.0.1-SNAPSHOT.jar TransformYFDataTask "-in_symbol=HSBA.L" "-out_symbol=HSBC" -outfile=t-HSBAL.csv
+del "HSBC.csv"
+java -jar portfolio-0.0.1-SNAPSHOT.jar LoadCsvToDbTask -file=t-HSBAL.csv
+del t-HSBAL.csv
+
+java -jar portfolio-0.0.1-SNAPSHOT.jar TransformYFDataTask "-in_symbol=SLA.L" "-out_symbol=Standard Life Aberdeen" -outfile=t-SLA.csv
+del "Standard Life Aberdeen.csv"
+java -jar portfolio-0.0.1-SNAPSHOT.jar LoadCsvToDbTask -file=t-SLA.csv
+del t-SLA.csv
+
+java -jar portfolio-0.0.1-SNAPSHOT.jar TransformYFDataTask "-in_symbol=PSN.L" "-out_symbol=Persimmon" -outfile=t-PSNL.csv
+del "Persimmon.csv"
+java -jar portfolio-0.0.1-SNAPSHOT.jar LoadCsvToDbTask -file=t-PSNL.csv
+del t-PSNL.csv
+
+java -jar portfolio-0.0.1-SNAPSHOT.jar TransformYFDataTask "-in_symbol=AV.L" "-out_symbol=Aviva" -outfile=t-AVL.csv
+del "Aviva.csv"
+java -jar portfolio-0.0.1-SNAPSHOT.jar LoadCsvToDbTask -file=t-AVL.csv
+del t-AVL.csv
+
+java -jar portfolio-0.0.1-SNAPSHOT.jar TransformYFDataTask "-in_symbol=BT-A.L" "-out_symbol=BT Group" -outfile=t-BT-AL.csv
+del "BT Group.csv"
+java -jar portfolio-0.0.1-SNAPSHOT.jar LoadCsvToDbTask -file=t-BT-AL.csv
+del t-BT-AL.csv
 
 rem "Vanguard data"
 java -jar portfolio-0.0.1-SNAPSHOT.jar DownloadTask "-url=https://api.vanguard.com/rs/gre/gra/1.7.0/datasets/urd-product-list.jsonp?callback=angular.callbacks._5" -outfile=vanguard.json
