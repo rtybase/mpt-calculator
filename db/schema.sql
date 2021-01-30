@@ -64,7 +64,11 @@ BEGIN
 			INSERT INTO tbl_prices (fk_assetID, dbl_price, dbl_change,
 				dbl_return, dtm_date, dtm_time)
 			VALUES (result, price, price_change, 
-				roi, regDate, regTime);
+				roi, regDate, regTime)
+			ON DUPLICATE KEY UPDATE 
+				dbl_price = price,
+				dbl_change = price_change,
+				dbl_return = roi;
 		COMMIT;
 	END IF;
 END;
