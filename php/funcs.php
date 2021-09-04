@@ -1,4 +1,7 @@
 <?php
+	$RETURN_ROUND_PRECISION = 5;
+	$VOLATILITY_ROUND_PRECISION = 4;
+
 	function indicatorText($text, $indicator) {
 		if ($indicator < 0) {
 			return "<font color=\"red\">".$text."</font>";
@@ -28,15 +31,16 @@
 	}
 
 	function getCollection($query, $id, $mainAsset, $link) {
+		global $RETURN_ROUND_PRECISION, $VOLATILITY_ROUND_PRECISION;
 		$ret = array();
-		$res = mysql_query($query,$link);
+		$res = mysql_query($query, $link);
 		if (!$res) die("Invalid query: ". mysql_error());
 		$i = 0;
 		while ($row = mysql_fetch_row($res)) {
 			$ret[$i] = array();
-			$ret[$i]["correlation"] = round($row[3], 5);
-			$ret[$i]["portret"] = round($row[6], 7);
-			$ret[$i]["portvol"] = round(sqrt(abs($row[7])), 5);
+			$ret[$i]["correlation"] = round($row[3], $VOLATILITY_ROUND_PRECISION);
+			$ret[$i]["portret"] = round($row[6], $RETURN_ROUND_PRECISION);
+			$ret[$i]["portvol"] = round(sqrt(abs($row[7])), $VOLATILITY_ROUND_PRECISION);
 			if ($row[0] == $id) {
 				$ret[$i]["asset1"] = $mainAsset;
 				$ret[$i]["asset2"] = $row[2];
@@ -56,6 +60,10 @@
 		return $ret;
 	}
 
+	function toChartNumber($number) {
+		return "{v: ".$number.", f: '".$number."'}";
+	}
+
 	function showData($data) {
 		$size = count($data);
 		$link = basename($_SERVER['PHP_SELF']);
@@ -66,12 +74,12 @@
 			echo "'<i><font color=\"#5D6D7E\">"
 				.$data[$i]["asset1"]."</font></i><br/>"
 				."<a href=\"./".$link."?id=".$data[$i]["asset2Id"]."\">".$data[$i]["asset2"]."</a>',";
-			echo $data[$i]["correlation"].",";
+			echo toChartNumber($data[$i]["correlation"]).",";
 			echo "'<i><font color=\"#5D6D7E\">"
 				.round($data[$i]["weight1"] * 100, 3)."&percnt;</font></i><br/>"
 				.round($data[$i]["weight2"] * 100, 3)."&percnt;',";
-			echo $data[$i]["portret"].",";
-			echo $data[$i]["portvol"]."]";
+			echo toChartNumber($data[$i]["portret"]).",";
+			echo toChartNumber($data[$i]["portvol"])."]";
 		}
 	}
 

@@ -72,9 +72,9 @@
 
 		data.addRows([['<b><?php echo $lastPriceInfo["dtm_date"];?></b>',
 		'<?php echo indicatorText(round($lastPriceInfo["dbl_price"], 4)." (".round($lastPriceInfo["dbl_change"], 4).")", $lastPriceInfo["dbl_change"]); ?>',
-		'<?php echo indicatorText(round($lastPriceInfo["dbl_return"], 4), $lastPriceInfo["dbl_return"]); ?>',
-		'<?php echo indicatorText(round($result["dbl_avgreturn"], 4), $result["dbl_avgreturn"]) ;?>',
-		<?php echo round(sqrt($result["dbl_varience"]), 4);?>]]);
+		'<?php echo indicatorText(round($lastPriceInfo["dbl_return"], $RETURN_ROUND_PRECISION), $lastPriceInfo["dbl_return"]); ?>',
+		'<?php echo indicatorText(round($result["dbl_avgreturn"], $RETURN_ROUND_PRECISION), $result["dbl_avgreturn"]) ;?>',
+		<?php echo toChartNumber(round(sqrt($result["dbl_varience"]), $VOLATILITY_ROUND_PRECISION));?>]]);
 		var table = new google.visualization.Table(document.getElementById('table1_div'));
 		table.draw(data, {showRowNumber: false, width: '100%', allowHtml: true});
 	}
@@ -143,9 +143,14 @@
     </script>
   </head>
   <body>
-    <table align="center" border="0">
+    <table align="center" border="0"><tr>
+      <td valign="top"><a href="./">Home</a><br/>
+		<a href="./top_r.php">Top returns</a><br/>
+		<a href="./top_p.php">Top pairs</a>
+      </td>
+      <td><table align="center" border="0">
 	<tr><td align="right">
-		<form name="main" method="GET" action="./<?php echo basename($_SERVER['PHP_SELF']);?>">
+		 <form name="main" method="GET" action="./<?php echo basename($_SERVER['PHP_SELF']);?>">
 		<font face="verdana">Asset:</font>
 		<select name="id" onchange="document.forms['main'].submit();">
 		<?php printAssets($id, $link);?>
@@ -165,7 +170,8 @@
 	<tr><td><font face="verdana">Low risk:</font><div id='table4_div' style="width: 1044px;"></div></td></tr>
 	<tr><td>&nbsp;</td></tr>
 	<tr><td><font face="verdana">High return:</font><div id='table5_div' style="width: 1044px;"></div></td></tr>
-    </table>
+      </table></td>
+    </tr></table>
   </body>
 </html>
 <?php mysql_close($link); ?>        
