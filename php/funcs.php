@@ -95,7 +95,34 @@
 		if (!empty($orderBy)) {
 			$query.= "ORDER BY ".$orderBy." ";
 		}
-		$query.= "LIMIT 0,15";
+		$query.= "LIMIT 0,30";
 		return getCollection($query, $id, $mainAsset, $link);
+	}
+
+	function getRelatedData($assetId1, $assetId2, $link) {
+		$query = "SELECT * ";
+		$query.= "FROM  tbl_correlations ";
+		$query.= "WHERE ((fk_asset1ID=$assetId1 and fk_asset2ID=$assetId2) OR (fk_asset1ID=$assetId2 and fk_asset2ID=$assetId1)) ";
+
+		$ret = array();
+		$res = mysql_query($query, $link);
+		if (!$res) die("Invalid query: ". mysql_error());
+
+		while ($row = mysql_fetch_array($res)) $ret = $row;
+		mysql_free_result($res);
+		return $ret;
+	}
+
+	function calculateBeta($assetId, $marketIndexId, $link) {
+		global $RETURN_ROUND_PRECISION;
+		if ($assetId != $marketIndexId) {
+			$marketIndexData = getSingleValyeByPK("tbl_avgreturns", "fk_assetID", $marketIndexId, $link);
+			$relatedData = getRelatedData($assetId, $marketIndexId, $link);
+			if (!empty($relatedData)) {
+				$covariance = $relatedData["dbl_covariance"];
+				return round($covariance / $marketIndexData["dbl_varience"], $RETURN_ROUND_PRECISION);
+			}
+		}
+		return "n/a";
 	}
 ?>

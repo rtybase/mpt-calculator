@@ -11,6 +11,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.rty.portfolio.core.AssetPriceInfoAccumulator;
+import org.rty.portfolio.core.utils.TimeUtils;
 import org.rty.portfolio.engine.AbstractTask;
 import org.rty.portfolio.io.CsvWriter;
 import org.rty.portfolio.net.RtyHttpClient;
@@ -85,7 +86,7 @@ public class TransformBoEDataTask extends AbstractTask {
 		String currentYear = "" + cal.get(Calendar.YEAR);
 		String currentMonth = cal.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.UK);
 
-		cal.add(Calendar.YEAR, -1);
+		cal.add(Calendar.YEAR, TimeUtils.yearsBack());
 		String startDay = "" + cal.get(Calendar.DAY_OF_MONTH);
 		String startYear = "" + cal.get(Calendar.YEAR);
 		String startMonth = cal.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.UK);

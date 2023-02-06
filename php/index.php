@@ -49,7 +49,8 @@
 	google.setOnLoadCallback(drawChart);
 
 	function drawTables() {
-		drawTable1();
+		drawBaseDataTable();
+		drawBetasTable();
 		drawTable2();
 		drawTable3();
 		drawTable4();
@@ -62,7 +63,7 @@
 		table.draw(data, {showRowNumber: false, allowHtml: true});
 	}
 
-	function drawTable1() {
+	function drawBaseDataTable() {
 		var data = new google.visualization.DataTable();
 		data.addColumn('string', 'Date');
 		data.addColumn('string', 'Last Price');
@@ -75,7 +76,22 @@
 		'<?php echo indicatorText(round($lastPriceInfo["dbl_return"], $RETURN_ROUND_PRECISION), $lastPriceInfo["dbl_return"]); ?>',
 		'<?php echo indicatorText(round($result["dbl_avgreturn"], $RETURN_ROUND_PRECISION), $result["dbl_avgreturn"]) ;?>',
 		<?php echo toChartNumber(round(sqrt($result["dbl_varience"]), $VOLATILITY_ROUND_PRECISION));?>]]);
-		var table = new google.visualization.Table(document.getElementById('table1_div'));
+		var table = new google.visualization.Table(document.getElementById('table_base_data_div'));
+		table.draw(data, {showRowNumber: false, width: '100%', allowHtml: true});
+	}
+
+	function drawBetasTable() {
+		var data = new google.visualization.DataTable();
+		data.addColumn('string', '<?php echo getName(105, $link);?>');
+		data.addColumn('string', '<?php echo getName(104, $link);?>');
+		data.addColumn('string', '<?php echo getName(102, $link);?>');
+		data.addColumn('string', '<?php echo getName(103, $link);?>');
+
+		data.addRows([['<?php echo calculateBeta($id, 105, $link);?>',
+		'<?php echo calculateBeta($id, 104, $link);?>',
+		'<?php echo calculateBeta($id, 102, $link);?>',
+		'<?php echo calculateBeta($id, 103, $link);?>']]);
+		var table = new google.visualization.Table(document.getElementById('table_betas_div'));
 		table.draw(data, {showRowNumber: false, width: '100%', allowHtml: true});
 	}
 
@@ -161,7 +177,8 @@
 		</form>
 	</td></tr>
 
-	<tr><td><div id="table1_div" style="width: 1044px;"></div></td></tr>
+	<tr><td><div id="table_base_data_div" style="width: 1044px;"></div></td></tr>
+	<tr><td><font face="verdana">Betas:</font><div id="table_betas_div" style="width: 1044px;"></div></td></tr>
 	<tr><td><div id="chart_div" style="width: 1044px; height: 350px;"></div></td></tr>
 	<tr><td><font face="verdana">Highly correlated:</font><div id='table2_div' style="width: 1044px;"></div></td></tr>
 	<tr><td>&nbsp;</td></tr>

@@ -90,12 +90,17 @@ public class TransformStdLifeJsonDataTask extends AbstractTask {
 		double change = Double.parseDouble(dataNode.get(PRICE_CHANGE).asText()
 				.replace("@3@", "")
 				.replace("@4@", "")
-				.replace("@5@", ""));
+				.replace("@5@", "")
+				.replace("</span>", "")
+				.replace("<span class='dls_fundUp'>", "")
+				.replace("<span class='dls_fundDown'>", ""));
 		double currentPrice = Double.parseDouble(dataNode.get(ASSET_PRICE).asText());
 		double previousProce = currentPrice - change;
 
 		return new AssetPriceInfo(
-				dataNode.get(ASSET_NAME).asText().replace("@17@", ""),
+				dataNode.get(ASSET_NAME).asText()
+					.replace("@17@", "")
+					.replace("<span class='microText'>CLOSED TO NEW BUSINESS</span>", ""),
 				currentPrice,
 				change,
 				Calculator.calculateRate(currentPrice, previousProce),

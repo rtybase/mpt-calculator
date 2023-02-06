@@ -16,6 +16,7 @@ import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.message.BasicHeader;
 import org.rty.portfolio.core.AssetPriceInfoAccumulator;
+import org.rty.portfolio.core.utils.TimeUtils;
 import org.rty.portfolio.engine.AbstractTask;
 import org.rty.portfolio.io.CsvWriter;
 import org.rty.portfolio.net.RtyHttpClient;
@@ -99,7 +100,7 @@ public class TransformYFDataTask extends AbstractTask {
 		Calendar cal = Calendar.getInstance();
 		long endDate = cal.getTimeInMillis() / 1000;
 
-		cal.add(Calendar.YEAR, -1);
+		cal.add(Calendar.YEAR, TimeUtils.yearsBack());
 		long startDate = cal.getTimeInMillis() / 1000;
 
 		return String.format(URL_PRICE_TEMPLATE, inSymbol, startDate, endDate, URLEncoder.encode(crumb, "UTF-8"));
