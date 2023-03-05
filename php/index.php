@@ -15,6 +15,9 @@
 	$lastPriceInfo = getLastPriceInfo($id, $link);
 	$result = getSingleValyeByPK("tbl_avgreturns", "fk_assetID", $id, $link);
 
+	$variance = $result["dbl_varience"];
+	$expectedReturn = $result["dbl_avgreturn"];
+
 	$constraint = "ABS(C.dbl_correlation) >= 0.75";
 	if (!$includeall) $constraint .= " and dbl_weight1 > 0 and dbl_weight2 > 0";
 	$hiCorrelation  = getCollectionFor($constraint, "ABS(C.dbl_correlation) DESC", $id, $mainAsset, $link);
@@ -74,8 +77,8 @@
 		data.addRows([['<b><?php echo $lastPriceInfo["dtm_date"];?></b>',
 		'<?php echo indicatorText(round($lastPriceInfo["dbl_price"], 4)." (".round($lastPriceInfo["dbl_change"], 4).")", $lastPriceInfo["dbl_change"]); ?>',
 		'<?php echo indicatorText(round($lastPriceInfo["dbl_return"], $RETURN_ROUND_PRECISION), $lastPriceInfo["dbl_return"]); ?>',
-		'<?php echo indicatorText(round($result["dbl_avgreturn"], $RETURN_ROUND_PRECISION), $result["dbl_avgreturn"]) ;?>',
-		<?php echo toChartNumber(round(sqrt($result["dbl_varience"]), $VOLATILITY_ROUND_PRECISION));?>]]);
+		'<?php echo indicatorText(round($expectedReturn, $RETURN_ROUND_PRECISION), $expectedReturn) ;?>',
+		<?php echo toChartNumber(round(sqrt($variance), $VOLATILITY_ROUND_PRECISION));?>]]);
 		var table = new google.visualization.Table(document.getElementById('table_base_data_div'));
 		table.draw(data, {showRowNumber: false, width: '100%', allowHtml: true});
 	}
@@ -178,6 +181,7 @@
 	</td></tr>
 
 	<tr><td><div id="table_base_data_div" style="width: 1044px;"></div></td></tr>
+	<tr><td><font face="verdana">Kelly fraction: <?php echo calculateKellyFraction($expectedReturn, $variance);?></font></td></tr>
 	<tr><td><font face="verdana">Betas:</font><div id="table_betas_div" style="width: 1044px;"></div></td></tr>
 	<tr><td><div id="chart_div" style="width: 1044px; height: 350px;"></div></td></tr>
 	<tr><td><font face="verdana">Highly correlated:</font><div id='table2_div' style="width: 1044px;"></div></td></tr>

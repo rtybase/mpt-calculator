@@ -125,4 +125,9 @@
 		}
 		return "n/a";
 	}
+
+	function calculateKellyFraction($expectedReturn, $variance) {
+		global $RETURN_ROUND_PRECISION;
+		return round($expectedReturn / $variance, $RETURN_ROUND_PRECISION);
+	}
 ?>
