@@ -107,7 +107,7 @@ public class TransformYFDataTask extends AbstractTask {
 	}
 
 	private String[] getCookieAndCrumb(RtyHttpClient client, String symbol) throws Exception {
-		String url = String.format(URL_ASSET_TEMPLATE, "%5EFCHI");
+		String url = String.format(URL_ASSET_TEMPLATE, symbol);
 		say("Collecting details from: " + url);
 		HttpResponse response = client.get(url, TEMP_HTML);
 		say("Status code: " + response.getStatusLine().getStatusCode());
