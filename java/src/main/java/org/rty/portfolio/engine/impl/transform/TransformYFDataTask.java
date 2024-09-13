@@ -21,8 +21,6 @@ import org.rty.portfolio.engine.AbstractTask;
 import org.rty.portfolio.io.CsvWriter;
 import org.rty.portfolio.net.RtyHttpClient;
 
-import au.com.bytecode.opencsv.CSVReader;
-
 /**
  * Yahoo Finance history prices data loader.
  * 
@@ -63,8 +61,7 @@ public class TransformYFDataTask extends AbstractTask {
 	private AssetPriceInfoAccumulator populateRates(String assetName, String file) throws Exception {
 		AssetPriceInfoAccumulator accumulator = new AssetPriceInfoAccumulator(assetName);
 
-		CSVReader reader = new CSVReader(new FileReader(file));
-		List<String[]> lines = reader.readAll();
+		List<String[]> lines = readAllLinesFrom(file);
 		if (lines.size() > 0) {
 			int closePriceColumn = getClosePriceColumnIndex(lines.get(0));
 			int i = 0;
@@ -81,7 +78,6 @@ public class TransformYFDataTask extends AbstractTask {
 				i++;
 			}
 		}
-		reader.close();
 		return accumulator;
 	}
 

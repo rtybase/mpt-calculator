@@ -17,11 +17,8 @@ import org.rty.portfolio.engine.impl.dbtask.LoadCsvToDbTask;
 import org.rty.portfolio.engine.impl.nettask.DownloadTask;
 import org.rty.portfolio.engine.impl.transform.TransformEcbRatesTask;
 import org.rty.portfolio.engine.impl.transform.TransformYFDataTask;
-import org.rty.portfolio.engine.impl.transform.TransformBoEDataTask;
-import org.rty.portfolio.engine.impl.transform.TransformLbmaDataTask;
-import org.rty.portfolio.engine.impl.transform.TransformStdLifeCsvDataTask;
+import org.rty.portfolio.engine.impl.transform.TransformSeriesDataTask;
 import org.rty.portfolio.engine.impl.transform.TransformStdLifeJsonDataTask;
-import org.rty.portfolio.engine.impl.transform.TransformVanguardDataTask;
 
 import com.google.common.base.Strings;
 
@@ -56,15 +53,12 @@ public class TaskExecutor {
 
 	private static void registerAllTasks() {
 		registerTask(new CalculateAssetStatsTask(dbManager));
-		registerTask(new TransformStdLifeCsvDataTask());
 		registerTask(new TransformStdLifeJsonDataTask());
 		registerTask(new Calculate2AssetsPortfolioStatsTask(dbManager));
 		registerTask(new DownloadTask());
 		registerTask(new TransformEcbRatesTask());
-		registerTask(new TransformBoEDataTask());
 		registerTask(new TransformYFDataTask());
-		registerTask(new TransformLbmaDataTask());
-		registerTask(new TransformVanguardDataTask());
+		registerTask(new TransformSeriesDataTask());
 		registerTask(new LoadCsvToDbTask(dbManager));
 	}
 

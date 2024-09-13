@@ -1,5 +1,6 @@
 package org.rty.portfolio.engine.impl.dbtask;
 
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -43,10 +44,29 @@ public class LoadCsvToDbTask extends AbstractDbTask {
 	public void execute(Map<String, String> parameters) throws Exception {
 		String inputFile = getValidParameterValue(parameters, INPUT_FILE_PARAM);
 
+		final File toLoadFrom = new File(inputFile);
+		if (toLoadFrom.isFile()) {
+			loadFromOneFiles(inputFile);
+		} else if (toLoadFrom.isDirectory()) {
+			File[] folderContent = toLoadFrom.listFiles();
+			
+			for (File file : folderContent) {
+				if (file.isFile()) {
+					loadFromOneFiles(file.getPath());
+				}
+			}
+		}
+
+		reportErrors();
+		say(DONE);
+	}
+
+	private void loadFromOneFiles(String inputFile) throws Exception {
 		CSVReader reader = new CSVReader(new FileReader(inputFile));
 		String[] nextLine;
 
-		say("Load data... ");
+		say("---------------------------------------------------");
+		say("Load data from " + inputFile + " ... ");
 		int total = 0;
 		int failed = 0;
 
@@ -74,10 +94,8 @@ public class LoadCsvToDbTask extends AbstractDbTask {
 		}
 		reader.close();
 
-		say("Total processed " + total);
-		say("Operations failed " + failed);
-		reportErrors();
-		say(DONE);
+		say("File: " + inputFile + ". Total processed " + total);
+		say("File: " + inputFile + ". Operations failed " + failed);
 	}
 
 	private void reportErrors() throws IOException {
