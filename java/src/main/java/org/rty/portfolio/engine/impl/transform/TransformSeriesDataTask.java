@@ -51,7 +51,7 @@ public class TransformSeriesDataTask extends AbstractTask {
 
 		int i = 0;
 		for (String[] line : lines) {
-			if (line.length >= minimumColumnsToHave) {
+			if (line.length > minimumColumnsToHave) {
 				try {
 					final Date date = strToDate(dateFormatter, line[dateColumn]);
 					final double price = Double.parseDouble(line[closePriceColumn].replace(",", ""));
