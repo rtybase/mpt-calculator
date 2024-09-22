@@ -95,7 +95,7 @@
 		if (!empty($orderBy)) {
 			$query.= "ORDER BY ".$orderBy." ";
 		}
-		$query.= "LIMIT 0,30";
+		$query.= "LIMIT 0,10";
 		return getCollection($query, $id, $mainAsset, $link);
 	}
 

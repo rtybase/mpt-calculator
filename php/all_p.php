@@ -4,28 +4,20 @@
 	include_once("./funcs.php");
 	header("Content-Type:text/html; charset=UTF-8");
 
+	$id = (int) $_GET["id"];
+	if ($id < 1) $id = 1;
+
 	$link = connect("portfolio");
+	$mainAsset = getName($id, $link);
 
-	$query = "SELECT a.fk_assetID, b.vchr_name, a.dbl_avgreturn, a.dbl_varience ";
-	$query.= "FROM tbl_avgreturns a, tbl_assets b ";
-	$query.= "WHERE a.fk_assetID = b.int_assetID ";
-	$query.= "ORDER BY a.dbl_avgreturn DESC ";
-	$query.= "LIMIT 0, 60";
+	$query = "SELECT C.fk_asset1ID, C.fk_asset2ID, A.vchr_name, C.dbl_correlation, ";
+	$query.= "C.dbl_weight1, C.dbl_weight2, C.dbl_portret, C.dbl_portvar ";
+	$query.= "FROM  tbl_correlations as C, tbl_assets as A ";
+	$query.= "WHERE ((C.fk_asset1ID=$id) OR (C.fk_asset2ID=$id)) ";
+	$query.= "AND C.fk_asset2ID=A.int_assetID ";
+	$query.= "ORDER BY C.dbl_portret DESC ";
 
-	$tableResult = "";
-	$res = mysql_query($query, $link);
-
-	if (!$res) die("Invalid query: ". mysql_error());
-	$i = 0;
-	while ($row = mysql_fetch_row($res)) {
-		if ($i == 0) $tableResult.= "[";
-		else $tableResult.= ",[";
-
-		$tableResult.= "'<a href=\"./?id=".$row[0]."\">".$row[1]."</a>',";
-		$tableResult.= toChartNumber(round($row[2], $RETURN_ROUND_PRECISION)).",";
-		$tableResult.= toChartNumber(round(sqrt(abs($row[3])), $VOLATILITY_ROUND_PRECISION))."]";
-		$i++;
-	}
+	$allCorrelation = getCollection($query, $id, $mainAsset, $link);
 	mysql_free_result($res);
 ?>
 <html>
@@ -44,7 +36,7 @@
 
 	function generateTable() {
 		var data = generateData();
-		data.addRows([<?php echo $tableResult; ?>]);
+		data.addRows([<?php showData($allCorrelation); ?>]);
 		drawTable('table_div', data);
 	}
 
@@ -56,21 +48,25 @@
 
 	function generateData() {
 		var dataTable = new google.visualization.DataTable();
-		dataTable.addColumn('string', 'Asset');
-		dataTable.addColumn('number', 'Average Return');
-		dataTable.addColumn('number', 'Volatility');
+		dataTable.addColumn('string', 'Portfolio');
+		dataTable.addColumn('number', 'Correlation');
+		dataTable.addColumn('string', 'Weights');
+		dataTable.addColumn('number', 'Portfolio Return');
+		dataTable.addColumn('number', 'Portfolio Volatility');
 		return dataTable;
 	}
+
     </script>
   </head>
   <body>
     <table align="center" border="0"><tr>
-      <td valign="top"><a href="./">Home</a><br/>
+      <td valign="top"><a href="./?id=<?php echo $id; ?>"><i>Back</i></a><br/>
+		<a href="./">Home</a><br/>
 		<a href="./top_r.php">Top returns</a><br/>
 		<a href="./top_p.php">Top pairs</a>
       </td>
       <td><table align="center" border="0">
-	<tr><td><font face="verdana">High returns:</font></td></tr>
+	<tr><td><font face="verdana">All <?php echo count($allCorrelation); ?> correlations for : <?php echo $mainAsset; ?></td></tr>
 	<tr><td><hr/></td></tr>
 	<tr><td><div id='table_div' style="width: 1044px;"></div></td></tr>
       </table></td>

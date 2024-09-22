@@ -147,6 +147,15 @@ load_yf "VNRT.L" "Vanguard FTSE North America UCITS ETF" "v-ftse-na-etf.csv"
 load_yf "0P0001IL90.L" "Vanguard Active U.K. Equity Fund" "v-act-uk-ef.csv"
 load_yf "0P0001IU23.F" "Vanguard Emerging Markets Bond Fund" "v-em-bf.csv"
 load_yf "IE00B50MZ724.IR" "Vanguard Emerging Markets Stock Index Fund" "v-em-sif.csv"
+load_yf "0P0000UGLG.L" "Vanguard ESG Developed World All Cap Equity Index Fund" "v-esg-dw-ac-eif.csv"
+load_yf "IE00BFRTD722.IR" "Vanguard Euro Government Bond Index Fund" "v-eg-bif.csv"
+load_yf "IE00B04FFJ44.IR" "Vanguard Euro Investment Grade Bond Index Fund" "v-eu-ig-bif.csv"
+load_yf "0P00018XAP.L" "Vanguard FTSE 100 Index Unit Trust" "v-ftse100-iuf.csv"
+
+load_yf "0P0001CSW3.L" "BlackRock ACS LifePath 2040-2042" "blk-acs-lp-40-42.csv"
+load_yf "0P0001F2HD.L" "BlackRock ACS World ESG Equity Tracker Fund" "blk-acs-w-esg-etf.csv"
+load_yf "0P0001S2NG.L" "BlackRock LifePath Target Date Fund 2040" "blk-lp-tdf-40.csv"
+load_yf "LIKIX" "BlackRock LifePath Index 2040 Fund" "blk-lp-i-40-f.csv"
 
 java -jar portfolio-0.0.1-SNAPSHOT.jar LoadCsvToDbTask "-file=${FOLDER_FOR_FILES}"
 rm -rf ${FOLDER_FOR_FILES}

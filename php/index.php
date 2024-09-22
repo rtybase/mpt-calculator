@@ -184,6 +184,8 @@
 	<tr><td><font face="verdana">Kelly fraction: <?php echo calculateKellyFraction($expectedReturn, $variance);?></font></td></tr>
 	<tr><td><font face="verdana">Betas:</font><div id="table_betas_div" style="width: 1044px;"></div></td></tr>
 	<tr><td><div id="chart_div" style="width: 1044px; height: 350px;"></div></td></tr>
+	<tr><td><hr/></td></tr>
+	<tr><td align="right"><a href="./all_p.php?id=<?php echo $id?>"><i>All correlations &gt;&gt;</i></a></td></tr>
 	<tr><td><font face="verdana">Highly correlated:</font><div id='table2_div' style="width: 1044px;"></div></td></tr>
 	<tr><td>&nbsp;</td></tr>
 	<tr><td><font face="verdana">Low correlation:</font><div id='table3_div' style="width: 1044px;"></div></td></tr>
@@ -195,4 +197,4 @@
     </tr></table>
   </body>
 </html>
-<?php mysql_close($link); ?>        
+<?php mysql_close($link); ?>

@@ -12,7 +12,7 @@
 	$query.= "FROM  tbl_correlations as B, tbl_assets as A ";
 	$query.= "WHERE B.fk_asset2ID=A.int_assetID ";
 	$query.= "ORDER BY B.dbl_portret DESC ";
-	$query.= "LIMIT 0, 40";
+	$query.= "LIMIT 0, 50";
 
 	$tableResult = "";
 	$res = mysql_query($query, $link);
@@ -81,9 +81,11 @@
 		<a href="./top_p.php">Top pairs</a>
       </td>
       <td><table align="center" border="0">
-	<tr><td><font face="verdana">High returns:</font><div id='table_div' style="width: 1044px;"></div></td></tr>
+	<tr><td><font face="verdana">High return pairs:</font></td></tr>
+	<tr><td><hr/></td></tr>
+	<tr><td><div id='table_div' style="width: 1044px;"></div></td></tr>
       </table></td>
     </tr></table>
   </body>
 </html>
-<?php mysql_close($link); ?>        
+<?php mysql_close($link); ?>
