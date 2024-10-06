@@ -163,10 +163,7 @@
   </head>
   <body>
     <table align="center" border="0"><tr>
-      <td valign="top"><a href="./">Home</a><br/>
-		<a href="./top_r.php">Top returns</a><br/>
-		<a href="./top_p.php">Top pairs</a>
-      </td>
+      <td valign="top"><?php showMenu(); ?></td>
       <td><table align="center" border="0">
 	<tr><td align="right">
 		 <form name="main" method="GET" action="./<?php echo basename($_SERVER['PHP_SELF']);?>">

@@ -130,4 +130,16 @@
 		global $RETURN_ROUND_PRECISION;
 		return round($expectedReturn / $variance, $RETURN_ROUND_PRECISION);
 	}
+
+	function showMenu() {
+ ?>
+		<a href="./">Home</a><br/>
+		<a href="./top_r.php">Top returns</a><br/>
+		<a href="./top_p.php">Top pairs</a><br/>
+		<a href="./stale_d.php">Stale data</a>
+<?php	}
+
+	function linkToAsset($id, $name) {
+		return "<a href=\"./?id=".$id."\">".$name."</a>";
+	}
 ?>

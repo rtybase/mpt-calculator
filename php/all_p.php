@@ -61,12 +61,10 @@
   <body>
     <table align="center" border="0"><tr>
       <td valign="top"><a href="./?id=<?php echo $id; ?>"><i>Back</i></a><br/>
-		<a href="./">Home</a><br/>
-		<a href="./top_r.php">Top returns</a><br/>
-		<a href="./top_p.php">Top pairs</a>
+		<?php showMenu(); ?>
       </td>
       <td><table align="center" border="0">
-	<tr><td><font face="verdana">All <?php echo count($allCorrelation); ?> correlations for : <?php echo $mainAsset; ?></td></tr>
+	<tr><td><font face="verdana">All <?php echo count($allCorrelation); ?> correlations for : <?php echo $mainAsset; ?></font></td></tr>
 	<tr><td><hr/></td></tr>
 	<tr><td><div id='table_div' style="width: 1044px;"></div></td></tr>
       </table></td>

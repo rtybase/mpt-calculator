@@ -23,8 +23,8 @@
 		if ($i == 0) $tableResult.= "[";
 		else $tableResult.= ",[";
 
-		$tableResult.= "'<a href=\"./?id=".$row[0]."\">".getName($row[0], $link)."</a><br/>"
-			."<a href=\"./?id=".$row[1]."\">".$row[2]."</a>',";
+		$tableResult.= "'".linkToAsset($row[0], getName($row[0], $link))."<br/>"
+			.linkToAsset($row[1], $row[2])."',";
 
 		$tableResult.= toChartNumber(round($row[3], $VOLATILITY_ROUND_PRECISION)).",";
 		$tableResult.= "'".round($row[4] * 100, 3)."&percnt;<br/>"
@@ -76,10 +76,7 @@
   </head>
   <body>
     <table align="center" border="0"><tr>
-      <td valign="top"><a href="./">Home</a><br/>
-		<a href="./top_r.php">Top returns</a><br/>
-		<a href="./top_p.php">Top pairs</a>
-      </td>
+      <td valign="top"><?php showMenu(); ?></td>
       <td><table align="center" border="0">
 	<tr><td><font face="verdana">High return pairs:</font></td></tr>
 	<tr><td><hr/></td></tr>

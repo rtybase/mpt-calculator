@@ -6,11 +6,14 @@
 
 	$link = connect("portfolio");
 
-	$query = "SELECT a.fk_assetID, b.vchr_name, a.dbl_avgreturn, a.dbl_varience ";
-	$query.= "FROM tbl_avgreturns a, tbl_assets b ";
+	$query = "SELECT a.fk_assetID, b.vchr_name, MAX( a.dtm_date ) ";
+	$query.= "FROM tbl_prices a, tbl_assets b ";
 	$query.= "WHERE a.fk_assetID = b.int_assetID ";
-	$query.= "ORDER BY a.dbl_avgreturn DESC ";
-	$query.= "LIMIT 0, 60";
+	$query.= "GROUP BY a.fk_assetID ";
+	$query.= "HAVING DATEDIFF( NOW( ) , MAX( a.dtm_date ) ) > 5 ";
+	$query.= "ORDER BY MAX( a.dtm_date ), b.vchr_name DESC";
+
+	$allCorrelation = getCollection($query, $id, $mainAsset, $link);
 
 	$tableResult = "";
 	$res = mysql_query($query, $link);
@@ -21,9 +24,8 @@
 		if ($i == 0) $tableResult.= "[";
 		else $tableResult.= ",[";
 
-		$tableResult.= "'".linkToAsset($row[0], $row[1])."',";
-		$tableResult.= toChartNumber(round($row[2], $RETURN_ROUND_PRECISION)).",";
-		$tableResult.= toChartNumber(round(sqrt(abs($row[3])), $VOLATILITY_ROUND_PRECISION))."]";
+		$tableResult.= "'".linkToAsset($row[0], $row[1])."','";
+		$tableResult.= $row[2]."']";
 		$i++;
 	}
 	mysql_free_result($res);
@@ -57,17 +59,17 @@
 	function generateData() {
 		var dataTable = new google.visualization.DataTable();
 		dataTable.addColumn('string', 'Asset');
-		dataTable.addColumn('number', 'Average Return');
-		dataTable.addColumn('number', 'Volatility');
+		dataTable.addColumn('string', 'Last Update');
 		return dataTable;
 	}
+
     </script>
   </head>
   <body>
     <table align="center" border="0"><tr>
       <td valign="top"><?php showMenu(); ?></td>
       <td><table align="center" border="0">
-	<tr><td><font face="verdana">High returns:</font></td></tr>
+	<tr><td><font face="verdana">Assets with stale data</font></td></tr>
 	<tr><td><hr/></td></tr>
 	<tr><td><div id='table_div' style="width: 1044px;"></div></td></tr>
       </table></td>
