@@ -161,6 +161,9 @@ load_yf "0P0001C5T6.L" "Vanguard Global Corporate Bond Index Fund" "v-gcb-if.csv
 load_yf "0P0001BLQI.L" "Vanguard Global Credit Bond Fund" "v-gc-bf.csv"
 load_yf "0P000185T1.L" "Vanguard Global Emerging Markets Fund" "v-g-emf.csv"
 load_yf "0P000185T3.L" "Vanguard Global Equity Fund" "v-g-ef.csv"
+load_yf "0P000185SZ.L" "Vanguard Global Equity Income Fund" "v-g-eif.csv"
+load_yf "IE00BH65QG55.IR" "Vanguard Global Short-Term Bond Index Fund" "v-g-st-bif.csv"
+load_yf "0P0001C5T4.L" "Vanguard Global Short-Term Corporate Bond Index Fund" "v-g-st-cbif.csv"
 
 load_yf "0P0001CSW3.L" "BlackRock ACS LifePath 2040-2042" "blk-acs-lp-40-42.csv"
 load_yf "0P0001F2HD.L" "BlackRock ACS World ESG Equity Tracker Fund" "blk-acs-w-esg-etf.csv"
