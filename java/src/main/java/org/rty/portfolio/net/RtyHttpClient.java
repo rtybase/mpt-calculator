@@ -44,8 +44,13 @@ public class RtyHttpClient {
 			for (Header hdr : headers) {
 				request.addHeader(hdr.getName(), hdr.getValue());
 
-				acceptSet = ACCEPT_HEADER.equalsIgnoreCase(hdr.getName());
-				userAgentSet = USER_AGENT_HEADER.equalsIgnoreCase(hdr.getName());
+				if (ACCEPT_HEADER.equalsIgnoreCase(hdr.getName())) {
+					acceptSet = true;
+				}
+
+				if (USER_AGENT_HEADER.equalsIgnoreCase(hdr.getName())) {
+					userAgentSet = true;
+				}
 			}
 		}
 
