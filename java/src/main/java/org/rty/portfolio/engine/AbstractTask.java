@@ -13,6 +13,7 @@ public abstract class AbstractTask implements Task {
 	public static final String INPUT_FILE_PARAM = "-file";
 	public static final String URL_PARAM = "-url";
 	public static final String OUTPUT_FILE_PARAM = "-outfile";
+	public static final String HTTP_HEADERS_FILE_PARAM = "-headers";
 	public static final String DATE_VALUE_INDEX_PARAM = "-date_value_index";
 	public static final String DATE_FORMAT_PARAM = "-date_format";
 	public static final String PRICE_VALUE_INDEX_PARAM = "-price_value_index";

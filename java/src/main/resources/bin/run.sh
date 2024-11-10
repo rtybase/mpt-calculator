@@ -7,9 +7,22 @@ FOLDER_FOR_FILES="./files_to_load"
 load_yf () {
 	echo "---------------------------------------------------"
 	echo "Yahoo data for: $2"
-	./ParseTable.exe "-link=https://finance.yahoo.com/quote/$1/history/" "-format=CSV"
+	java -jar portfolio-0.0.1-SNAPSHOT.jar DownloadTask "-url=https://finance.yahoo.com/quote/$1/history/" -outfile=out.html -headers=headers/yh-headers.prop
+	./ParseTable.exe "-link=out.html" "-format=CSV"
 	java -jar portfolio-0.0.1-SNAPSHOT.jar TransformSeriesDataTask "-file=out.csv" "-out_symbol=$2" "-outfile=${FOLDER_FOR_FILES}/$3" "-date_value_index=0" "-price_value_index=4" "-date_format=MMM d, yyyy"
+	rm -rf out.html
 	rm -rf out.csv
+	rm -rf request.tmp
+}
+
+load_uk_in() {
+	echo "---------------------------------------------------"
+	echo "UK Investing data for: $2"
+	./ParseTable.exe "-link=https://uk.investing.com/$1-historical-data" "-format=CSV"
+	head -n 27 out.csv > out1.csv
+	java -jar portfolio-0.0.1-SNAPSHOT.jar TransformSeriesDataTask "-file=out1.csv" "-out_symbol=$2" "-outfile=${FOLDER_FOR_FILES}/$3" "-date_value_index=0" "-price_value_index=1" "-date_format=MMM d, yyyy"
+	rm -rf out.csv
+	rm -rf out1.csv
 	rm -rf request.tmp
 }
 
@@ -27,49 +40,41 @@ java -jar portfolio-0.0.1-SNAPSHOT.jar DownloadTask "-url=http://www.ecb.europa.
 java -jar portfolio-0.0.1-SNAPSHOT.jar TransformEcbRatesTask "-file=ecb_rates.xml" "-outfile=${FOLDER_FOR_FILES}/ecb.csv"
 rm -rf ecb_rates.xml
 
-echo "---------------------------------------------------"
-echo "FTSE100"
-./ParseTable.exe "-link=https://uk.investing.com/indices/uk-100-historical-data" "-format=CSV"
-head -n 27 out.csv > out1.csv
-java -jar portfolio-0.0.1-SNAPSHOT.jar TransformSeriesDataTask "-file=out1.csv" "-out_symbol=FTSE100" "-outfile=${FOLDER_FOR_FILES}/ftse100_1.csv" "-date_value_index=0" "-price_value_index=1" "-date_format=MMM d, yyyy"
-rm -rf out.csv
-rm -rf out1.csv
-rm -rf request.tmp
-
-load_yf "%5EFTSE" "FTSE100" "ftse100.csv"
+load_uk_in "indices/uk-100" "FTSE100" "ftse100-1.csv"
 load_yf "%5EGSPC" "S&P500" "sp500.csv"
-load_yf "%5ENDX" "NASDAQ100" "nasdaq.csv"
 load_yf "%5EFCHI" "CAC40" "cac40.csv"
+load_yf "%5ENDX" "NASDAQ100" "nasdaq.csv"
 
-load_yf "GBPUSD%3DX" "GBP/USD" "gbp.csv"
 load_yf "GC%3DF" "GOLD" "gold.csv"
 load_yf "SI%3DF" "SILVER" "silver.csv"
 load_yf "HG%3DF" "COPPER" "copper.csv"
 load_yf "PL%3DF" "PLATINUM" "platinum.csv"
+load_yf "GBPUSD%3DX" "GBP/USD" "gbp.csv"
 
-load_yf "AMZN" "Amazon" "amzn.csv"
-load_yf "MSFT" "Microsoft" "msft.csv"
+load_yf "TSLA" "Tesla" "tsla.csv"
+load_yf "ZM" "Zoom" "zm.csv"
 load_yf "IRM" "Iron Mountain" "irm.csv"
 load_yf "BLK" "BlackRock" "blk.csv"
+load_yf "JAMF" "Jamf Holding" "jamf.csv"
+load_yf "NVDA" "NVIDIA" "nvda.csv"
+load_yf "PLTR" "Palantir" "pltr.csv"
+load_yf "AMZN" "Amazon" "amzn.csv"
+load_yf "MSFT" "Microsoft" "msft.csv"
 load_yf "KO" "Coca-Cola" "ko.csv"
 load_yf "MCD" "McDonalds" "mcd.csv"
 load_yf "T" "AT&T" "t.csv"
-load_yf "JAMF" "Jamf Holding" "jamf.csv"
 load_yf "AAPL" "Apple" "aapl.csv"
-load_yf "TSLA" "Tesla" "tsla.csv"
 load_yf "INTC" "Intel" "intc.csv"
 load_yf "AMD" "AMD" "amd.csv"
 load_yf "SNAP" "Snap" "snap.csv"
 load_yf "NET" "Cloudflare" "net.csv"
 load_yf "FTNT" "Fortinet" "ftnt.csv"
 load_yf "NTDOF" "Nintendo" "ntdof.csv"
-load_yf "ZM" "Zoom" "zm.csv"
 load_yf "TEAM" "Atlassian" "team.csv"
 load_yf "EBAY" "Ebay" "ebay.csv"
 load_yf "CSCO" "Cisco" "csco.csv"
 load_yf "NFLX" "Netflix" "nflx.csv"
 load_yf "PYPL" "PayPal" "pypl.csv"
-load_yf "NVDA" "NVIDIA" "nvda.csv"
 load_yf "ZS" "Zscaler" "zs.csv"
 load_yf "META" "Facebook" "meta.csv"
 load_yf "GOOG" "Alphabet" "goog.csv"
@@ -84,7 +89,6 @@ load_yf "SPOT" "Spotify" "spot.csv"
 load_yf "CRWD" "CrowdStrike" "crwd.csv"
 load_yf "DELL" "Dell" "dell.csv"
 load_yf "ABNB" "Airbnb" "abnb.csv"
-load_yf "PLTR" "Palantir" "pltr.csv"
 load_yf "ORCL" "Oracle" "orcl.csv"
 load_yf "SHOP" "Shopify" "shop.csv"
 load_yf "PANW" "Palo Alto Networks" "panw.csv"
