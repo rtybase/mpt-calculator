@@ -4,10 +4,12 @@
 	include_once("./funcs.php");
 	header("Content-Type:text/html; charset=UTF-8");
 
+	$period = periodTableFrom($_GET["period"]);
+
 	$link = connect("portfolio");
 
 	$query = "SELECT a.fk_assetID, b.vchr_name, a.dbl_avgreturn, a.dbl_varience ";
-	$query.= "FROM tbl_avgreturns a, tbl_assets b ";
+	$query.= "FROM tbl_avgreturns".$period." a, tbl_assets b ";
 	$query.= "WHERE a.fk_assetID = b.int_assetID ";
 	$query.= "ORDER BY a.dbl_avgreturn DESC ";
 	$query.= "LIMIT 0, 60";
@@ -67,7 +69,21 @@
     <table align="center" border="0"><tr>
       <td valign="top"><?php showMenu(); ?></td>
       <td><table align="center" border="0">
-	<tr><td><font face="verdana">High returns:</font></td></tr>
+	<tr><td align="left">
+		<form name="main" method="GET" action="./<?php echo basename($_SERVER['PHP_SELF']);?>">
+		<font face="verdana">High returns for
+			<select name="period" onchange="document.forms['main'].submit();">
+				<option value="">Overall</option>
+				<option value="1w"<?php if ($period === "_1w") echo " selected";?>>1 Week</option>
+				<option value="1m"<?php if ($period === "_1m") echo " selected";?>>1 Month</option>
+				<option value="6m"<?php if ($period === "_6m") echo " selected";?>>6 Months</option>
+				<option value="1y"<?php if ($period === "_1y") echo " selected";?>>1 Year</option>
+				<option value="2y"<?php if ($period === "_2y") echo " selected";?>>2 Years</option>
+				<option value="5y"<?php if ($period === "_5y") echo " selected";?>>5 Years</option>
+			</select>
+		period:</font>
+		</form>
+	</td></tr>
 	<tr><td><hr/></td></tr>
 	<tr><td><div id='table_div' style="width: 1044px;"></div></td></tr>
       </table></td>

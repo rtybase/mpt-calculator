@@ -27,6 +27,54 @@ create table tbl_avgreturns (
 	foreign key(fk_assetID) references tbl_assets (int_assetID)
 ) ENGINE = InnoDB;
 
+create table tbl_avgreturns_1w (
+	fk_assetID int(10) unsigned NOT NULL,
+	dbl_avgreturn DOUBLE not null,
+	dbl_varience DOUBLE not null,
+	primary key(fk_assetID),
+	foreign key(fk_assetID) references tbl_assets (int_assetID)
+) ENGINE = InnoDB;
+
+create table tbl_avgreturns_1m (
+	fk_assetID int(10) unsigned NOT NULL,
+	dbl_avgreturn DOUBLE not null,
+	dbl_varience DOUBLE not null,
+	primary key(fk_assetID),
+	foreign key(fk_assetID) references tbl_assets (int_assetID)
+) ENGINE = InnoDB;
+
+create table tbl_avgreturns_6m (
+	fk_assetID int(10) unsigned NOT NULL,
+	dbl_avgreturn DOUBLE not null,
+	dbl_varience DOUBLE not null,
+	primary key(fk_assetID),
+	foreign key(fk_assetID) references tbl_assets (int_assetID)
+) ENGINE = InnoDB;
+
+create table tbl_avgreturns_1y (
+	fk_assetID int(10) unsigned NOT NULL,
+	dbl_avgreturn DOUBLE not null,
+	dbl_varience DOUBLE not null,
+	primary key(fk_assetID),
+	foreign key(fk_assetID) references tbl_assets (int_assetID)
+) ENGINE = InnoDB;
+
+create table tbl_avgreturns_2y (
+	fk_assetID int(10) unsigned NOT NULL,
+	dbl_avgreturn DOUBLE not null,
+	dbl_varience DOUBLE not null,
+	primary key(fk_assetID),
+	foreign key(fk_assetID) references tbl_assets (int_assetID)
+) ENGINE = InnoDB;
+
+create table tbl_avgreturns_5y (
+	fk_assetID int(10) unsigned NOT NULL,
+	dbl_avgreturn DOUBLE not null,
+	dbl_varience DOUBLE not null,
+	primary key(fk_assetID),
+	foreign key(fk_assetID) references tbl_assets (int_assetID)
+) ENGINE = InnoDB;
+
 create table tbl_correlations (
 	fk_asset1ID int(10) unsigned NOT NULL,
 	fk_asset2ID int(10) unsigned NOT NULL,
@@ -89,10 +137,54 @@ BEGIN
 	START TRANSACTION;
 
 	DELETE FROM tbl_avgreturns;
+	DELETE FROM tbl_avgreturns_1w;
+	DELETE FROM tbl_avgreturns_1m;
+	DELETE FROM tbl_avgreturns_6m;
+	DELETE FROM tbl_avgreturns_1y;
+	DELETE FROM tbl_avgreturns_2y;
+	DELETE FROM tbl_avgreturns_5y;
 	DELETE FROM tbl_correlations;
 
 	INSERT INTO tbl_avgreturns (fk_assetID, dbl_avgreturn, dbl_varience)
-	SELECT fk_assetID, AVG(dbl_return), VAR_POP(dbl_return) FROM tbl_prices GROUP BY fk_assetID;
+	SELECT fk_assetID, AVG(dbl_return), VAR_POP(dbl_return)
+	FROM tbl_prices
+	GROUP BY fk_assetID;
+
+	INSERT INTO tbl_avgreturns_1w (fk_assetID, dbl_avgreturn, dbl_varience)
+	SELECT fk_assetID, AVG(dbl_return), VAR_POP(dbl_return)
+	FROM tbl_prices
+	WHERE dtm_date BETWEEN (NOW() - INTERVAL 1 WEEK) AND NOW()
+	GROUP BY fk_assetID;
+
+	INSERT INTO tbl_avgreturns_1m (fk_assetID, dbl_avgreturn, dbl_varience)
+	SELECT fk_assetID, AVG(dbl_return), VAR_POP(dbl_return)
+	FROM tbl_prices
+	WHERE dtm_date BETWEEN (NOW() - INTERVAL 1 MONTH) AND NOW()
+	GROUP BY fk_assetID;
+
+	INSERT INTO tbl_avgreturns_6m (fk_assetID, dbl_avgreturn, dbl_varience)
+	SELECT fk_assetID, AVG(dbl_return), VAR_POP(dbl_return)
+	FROM tbl_prices
+	WHERE dtm_date BETWEEN (NOW() - INTERVAL 6 MONTH) AND NOW()
+	GROUP BY fk_assetID;
+
+	INSERT INTO tbl_avgreturns_1y (fk_assetID, dbl_avgreturn, dbl_varience)
+	SELECT fk_assetID, AVG(dbl_return), VAR_POP(dbl_return)
+	FROM tbl_prices
+	WHERE dtm_date BETWEEN (NOW() - INTERVAL 1 YEAR) AND NOW()
+	GROUP BY fk_assetID;
+
+	INSERT INTO tbl_avgreturns_2y (fk_assetID, dbl_avgreturn, dbl_varience)
+	SELECT fk_assetID, AVG(dbl_return), VAR_POP(dbl_return)
+	FROM tbl_prices
+	WHERE dtm_date BETWEEN (NOW() - INTERVAL 2 YEAR) AND NOW()
+	GROUP BY fk_assetID;
+
+	INSERT INTO tbl_avgreturns_5y (fk_assetID, dbl_avgreturn, dbl_varience)
+	SELECT fk_assetID, AVG(dbl_return), VAR_POP(dbl_return)
+	FROM tbl_prices
+	WHERE dtm_date BETWEEN (NOW() - INTERVAL 5 YEAR) AND NOW()
+	GROUP BY fk_assetID;
 
 	COMMIT;
 

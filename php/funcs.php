@@ -2,6 +2,17 @@
 	$RETURN_ROUND_PRECISION = 5;
 	$VOLATILITY_ROUND_PRECISION = 4;
 
+	$PERIODS = array("1w", "1m", "6m", "1y", "2y", "5y");
+
+	function periodTableFrom($period) {
+		global $PERIODS;
+
+		if (in_array($period, $PERIODS)) {
+			return "_".$period;
+		}
+		return "";
+	}
+
 	function indicatorText($text, $indicator) {
 		if ($indicator < 0) {
 			return "<font color=\"red\">".$text."</font>";

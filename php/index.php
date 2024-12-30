@@ -4,6 +4,31 @@
 	include_once("./funcs.php");
 	header("Content-Type:text/html; charset=UTF-8");
 
+	function getRatesDataFor($assetId, $period, $link) {
+		global $RETURN_ROUND_PRECISION, $VOLATILITY_ROUND_PRECISION;
+		$result = array();
+		$data = getSingleValyeByPK("tbl_avgreturns".periodTableFrom($period), "fk_assetID", $assetId, $link);
+
+		if (empty($data)) {
+			$result["expectedReturn"] = "N/A";
+			$result["volatility"] = "N/A";
+			$result["kelly"] = "N/A";
+		} else {
+			$variance = $data["dbl_varience"];
+			$expectedReturn = $data["dbl_avgreturn"];
+
+			$result["expectedReturn"] = indicatorText(round($expectedReturn, $RETURN_ROUND_PRECISION), $expectedReturn);
+			$result["volatility"] = round(sqrt($variance), $VOLATILITY_ROUND_PRECISION);
+
+			if ($variance > 0.0) {
+				$result["kelly"] = calculateKellyFraction($expectedReturn, $variance);
+			} else {
+				$result["kelly"] = "N/A";
+			}
+		}
+		return $result;
+	}
+
 	$id = (int) $_GET["id"];
 	if ($id < 1) $id = 1;
 
@@ -13,10 +38,6 @@
 
 	$mainAsset = getName($id, $link);
 	$lastPriceInfo = getLastPriceInfo($id, $link);
-	$result = getSingleValyeByPK("tbl_avgreturns", "fk_assetID", $id, $link);
-
-	$variance = $result["dbl_varience"];
-	$expectedReturn = $result["dbl_avgreturn"];
 
 	$constraint = "ABS(C.dbl_correlation) >= 0.75";
 	if (!$includeall) $constraint .= " and dbl_weight1 > 0 and dbl_weight2 > 0";
@@ -33,6 +54,15 @@
 	$constraint = "";
 	if (!$includeall) $constraint = "dbl_weight1 > 0 and dbl_weight2 > 0";
 	$hiReturn = getCollectionFor($constraint, "C.dbl_portret DESC", $id, $mainAsset, $link);
+
+	$rates = array();
+	$rates["1w"] = getRatesDataFor($id, "1w", $link);
+	$rates["1m"] = getRatesDataFor($id, "1m", $link);
+	$rates["6m"] = getRatesDataFor($id, "6m", $link);
+	$rates["1y"] = getRatesDataFor($id, "1y", $link);
+	$rates["2y"] = getRatesDataFor($id, "2y", $link);
+	$rates["5y"] = getRatesDataFor($id, "5y", $link);
+	$rates["All"] = getRatesDataFor($id, "All", $link);
 ?>
 <html>
   <head>
@@ -53,6 +83,7 @@
 
 	function drawTables() {
 		drawBaseDataTable();
+		drawRatesDataTable();
 		drawBetasTable();
 		drawTable2();
 		drawTable3();
@@ -71,15 +102,50 @@
 		data.addColumn('string', 'Date');
 		data.addColumn('string', 'Last Price');
 		data.addColumn('string', 'Return');
-		data.addColumn('string', 'Average Return');
-		data.addColumn('number', 'Volatility');
 
 		data.addRows([['<b><?php echo $lastPriceInfo["dtm_date"];?></b>',
 		'<?php echo indicatorText(round($lastPriceInfo["dbl_price"], 4)." (".round($lastPriceInfo["dbl_change"], 4).")", $lastPriceInfo["dbl_change"]); ?>',
-		'<?php echo indicatorText(round($lastPriceInfo["dbl_return"], $RETURN_ROUND_PRECISION), $lastPriceInfo["dbl_return"]); ?>',
-		'<?php echo indicatorText(round($expectedReturn, $RETURN_ROUND_PRECISION), $expectedReturn) ;?>',
-		<?php echo toChartNumber(round(sqrt($variance), $VOLATILITY_ROUND_PRECISION));?>]]);
+		'<?php echo indicatorText(round($lastPriceInfo["dbl_return"], $RETURN_ROUND_PRECISION), $lastPriceInfo["dbl_return"]); ?>']]);
 		var table = new google.visualization.Table(document.getElementById('table_base_data_div'));
+		table.draw(data, {showRowNumber: false, width: '100%', allowHtml: true});
+	}
+
+	function drawRatesDataTable() {
+		var data = new google.visualization.DataTable();
+		data.addColumn('string', 'Period');
+		data.addColumn('string', 'Average Return');
+		data.addColumn('string', 'Volatility');
+		data.addColumn('string', 'Kelly Fraction');
+
+		data.addRows([['1 week',
+		'<?php echo $rates["1w"]["expectedReturn"]; ?>',
+		'<?php echo $rates["1w"]["volatility"]; ?>',
+		'<?php echo $rates["1w"]["kelly"]; ?>'],
+		['1 month',
+		'<?php echo $rates["1m"]["expectedReturn"]; ?>',
+		'<?php echo $rates["1m"]["volatility"]; ?>',
+		'<?php echo $rates["1m"]["kelly"]; ?>'],
+		['6 months',
+		'<?php echo $rates["6m"]["expectedReturn"]; ?>',
+		'<?php echo $rates["6m"]["volatility"]; ?>',
+		'<?php echo $rates["6m"]["kelly"]; ?>'],
+		['1 year',
+		'<?php echo $rates["1y"]["expectedReturn"]; ?>',
+		'<?php echo $rates["1y"]["volatility"]; ?>',
+		'<?php echo $rates["1y"]["kelly"]; ?>'],
+		['2 years',
+		'<?php echo $rates["2y"]["expectedReturn"]; ?>',
+		'<?php echo $rates["2y"]["volatility"]; ?>',
+		'<?php echo $rates["2y"]["kelly"]; ?>'],
+		['5 years',
+		'<?php echo $rates["5y"]["expectedReturn"]; ?>',
+		'<?php echo $rates["5y"]["volatility"]; ?>',
+		'<?php echo $rates["5y"]["kelly"]; ?>'],
+		['Overall',
+		'<?php echo $rates["All"]["expectedReturn"]; ?>',
+		'<?php echo $rates["All"]["volatility"]; ?>',
+		'<?php echo $rates["All"]["kelly"]; ?>']]);
+		var table = new google.visualization.Table(document.getElementById('table_rates_data_div'));
 		table.draw(data, {showRowNumber: false, width: '100%', allowHtml: true});
 	}
 
@@ -166,7 +232,7 @@
       <td valign="top"><?php showMenu(); ?></td>
       <td><table align="center" border="0">
 	<tr><td align="right">
-		 <form name="main" method="GET" action="./<?php echo basename($_SERVER['PHP_SELF']);?>">
+		<form name="main" method="GET" action="./<?php echo basename($_SERVER['PHP_SELF']);?>">
 		<font face="verdana">Asset:</font>
 		<select name="id" onchange="document.forms['main'].submit();">
 		<?php printAssets($id, $link);?>
@@ -178,9 +244,9 @@
 	</td></tr>
 
 	<tr><td><div id="table_base_data_div" style="width: 1044px;"></div></td></tr>
-	<tr><td><font face="verdana">Kelly fraction: <?php echo calculateKellyFraction($expectedReturn, $variance);?></font></td></tr>
 	<tr><td><font face="verdana">Betas:</font><div id="table_betas_div" style="width: 1044px;"></div></td></tr>
 	<tr><td><div id="chart_div" style="width: 1044px; height: 350px;"></div></td></tr>
+	<tr><td><font face="verdana">Rates:</font><div id="table_rates_data_div" style="width: 1044px;"></div></td></tr>
 	<tr><td><hr/></td></tr>
 	<tr><td align="right"><a href="./all_p.php?id=<?php echo $id?>"><i>All correlations &gt;&gt;</i></a></td></tr>
 	<tr><td><font face="verdana">Highly correlated:</font><div id='table2_div' style="width: 1044px;"></div></td></tr>
