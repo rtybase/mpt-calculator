@@ -7,12 +7,17 @@ FOLDER_FOR_FILES="./files_to_load"
 load_yf () {
 	echo "---------------------------------------------------"
 	echo "Yahoo data for: $2"
-	java -jar portfolio-0.0.1-SNAPSHOT.jar DownloadTask "-url=https://finance.yahoo.com/quote/$1/history/" -outfile=out.html -headers=headers/yh-headers.prop
-	./ParseTable.exe "-link=out.html" "-format=CSV"
-	java -jar portfolio-0.0.1-SNAPSHOT.jar TransformSeriesDataTask "-file=out.csv" "-out_symbol=$2" "-outfile=${FOLDER_FOR_FILES}/$3" "-date_value_index=0" "-price_value_index=4" "-date_format=MMM d, yyyy"
-	rm -rf out.html
-	rm -rf out.csv
-	rm -rf request.tmp
+	out_file="${FOLDER_FOR_FILES}/$3"
+	if [ -f $out_file ]; then
+		echo "${out_file} already exists."
+	else 
+		java -jar portfolio-0.0.1-SNAPSHOT.jar DownloadTask "-url=https://finance.yahoo.com/quote/$1/history/" -outfile=out.html -headers=headers/yh-headers.prop
+		./ParseTable.exe "-link=out.html" "-format=CSV"
+		java -jar portfolio-0.0.1-SNAPSHOT.jar TransformSeriesDataTask "-file=out.csv" "-out_symbol=$2" "-outfile=${out_file}" "-date_value_index=0" "-price_value_index=4" "-date_format=MMM d, yyyy"
+		rm -rf out.html
+		rm -rf out.csv
+		rm -rf request.tmp
+	fi
 }
 
 load_uk_in() {
@@ -108,7 +113,6 @@ load_yf "AVGO" "Broadcom" "avgo.csv"
 
 load_yf "HSBA.L" "HSBC" "hsbc.csv"
 load_yf "ABDN.L" "Standard Life Aberdeen" "abdn-l.csv"
-load_yf "PSN.L" "Persimmon" "psn-l.csv"
 load_yf "AV.L" "Aviva" "av-l.csv"
 load_yf "BT-A.L" "BT Group" "bt-a-l.csv"
 load_yf "ROO.L" "Deliveroo" "roo-l.csv"
@@ -118,6 +122,7 @@ load_yf "RIO.L" "Rio Tinto" "rio-l.csv"
 load_yf "BP.L" "BP" "bp-l.csv"
 load_yf "NG.L" "National Grid" "ng-l.csv"
 load_yf "LGEN.L" "Legal & General" "lgen-l.csv"
+load_yf "PSN.L" "Persimmon" "psn-l.csv"
 
 load_yf "BTC-USD" "BITCOIN" "btc-usd.csv"
 load_yf "DOGE-USD" "DOGECOIN" "doge-usd.csv"
