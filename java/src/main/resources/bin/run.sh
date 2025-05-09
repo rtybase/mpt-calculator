@@ -11,7 +11,7 @@ load_yf () {
 	if [ -f $out_file ]; then
 		echo "${out_file} already exists."
 	else 
-		java -jar portfolio-0.0.1-SNAPSHOT.jar DownloadTask "-url=https://finance.yahoo.com/quote/$1/history/" -outfile=out.html -headers=headers/yh-headers.prop
+		java -Duse-http2=true -jar portfolio-0.0.1-SNAPSHOT.jar DownloadTask "-url=https://finance.yahoo.com/quote/$1/history/" -outfile=out.html -headers=headers/yh-headers.prop
 		./ParseTable.exe "-link=out.html" "-format=CSV"
 		java -jar portfolio-0.0.1-SNAPSHOT.jar TransformSeriesDataTask "-file=out.csv" "-out_symbol=$2" "-outfile=${out_file}" "-date_value_index=0" "-price_value_index=4" "-date_format=MMM d, yyyy"
 		rm -rf out.html
@@ -41,7 +41,7 @@ rm -rf std-life.json
 
 echo "---------------------------------------------------"
 echo "European Central Bank data"
-java -jar portfolio-0.0.1-SNAPSHOT.jar DownloadTask "-url=http://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist-90d.xml" -outfile=ecb_rates.xml
+curl "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist-90d.xml" > ecb_rates.xml
 java -jar portfolio-0.0.1-SNAPSHOT.jar TransformEcbRatesTask "-file=ecb_rates.xml" "-outfile=${FOLDER_FOR_FILES}/ecb.csv"
 rm -rf ecb_rates.xml
 

@@ -6,13 +6,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.http.Header;
-import org.apache.http.message.BasicHeader;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.message.BasicHeader;
 import org.rty.portfolio.engine.AbstractTask;
+import org.rty.portfolio.net.HttpClient;
 import org.rty.portfolio.net.RtyHttpClient;
+import org.rty.portfolio.net.RtyHttpClientWithHTTP2Support;
 
 public class DownloadTask extends AbstractTask {
-	private final RtyHttpClient httpClient = new RtyHttpClient();
+	private final HttpClient httpClient;
+
+	public DownloadTask() {
+		final boolean shouldUseHttp2 = Boolean.getBoolean("use-http2");
+		if (shouldUseHttp2) {
+			say("Using HTTP/2 client!");
+			httpClient = new RtyHttpClientWithHTTP2Support();
+		} else {
+			say("Using HTTP/1.1 client!");
+			httpClient = new RtyHttpClient();
+		}
+	}
 
 	@Override
 	public void execute(Map<String, String> parameters) throws Exception {
