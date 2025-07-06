@@ -7,8 +7,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 public class DbManager {
@@ -36,24 +38,17 @@ public class DbManager {
 	 */
 	public boolean applyAverages() throws Exception {
 		boolean ret = false;
-		CallableStatement cStmt = null;
 
-		try {
-			cStmt = connection.prepareCall("{call usp_applyavg(?)}");
+		try (CallableStatement cStmt = connection.prepareCall("{call usp_applyavg(?)}")) {
 			cStmt.registerOutParameter(1, Types.INTEGER);
 			cStmt.execute();
+
 			int result = cStmt.getInt(1);
 			if (result >= 0) {
 				ret = true;
 			}
-		} finally {
-			if (cStmt != null) {
-				try {
-					cStmt.close();
-				} catch (SQLException e) {
-				}
-			}
 		}
+
 		return ret;
 	}
 
@@ -63,10 +58,8 @@ public class DbManager {
 	 */
 	public boolean addNewPrice(String assetName, double price, double change, double rate, Date date) throws Exception {
 		boolean ret = false;
-		CallableStatement cStmt = null;
 
-		try {
-			cStmt = connection.prepareCall("{call usp_addPrice(?,?,?,?,?,?,?)}");
+		try (CallableStatement cStmt = connection.prepareCall("{call usp_addPrice(?,?,?,?,?,?,?)}")) {
 
 			cStmt.setString(1, assetName);
 			cStmt.setDouble(2, price);
@@ -82,14 +75,8 @@ public class DbManager {
 			if (result >= 0) {
 				ret = true;
 			}
-		} finally {
-			if (cStmt != null) {
-				try {
-					cStmt.close();
-				} catch (SQLException e) {
-				}
-			}
 		}
+
 		return ret;
 	}
 
@@ -100,11 +87,9 @@ public class DbManager {
 	public boolean addNew2AssetsPortfolioInfo(int asset1, int asset2, double covariance, double correlation,
 			double weight1, double weight2, double portRet, double portVar) throws Exception {
 		boolean ret = false;
-		PreparedStatement pStmt = null;
 
-		try {
-			pStmt = connection.prepareStatement(
-					"INSERT INTO tbl_correlations (fk_asset1ID, fk_asset2ID, dbl_covariance, dbl_correlation, dbl_weight1, dbl_weight2, dbl_portret, dbl_portvar) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+		try (PreparedStatement pStmt = connection.prepareStatement(
+				"INSERT INTO tbl_correlations (fk_asset1ID, fk_asset2ID, dbl_covariance, dbl_correlation, dbl_weight1, dbl_weight2, dbl_portret, dbl_portvar) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");) {
 
 			pStmt.setInt(1, asset1);
 			pStmt.setInt(2, asset2);
@@ -117,15 +102,8 @@ public class DbManager {
 
 			pStmt.executeUpdate();
 			ret = true;
-		} finally {
-
-			if (pStmt != null) {
-				try {
-					pStmt.close();
-				} catch (SQLException e) {
-				}
-			}
 		}
+
 		return ret;
 	}
 
@@ -134,26 +112,28 @@ public class DbManager {
 	 * a map where key is the date and value is rate at that date.
 	 * 
 	 */
-	public HashMap<Integer, HashMap<String, Double>> getAllDailyRates() throws Exception {
-		HashMap<Integer, HashMap<String, Double>> storage = new HashMap<Integer, HashMap<String, Double>>();
+	public Map<Integer, Map<String, Double>> getAllDailyRates() throws Exception {
+		final Map<Integer, HashMap<String, Double>> storage = new HashMap<>();
 
-		Statement stmt = connection.createStatement();
-		ResultSet rs = stmt.executeQuery(
-				"select fk_assetID, dtm_date, dbl_return from tbl_prices order by fk_assetID, dtm_date desc, dtm_time desc");
-		while (rs.next()) {
-			Integer id = rs.getInt(1);
-			String date = rs.getString(2);
-			Double rate = rs.getDouble(3);
+		try (Statement stmt = connection.createStatement();
+				ResultSet rs = stmt.executeQuery(
+						"select fk_assetID, dtm_date, dbl_return from tbl_prices order by fk_assetID, dtm_date desc, dtm_time desc")) {
 
-			HashMap<String, Double> row = storage.get(id);
-			if (row == null) {
-				row = new HashMap<String, Double>();
-				storage.put(id, row);
+			while (rs.next()) {
+				addResultToStorage(storage, rs);
 			}
-			row.put(date, rate);
 		}
-		rs.close();
-		stmt.close();
-		return storage;
+
+		return Collections.unmodifiableMap(storage);
+	}
+
+	private final void addResultToStorage(final Map<Integer, HashMap<String, Double>> storage, ResultSet rs)
+			throws SQLException {
+		final Integer id = rs.getInt(1);
+		final String date = rs.getString(2);
+		final Double rate = rs.getDouble(3);
+
+		final Map<String, Double> row = storage.computeIfAbsent(id, key -> new HashMap<>());
+		row.put(date, rate);
 	}
 }

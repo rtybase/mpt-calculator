@@ -1,26 +1,26 @@
 package org.rty.portfolio.core;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Date;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class AssetPriceInfoAccumulatorTest {
+class AssetPriceInfoAccumulatorTest {
 	private static final String ASSET_NAME = "asset";
 
 	private AssetPriceInfoAccumulator accumulator;
 
-	@Before
-	public void setup() {
+	@BeforeEach
+	void setup() {
 		accumulator = new AssetPriceInfoAccumulator(ASSET_NAME);
 	}
 
 	@Test
-	public void testHistory() {
+	void testHistory() {
 		accumulator.add(new Date(101, 1, 4), 1.0D);
 		accumulator.add(new Date(101, 1, 5), 1.5D);
 		accumulator.add(new Date(101, 1, 1), 0.1D);
@@ -56,7 +56,7 @@ public class AssetPriceInfoAccumulatorTest {
 	}
 
 	@Test
-	public void testEmptyHistory() {
+	void testEmptyHistory() {
 		List<AssetPriceInfo> history = accumulator.getChangeHistory();
 		assertTrue(history.isEmpty());
 	}
