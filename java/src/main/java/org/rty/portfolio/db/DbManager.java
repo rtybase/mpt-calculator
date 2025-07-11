@@ -10,8 +10,11 @@ import java.sql.Types;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+
+import org.rty.portfolio.engine.impl.dbtask.TwoAssetsStatsCalculationTask.TwoAssetsStatsCalculationResult;
 
 public class DbManager {
 	private final Connection connection;
@@ -84,27 +87,25 @@ public class DbManager {
 	 * Adds new 2 assets portfolio record with associated statistics.
 	 * 
 	 */
-	public boolean addNew2AssetsPortfolioInfo(int asset1, int asset2, double covariance, double correlation,
-			double weight1, double weight2, double portRet, double portVar) throws Exception {
-		boolean ret = false;
-
+	public int[] addNew2AssetsPortfolioInfo(List<TwoAssetsStatsCalculationResult> results) throws Exception {
 		try (PreparedStatement pStmt = connection.prepareStatement(
 				"INSERT INTO tbl_correlations (fk_asset1ID, fk_asset2ID, dbl_covariance, dbl_correlation, dbl_weight1, dbl_weight2, dbl_portret, dbl_portvar) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");) {
 
-			pStmt.setInt(1, asset1);
-			pStmt.setInt(2, asset2);
-			pStmt.setDouble(3, covariance);
-			pStmt.setDouble(4, correlation);
-			pStmt.setDouble(5, weight1);
-			pStmt.setDouble(6, weight2);
-			pStmt.setDouble(7, portRet);
-			pStmt.setDouble(8, portVar);
+			for (TwoAssetsStatsCalculationResult result : results) {
+				pStmt.setInt(1, result.asset1Id);
+				pStmt.setInt(2, result.asset2Id);
+				pStmt.setDouble(3, result.covariance);
+				pStmt.setDouble(4, result.correlation);
+				pStmt.setDouble(5, result.portflioStats.getPortfolioWeights()[0]);
+				pStmt.setDouble(6, result.portflioStats.getPortfolioWeights()[1]);
+				pStmt.setDouble(7, result.portflioStats.getPortfolioReturn());
+				pStmt.setDouble(8, result.portflioStats.getPorfolioVariance());
 
-			pStmt.executeUpdate();
-			ret = true;
+				pStmt.addBatch();
+			}
+
+			return pStmt.executeBatch();
 		}
-
-		return ret;
 	}
 
 	/**

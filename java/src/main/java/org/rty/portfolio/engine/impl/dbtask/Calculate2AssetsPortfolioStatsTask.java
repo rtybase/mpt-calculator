@@ -1,16 +1,19 @@
 package org.rty.portfolio.engine.impl.dbtask;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.rty.portfolio.core.PortflioStats;
 import org.rty.portfolio.core.utils.ConcurrentTaskExecutorWithBatching;
 import org.rty.portfolio.core.utils.DatesAndSetUtil;
 import org.rty.portfolio.db.DbManager;
 import org.rty.portfolio.engine.AbstractDbTask;
 import org.rty.portfolio.engine.impl.dbtask.TwoAssetsStatsCalculationTask.TwoAssetsStatsCalculationResult;
+
+import com.mysql.jdbc.Statement;
 
 public class Calculate2AssetsPortfolioStatsTask extends AbstractDbTask {
 	public Calculate2AssetsPortfolioStatsTask(DbManager dbManager) {
@@ -33,23 +36,15 @@ public class Calculate2AssetsPortfolioStatsTask extends AbstractDbTask {
 		final AtomicInteger totalFail  = new AtomicInteger(0);
 
 		dbManager.setAutoCommit(false);
-		final ConcurrentTaskExecutorWithBatching<TwoAssetsStatsCalculationResult> taskExecutor = new ConcurrentTaskExecutorWithBatching<>(4, 16, 128,
+		final ConcurrentTaskExecutorWithBatching<TwoAssetsStatsCalculationResult> taskExecutor = new ConcurrentTaskExecutorWithBatching<>(8, 4096, 4096,
 				listOfFutures -> {
+					final List<TwoAssetsStatsCalculationResult> listOfResults = new ArrayList<>(listOfFutures.size());
+
 					for (Future<TwoAssetsStatsCalculationResult> futureResult : listOfFutures) {
-						final TwoAssetsStatsCalculationResult result = futureResult.get();
-
-						boolean res = saveResults(result.asset1Id,
-								result.asset2Id,
-								result.covariance,
-								result.correlation,
-								result.portflioStats);
-
-						if (!res) {
-							say(result.toString());
-							totalFail.incrementAndGet();
-						}
-						
+						listOfResults.add(futureResult.get());
 					}
+
+					saveResults(listOfResults, totalFail);
 				});
 
 		for (int i = 0; i < indexes.length; ++i) {
@@ -82,22 +77,19 @@ public class Calculate2AssetsPortfolioStatsTask extends AbstractDbTask {
 
 	}
 
-	private boolean saveResults(int asset1, int asset2, double covariance, double correlation, PortflioStats portStats)
+	private void saveResults(List<TwoAssetsStatsCalculationResult> resultsToSave, AtomicInteger totalFail)
 			throws Exception {
-		boolean res = false;
 		try {
-			res = dbManager.addNew2AssetsPortfolioInfo(
-					asset1,
-					asset2,
-					covariance,
-					correlation,
-					portStats.getPortfolioWeights()[0],
-					portStats.getPortfolioWeights()[1],
-					portStats.getPortfolioReturn(),
-					portStats.getPorfolioVariance());
+			int[] executionResults = dbManager.addNew2AssetsPortfolioInfo(resultsToSave);
+
+			for (int result : executionResults) {
+				if (result == Statement.EXECUTE_FAILED) {
+					say(resultsToSave.get(result).toString());
+					totalFail.incrementAndGet();
+				}
+			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
-		return res;
 	}
 }
