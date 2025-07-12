@@ -15,50 +15,62 @@ import org.rty.portfolio.engine.impl.dbtask.TwoAssetsStatsCalculationTask.Assets
 import org.rty.portfolio.math.Calculator;
 
 public class TwoAssetsStatsCalculationTask implements Callable<AssetsStatsCalculationResult> {
-	private final int asset1Id;
-	private final int asset2Id;
+	private final List<Integer> assetIds;
 	private final Map<Integer, Map<String, Double>> storage;
 
-	TwoAssetsStatsCalculationTask(Map<Integer, Map<String, Double>> storage, int asset1Id, int asset2Id) {
+	TwoAssetsStatsCalculationTask(Map<Integer, Map<String, Double>> storage, List<Integer> assetIds) {
 		this.storage = storage;
-		this.asset1Id = asset1Id;
-		this.asset2Id = asset2Id;
+		this.assetIds = assetIds;
 	}
 
 	@Override
 	public AssetsStatsCalculationResult call() throws Exception {
-		final Map<String, Double> asset1Rates = storage.get(asset1Id);
-		final Map<String, Double> asset2Rates = storage.get(asset2Id);
-		final Set<String> dates = DatesAndSetUtil.computeCommonValues(asset1Rates.keySet(), asset2Rates.keySet());
+		final List<Map<String, Double>> assetsRates = assetIds.stream().map(storage::get).toList();
+		final Set<String> dates = DatesAndSetUtil
+				.computeCommonValues(assetsRates.stream().map(assetRates -> assetRates.keySet()).toList());
 
 		if (DatesAndSetUtil.hasSufficientContent(dates)) {
 			// get the rates for the common dates
-			double[] values1 = DatesAndSetUtil.getValuesByIndex(dates, asset1Rates);
-			double[] values2 = DatesAndSetUtil.getValuesByIndex(dates, asset2Rates);
+			final List<double[]> values = assetsRates.stream()
+					.map(assetRates -> DatesAndSetUtil.getValuesByIndex(dates, assetRates)).toList();
+			final List<Double> means = values.stream().map(StatUtils::mean).toList();
+			final List<Double> variances = values.stream().map(StatUtils::populationVariance).toList();
 
-			double avg_r1 = StatUtils.mean(values1);
-			double avg_r2 = StatUtils.mean(values2);
+			double[][] covarianceMatrix = new double[assetIds.size()][assetIds.size()];
+			double[][] correlationMatrix = new double[assetIds.size()][assetIds.size()];
 
-			double variance1 = StatUtils.populationVariance(values1);
-			double variance2 = StatUtils.populationVariance(values2);
+			for (int i = 0; i < assetIds.size(); i++) {
+				covarianceMatrix[i][i] = variances.get(i);
+				correlationMatrix[i][i] = 1D;
 
-			double covariance = new Covariance().covariance(values1, values2, false);
-			double correlation = Calculator.calculateCorrelation(covariance, variance1, variance2);
+				for (int j = i + 1; j < assetIds.size(); j++) {
+					final double covariance = new Covariance().covariance(values.get(i),
+							values.get(j),
+							false);
 
-			double[][] covarianceMatrix = new double[][] { { variance1, covariance }, { covariance, variance2 } };
-			double[][] correlationMatrix = new double[][] { { 1D, correlation }, { correlation, 1D } };
+					final double correlation = Calculator.calculateCorrelation(covariance,
+							variances.get(i),
+							variances.get(j));
 
-			PortflioStats portStats = calculatePortfolioStats(avg_r1, avg_r2, covarianceMatrix);
+					covarianceMatrix[i][j] = covariance;
+					covarianceMatrix[j][i] = covariance;
 
-			return new AssetsStatsCalculationResult(List.of(asset1Id, asset2Id), true, 
-					List.of(values1, values2),
-					List.of(avg_r1, avg_r2),
-					List.of(variance1, variance2),
+					correlationMatrix[i][j] = correlation;
+					correlationMatrix[j][i] = correlation;
+				}
+			}
+
+			PortflioStats portStats = calculatePortfolioStats(means, covarianceMatrix);
+
+			return new AssetsStatsCalculationResult(assetIds, true, 
+					values,
+					means,
+					variances,
 					covarianceMatrix,
 					correlationMatrix,
 					portStats);
 		} else {
-			return new AssetsStatsCalculationResult(List.of(asset1Id, asset2Id), false,
+			return new AssetsStatsCalculationResult(assetIds, false,
 					null,
 					null,
 					null,
@@ -68,8 +80,8 @@ public class TwoAssetsStatsCalculationTask implements Callable<AssetsStatsCalcul
 		}
 	}
 
-	private static PortflioStats calculatePortfolioStats(double avg_r1, double avg_r2, double[][] covarianceMatrix) {
-		final double[] rates = new double[] { avg_r1, avg_r2 };
+	private static PortflioStats calculatePortfolioStats(List<Double> means, double[][] covarianceMatrix) {
+		final double[] rates = means.stream().mapToDouble(Double::doubleValue).toArray();
 		return Calculator.calculateWeights(rates, covarianceMatrix);
 	}
 

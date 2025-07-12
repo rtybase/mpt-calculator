@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -24,22 +25,44 @@ class DatesAndSetUtilTest {
 	}
 
 	@Test
+	void testComputeCommonWithEmptyInput() {
+		final Set<String> result = DatesAndSetUtil.computeCommonValues(List.of());
+
+		assertTrue(result.isEmpty());
+	}
+
+	@Test
+	void testComputeCommonWithOneInput() {
+		final Set<String> result = DatesAndSetUtil.computeCommonValues(List.of(Set.of("1")));
+
+		assertEquals(Set.of("1"), result);
+	}
+
+	@Test
 	void testComputeCommonValuesIsEmpty() {
-		final Set<String> result = DatesAndSetUtil.computeCommonValues(Set.of(), Set.of("1"));
+		final Set<String> result = DatesAndSetUtil.computeCommonValues(List.of(Set.of(), Set.of("1")));
 
 		assertTrue(result.isEmpty());
 	}
 
 	@Test
 	void testComputeCommonValuesWithNoCommonValues() {
-		final Set<String> result = DatesAndSetUtil.computeCommonValues(Set.of("2"), Set.of("3"));
+		final Set<String> result = DatesAndSetUtil.computeCommonValues(List.of(Set.of("2"), Set.of("3")));
 
 		assertTrue(result.isEmpty());
 	}
 
 	@Test
 	void testComputeCommonValues() {
-		final Set<String> result = DatesAndSetUtil.computeCommonValues(Set.of("2"), Set.of("2", "3"));
+		final Set<String> result = DatesAndSetUtil.computeCommonValues(List.of(Set.of("2"), Set.of("2", "3")));
+
+		assertEquals(Set.of("2"), result);
+	}
+
+	@Test
+	void testComputeCommonValuesMoreInputs() {
+		final Set<String> result = DatesAndSetUtil
+				.computeCommonValues(List.of(Set.of("2"), Set.of("2", "4"), Set.of("2", "3")));
 
 		assertEquals(Set.of("2"), result);
 	}

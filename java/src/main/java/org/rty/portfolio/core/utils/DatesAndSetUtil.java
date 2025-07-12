@@ -1,6 +1,8 @@
 package org.rty.portfolio.core.utils;
 
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -15,9 +17,24 @@ public final class DatesAndSetUtil {
 		return dates.size() >= MIN_COMMON_DATE;
 	}
 
-	public static <T> Set<T> computeCommonValues(Set<T> set1, Set<T> set2) {
-		Set<T> result = new HashSet<>(set1);
-		result.retainAll(set2);
+	public static <T> Set<T> computeCommonValues(List<Set<T>> sets) {
+		if (sets.isEmpty()) {
+			return Collections.emptySet();
+		}
+
+		if (sets.size() == 1) {
+			return sets.get(0);
+		}
+
+		Set<T> result = new HashSet<>(sets.get(0));
+		for (int i = 1; i < sets.size(); i++) {
+			result.retainAll(sets.get(i));
+
+			if (result.isEmpty()) {
+				return Collections.emptySet();
+			}
+		}
+
 		return result;
 	}
 
