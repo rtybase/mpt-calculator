@@ -114,14 +114,14 @@ load_yf "AVGO" "Broadcom" "avgo.csv"
 load_yf "HSBA.L" "HSBC" "hsbc.csv"
 load_yf "ABDN.L" "Standard Life Aberdeen" "abdn-l.csv"
 load_yf "AV.L" "Aviva" "av-l.csv"
-load_yf "BT-A.L" "BT Group" "bt-a-l.csv"
 load_yf "ROO.L" "Deliveroo" "roo-l.csv"
-load_yf "ULVR.L" "Unilever" "ulvr-l.csv"
 load_yf "LLOY.L" "Lloyds Banking" "lloy-l.csv"
 load_yf "RIO.L" "Rio Tinto" "rio-l.csv"
 load_yf "BP.L" "BP" "bp-l.csv"
 load_yf "NG.L" "National Grid" "ng-l.csv"
 load_yf "LGEN.L" "Legal & General" "lgen-l.csv"
+load_yf "ULVR.L" "Unilever" "ulvr-l.csv"
+load_yf "BT-A.L" "BT Group" "bt-a-l.csv"
 load_yf "PSN.L" "Persimmon" "psn-l.csv"
 
 load_yf "BTC-USD" "BITCOIN" "btc-usd.csv"
@@ -194,4 +194,4 @@ java -jar portfolio-0.0.1-SNAPSHOT.jar LoadCsvToDbTask "-file=${FOLDER_FOR_FILES
 rm -rf ${FOLDER_FOR_FILES}
 
 java -Xmx512m -jar portfolio-0.0.1-SNAPSHOT.jar CalculateAssetStatsTask
-java -Xmx512m -jar portfolio-0.0.1-SNAPSHOT.jar Calculate2AssetsPortfolioStatsTask
+java -Xmx768m -jar portfolio-0.0.1-SNAPSHOT.jar Calculate2AssetsPortfolioStatsTask

@@ -13,6 +13,7 @@ import org.rty.portfolio.db.DbManager;
 import org.rty.portfolio.engine.Task;
 import org.rty.portfolio.engine.impl.dbtask.Calculate2AssetsPortfolioStatsTask;
 import org.rty.portfolio.engine.impl.dbtask.CalculateAssetStatsTask;
+import org.rty.portfolio.engine.impl.dbtask.CalculateMultiAssetsPortfolioStatsTask;
 import org.rty.portfolio.engine.impl.dbtask.LoadCsvToDbTask;
 import org.rty.portfolio.engine.impl.nettask.DownloadTask;
 import org.rty.portfolio.engine.impl.transform.TransformEcbRatesTask;
@@ -54,6 +55,7 @@ public class TaskExecutor {
 		registerTask(new CalculateAssetStatsTask(dbManager));
 		registerTask(new TransformStdLifeJsonDataTask());
 		registerTask(new Calculate2AssetsPortfolioStatsTask(dbManager));
+		registerTask(new CalculateMultiAssetsPortfolioStatsTask(dbManager));
 		registerTask(new DownloadTask());
 		registerTask(new TransformEcbRatesTask());
 		registerTask(new TransformSeriesDataTask());
