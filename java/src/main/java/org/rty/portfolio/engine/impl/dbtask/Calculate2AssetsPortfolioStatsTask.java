@@ -10,7 +10,7 @@ import org.rty.portfolio.core.utils.ConcurrentTaskExecutorWithBatching;
 import org.rty.portfolio.core.utils.DatesAndSetUtil;
 import org.rty.portfolio.db.DbManager;
 import org.rty.portfolio.engine.AbstractDbTask;
-import org.rty.portfolio.engine.impl.dbtask.TwoAssetsStatsCalculationTask.AssetsStatsCalculationResult;
+import org.rty.portfolio.engine.impl.dbtask.AssetsStatsCalculationTask.AssetsStatsCalculationResult;
 
 import com.mysql.jdbc.Statement;
 
@@ -58,7 +58,7 @@ public class Calculate2AssetsPortfolioStatsTask extends AbstractDbTask {
 
 		for (int i = 0; i < indexes.length; ++i) {
 			for (int j = i + 1; j < indexes.length; ++j) {
-				taskExecutor.addTask(new TwoAssetsStatsCalculationTask(storage,
+				taskExecutor.addTask(new AssetsStatsCalculationTask(storage,
 						List.of(indexes[i], indexes[j])));
 				total.incrementAndGet();
 			}

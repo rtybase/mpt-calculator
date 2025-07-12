@@ -6,19 +6,23 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.stat.StatUtils;
 import org.apache.commons.math3.stat.correlation.Covariance;
 import org.rty.portfolio.core.PortflioStats;
 import org.rty.portfolio.core.utils.DatesAndSetUtil;
-import org.rty.portfolio.engine.impl.dbtask.TwoAssetsStatsCalculationTask.AssetsStatsCalculationResult;
+import org.rty.portfolio.engine.impl.dbtask.AssetsStatsCalculationTask.AssetsStatsCalculationResult;
 import org.rty.portfolio.math.Calculator;
 
-public class TwoAssetsStatsCalculationTask implements Callable<AssetsStatsCalculationResult> {
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+public class AssetsStatsCalculationTask implements Callable<AssetsStatsCalculationResult> {
+	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
 	private final List<Integer> assetIds;
 	private final Map<Integer, Map<String, Double>> storage;
 
-	TwoAssetsStatsCalculationTask(Map<Integer, Map<String, Double>> storage, List<Integer> assetIds) {
+	AssetsStatsCalculationTask(Map<Integer, Map<String, Double>> storage, List<Integer> assetIds) {
 		this.storage = storage;
 		this.assetIds = assetIds;
 	}
@@ -62,7 +66,8 @@ public class TwoAssetsStatsCalculationTask implements Callable<AssetsStatsCalcul
 
 			PortflioStats portStats = calculatePortfolioStats(means, covarianceMatrix);
 
-			return new AssetsStatsCalculationResult(assetIds, true, 
+			return new AssetsStatsCalculationResult(assetIds, dates,
+					true, 
 					values,
 					means,
 					variances,
@@ -70,7 +75,8 @@ public class TwoAssetsStatsCalculationTask implements Callable<AssetsStatsCalcul
 					correlationMatrix,
 					portStats);
 		} else {
-			return new AssetsStatsCalculationResult(assetIds, false,
+			return new AssetsStatsCalculationResult(assetIds, dates,
+					false,
 					null,
 					null,
 					null,
@@ -87,15 +93,18 @@ public class TwoAssetsStatsCalculationTask implements Callable<AssetsStatsCalcul
 
 	public static class AssetsStatsCalculationResult {
 		public final List<Integer> assetIds;
+		public final Set<String> dates;
+		public final boolean hasSufficientContent;
+
 		public final List<double[]> assetValues;
 		public final List<Double> assetMeans;
 		public final List<Double> assetVariances;
 		public final double[][] covarianceMatrix;
 		public final double[][] correlationMatrix;
 		public final PortflioStats portflioStats;
-		public final boolean hasSufficientContent;
 
 		private AssetsStatsCalculationResult(List<Integer> assetIds,
+				Set<String> dates,
 				boolean hasSufficientContent,
 				List<double[]> assetValues,
 				List<Double> assetMeans,
@@ -104,6 +113,7 @@ public class TwoAssetsStatsCalculationTask implements Callable<AssetsStatsCalcul
 				double[][] correlationMatrix,
 				PortflioStats portflioStats) {
 			this.assetIds = Collections.unmodifiableList(assetIds);
+			this.dates = dates;
 			this.hasSufficientContent = hasSufficientContent;
 			this.assetValues = toUnmodifiableList(assetValues);
 			this.assetMeans = toUnmodifiableList(assetMeans);
@@ -115,33 +125,11 @@ public class TwoAssetsStatsCalculationTask implements Callable<AssetsStatsCalcul
 
 		@Override
 		public String toString() {
-			if (hasSufficientContent) {
-				return String.format(
-						"assetIds=%s\n"
-						+ "assetMeans=%s\n"
-						+ "assetVariances=%s\n"
-						+ "cov=[%s]\n"
-						+ "cor=[%s]\n"
-						+ "assetWeights=%s\n"
-						+ "portRet=%.5f, portVar=%.5f",
-						StringUtils.join(assetIds, " "),
-						join(assetMeans),
-						join(assetVariances),
-						join(covarianceMatrix),
-						join(correlationMatrix),
-						join(portflioStats.getPortfolioWeights()),
-						portflioStats.getPortfolioReturn(),
-						portflioStats.getPorfolioVariance());
-			} else {
-				return String.format(
-						"assetIds=%s\n"
-						+ "assetMeans=\n"
-						+ "assetVariances=\n"
-						+ "cov=[]\n"
-						+ "cor=[]\n"
-						+ "assetWeights=\n"
-						+ "portRet=, portVar=",
-						StringUtils.join(assetIds, " "));
+			try {
+				return OBJECT_MAPPER.writeValueAsString(this);
+			} catch (JsonProcessingException e) {
+				e.printStackTrace();
+				return "";
 			}
 		}
 
@@ -150,29 +138,6 @@ public class TwoAssetsStatsCalculationTask implements Callable<AssetsStatsCalcul
 				return Collections.unmodifiableList(values);
 			}
 			return null;
-		}
-
-		private static String join(List<Double> values) {
-			final StringBuilder sb = new StringBuilder();
-			values.forEach(value -> sb.append(String.format("%.5f ", value)));
-			return sb.toString();
-		}
-
-		private static String join(double[] values) {
-			final StringBuilder sb = new StringBuilder();
-			for (double value : values) {
-				sb.append(String.format("%.5f ", value));
-			}
-			return sb.toString();
-		}
-
-		private static String join(double[][] values) {
-			final StringBuilder sb = new StringBuilder();
-			for (double[] value : values) {
-				sb.append(join(value));
-				sb.append("\n");
-			}
-			return sb.toString();
 		}
 	}
 }

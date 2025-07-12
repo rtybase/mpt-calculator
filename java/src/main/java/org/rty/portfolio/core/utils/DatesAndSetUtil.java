@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 public final class DatesAndSetUtil {
 	private static final int MIN_COMMON_DATE = 5;
@@ -35,7 +36,7 @@ public final class DatesAndSetUtil {
 			}
 		}
 
-		return result;
+		return new TreeSet<>(result);
 	}
 
 	public static int[] getIndexesFrom(Map<Integer, ?> storage) {

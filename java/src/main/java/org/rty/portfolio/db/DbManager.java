@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import org.rty.portfolio.engine.impl.dbtask.TwoAssetsStatsCalculationTask.AssetsStatsCalculationResult;
+import org.rty.portfolio.engine.impl.dbtask.AssetsStatsCalculationTask.AssetsStatsCalculationResult;
 
 public class DbManager {
 	private final Connection connection;
