@@ -3,7 +3,6 @@ package org.rty.portfolio.engine.impl.dbtask;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -11,7 +10,7 @@ import org.rty.portfolio.core.utils.ConcurrentTaskExecutorWithBatching;
 import org.rty.portfolio.core.utils.DatesAndSetUtil;
 import org.rty.portfolio.db.DbManager;
 import org.rty.portfolio.engine.AbstractDbTask;
-import org.rty.portfolio.engine.impl.dbtask.TwoAssetsStatsCalculationTask.TwoAssetsStatsCalculationResult;
+import org.rty.portfolio.engine.impl.dbtask.TwoAssetsStatsCalculationTask.AssetsStatsCalculationResult;
 
 import com.mysql.jdbc.Statement;
 
@@ -36,36 +35,37 @@ public class Calculate2AssetsPortfolioStatsTask extends AbstractDbTask {
 		final AtomicInteger totalFail  = new AtomicInteger(0);
 
 		dbManager.setAutoCommit(false);
-		final ConcurrentTaskExecutorWithBatching<TwoAssetsStatsCalculationResult> taskExecutor = new ConcurrentTaskExecutorWithBatching<>(8, 4096, 4096,
-				listOfFutures -> {
-					final List<TwoAssetsStatsCalculationResult> listOfResults = new ArrayList<>(listOfFutures.size());
+		final ConcurrentTaskExecutorWithBatching<AssetsStatsCalculationResult> taskExecutor = new ConcurrentTaskExecutorWithBatching<>(
+				8, 4096, 3072, listOfFutures -> {
+					final List<AssetsStatsCalculationResult> listOfResults = new ArrayList<>(listOfFutures.size());
 
-					for (Future<TwoAssetsStatsCalculationResult> futureResult : listOfFutures) {
-						listOfResults.add(futureResult.get());
+					for (Future<AssetsStatsCalculationResult> futureResult : listOfFutures) {
+						AssetsStatsCalculationResult calculationResult = futureResult.get();
+						if (calculationResult.hasSufficientContent) {
+							listOfResults.add(calculationResult);
+						} else {
+							say(calculationResult.assetIds.get(0)
+									+ ":" + calculationResult.assetIds.get(1)
+									+ " - have insufficient common dates.");
+							totalFail.incrementAndGet();
+						}
 					}
 
-					saveResults(listOfResults, totalFail);
+					if (!listOfResults.isEmpty()) {
+						saveResults(listOfResults, totalFail);
+					}
 				});
 
 		for (int i = 0; i < indexes.length; ++i) {
-			final Map<String, Double> rates1 = storage.get(indexes[i]);
-
 			for (int j = i + 1; j < indexes.length; ++j) {
-				final Map<String, Double> rates2 = storage.get(indexes[j]);
-
-				Set<String> dates = DatesAndSetUtil.computeCommonValues(rates1.keySet(), rates2.keySet());
-
-				if (DatesAndSetUtil.hasSufficientContent(dates)) {
-					taskExecutor.addTask(new TwoAssetsStatsCalculationTask(indexes[i], indexes[j], dates, rates1, rates2));
-				} else {
-					say(indexes[i] + ":" + indexes[j] + " - have insufficient common dates.");
-					totalFail.incrementAndGet();
-				}
-
+				taskExecutor.addTask(new TwoAssetsStatsCalculationTask(storage,
+						indexes[i],
+						indexes[j]));
 				total.incrementAndGet();
 			}
 			dbManager.commit();
 		}
+
 		taskExecutor.close();
 		dbManager.commit();
 		dbManager.setAutoCommit(true);
@@ -77,7 +77,7 @@ public class Calculate2AssetsPortfolioStatsTask extends AbstractDbTask {
 
 	}
 
-	private void saveResults(List<TwoAssetsStatsCalculationResult> resultsToSave, AtomicInteger totalFail)
+	private void saveResults(List<AssetsStatsCalculationResult> resultsToSave, AtomicInteger totalFail)
 			throws Exception {
 		try {
 			int[] executionResults = dbManager.addNew2AssetsPortfolioInfo(resultsToSave);

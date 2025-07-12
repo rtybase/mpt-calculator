@@ -7,8 +7,8 @@ import org.apache.commons.math3.linear.SingularValueDecomposition;
 import org.rty.portfolio.core.PortflioStats;
 
 public class Calculator {
-	private static final double CORRECTION = 1000000.0;
-	private static final double ERROR = 0.0000001;
+	private static final double CORRECTION = 1000000.0D;
+	private static final double ERROR = 0.0000001D;
 
 	public static PortflioStats calculateWeights(double[] rates, double[][] covariance) {
 		RealMatrix ratesVector = new Array2DRowRealMatrix(rates);
@@ -27,7 +27,7 @@ public class Calculator {
 	 * Calculated rates are in percentage.
 	 */
 	public static double calculateRate(double currentPrice, double previousPrice) {
-		double rate = (100.0 * calculateChange(currentPrice, previousPrice)) / previousPrice;
+		double rate = (100.0D * calculateChange(currentPrice, previousPrice)) / previousPrice;
 		return Math.round(rate * CORRECTION) / CORRECTION;
 	}
 
