@@ -74,7 +74,7 @@ public class TransformEcbRatesTask extends AbstractTask {
 								double doubleRate = Double.parseDouble(rate);
 								accumulator.add(date, doubleRate);
 							} catch (Exception ex) {
-								say("parse error for " + currency + ", rate=" + rate);
+								say("parse error for '{}', rate='{}'", currency, rate);
 							}
 						}
 					}

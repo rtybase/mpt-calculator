@@ -66,7 +66,7 @@ public class LoadCsvToDbTask extends AbstractDbTask {
 		String[] nextLine;
 
 		say("---------------------------------------------------");
-		say("Load data from " + inputFile + " ... ");
+		say("Load data from '{}' ... ", inputFile);
 		int total = 0;
 		int failed = 0;
 
@@ -94,12 +94,12 @@ public class LoadCsvToDbTask extends AbstractDbTask {
 		}
 		reader.close();
 
-		say("File: " + inputFile + ". Total processed " + total);
-		say("File: " + inputFile + ". Operations failed " + failed);
+		say("File: '{}'. Total processed {}", inputFile, total);
+		say("File: '{}'. Operations failed {}", inputFile, failed);
 	}
 
 	private void reportErrors() throws IOException {
-		say("Number of failed assets " + errorAssets.size());
+		say("Number of failed assets {}", errorAssets.size());
 
 		if (errorAssets.size() > 0) {
 			Calendar cal = Calendar.getInstance();

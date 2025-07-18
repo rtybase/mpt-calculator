@@ -5,11 +5,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.base.Strings;
 
 import au.com.bytecode.opencsv.CSVReader;
 
 public abstract class AbstractTask implements Task {
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getSimpleName());
+
 	public static final String INPUT_FILE_PARAM = "-file";
 	public static final String URL_PARAM = "-url";
 	public static final String OUTPUT_FILE_PARAM = "-outfile";
@@ -29,8 +34,8 @@ public abstract class AbstractTask implements Task {
 		return getClass().getSimpleName();
 	}
 
-	protected void say(String text) {
-		System.out.println(getName() + ": " + text);
+	protected void say(String text, Object... params) {
+		logger.info(text, params);
 	}
 
 	protected static String getValidParameterValue(Map<String, String> parameters, String parameterName) {

@@ -44,9 +44,9 @@ public class Calculate2AssetsPortfolioStatsTask extends AbstractDbTask {
 						if (calculationResult.hasSufficientContent) {
 							listOfResults.add(calculationResult);
 						} else {
-							say(calculationResult.assetIds.get(0)
-									+ ":" + calculationResult.assetIds.get(1)
-									+ " - have insufficient common dates.");
+							say("{}:{} - have insufficient common dates.",
+									calculationResult.assetIds.get(0),
+									calculationResult.assetIds.get(1));
 							totalFail.incrementAndGet();
 						}
 					}
@@ -70,9 +70,9 @@ public class Calculate2AssetsPortfolioStatsTask extends AbstractDbTask {
 		dbManager.setAutoCommit(true);
 
 		long ex_time = System.currentTimeMillis() - start;
-		say(DONE + ". Execution time: " + ex_time + "ms.");
-		say("Total processed " + total);
-		say("Failed " + totalFail);
+		say("{}. Execution time: {}ms,", DONE, ex_time);
+		say("Total processed {}", total);
+		say("Failed {}", totalFail);
 
 	}
 
@@ -83,7 +83,7 @@ public class Calculate2AssetsPortfolioStatsTask extends AbstractDbTask {
 
 			for (int result : executionResults) {
 				if (result == Statement.EXECUTE_FAILED) {
-					say(resultsToSave.get(result).toString());
+					say("Failed: {}", resultsToSave.get(result));
 					totalFail.incrementAndGet();
 				}
 			}

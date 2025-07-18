@@ -33,7 +33,7 @@ public class DownloadTask extends AbstractTask {
 		final String outFile = getValidParameterValue(parameters, OUTPUT_FILE_PARAM);
 		final String httpHeadersFile = headersFileValues(parameters);
 
-		say(String.format("Downloading '%s' to '%s'", url, outFile));
+		say("Downloading '{}' to '{}'", url, outFile);
 		httpClient.get(url, outFile, extraHeadersFrom(httpHeadersFile));
 		say(DONE);
 	}

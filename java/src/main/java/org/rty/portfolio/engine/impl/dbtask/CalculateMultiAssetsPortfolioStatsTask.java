@@ -57,12 +57,12 @@ public class CalculateMultiAssetsPortfolioStatsTask extends AbstractDbTask {
 		taskExecutor.close();
 
 		long ex_time = System.currentTimeMillis() - start;
-		say(DONE + ". Execution time: " + ex_time + "ms.");
-		say("Total processed " + total);
+		say("{}. Execution time: {}ms,", DONE, ex_time);
+		say("Total processed {}", total);
 	}
 
 	private List<List<Integer>> loadPortfolioDefinitions(String inputFile) throws Exception {
-		say("Load portfolio definitions from " + inputFile + " ... ");
+		say("Load portfolio definitions from '{}' ... ", inputFile);
 
 		List<List<Integer>> result = new ArrayList<>();
 		final CSVReader reader = new CSVReader(new FileReader(inputFile));
@@ -86,8 +86,8 @@ public class CalculateMultiAssetsPortfolioStatsTask extends AbstractDbTask {
 
 		reader.close();
 
-		say("Total portfolio definitions loaded " + total);
-		say("Operations failed " + failed);
+		say("Total portfolio definitions loaded {}", total);
+		say("Operations failed {}", failed);
 		return result;
 	}
 

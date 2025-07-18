@@ -58,7 +58,7 @@ public class TransformStdLifeJsonDataTask extends AbstractTask {
 					try {
 						writer.write(buildPriceInfo(values));
 					} catch (Exception ex) {
-						say(String.format("Failed to extract price info from '%s'.", values.toString()));
+						say("Failed to extract price info from '{}'.", values.toString());
 						ex.printStackTrace();
 					}
 				}
@@ -69,7 +69,7 @@ public class TransformStdLifeJsonDataTask extends AbstractTask {
 			say("Bad JSON format!");
 		}
 
-		say("Total processed " + total);
+		say("Total processed {}", total);
 		say(DONE);
 	}
 

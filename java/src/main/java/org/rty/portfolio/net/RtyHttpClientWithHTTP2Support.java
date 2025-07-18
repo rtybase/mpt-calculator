@@ -27,8 +27,11 @@ import org.apache.hc.core5.reactor.IOReactorConfig;
 import org.apache.hc.core5.ssl.SSLContexts;
 import org.apache.hc.core5.util.TimeValue;
 import org.apache.hc.core5.util.Timeout;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RtyHttpClientWithHTTP2Support extends HttpClient {
+	private static final Logger LOGGER = LoggerFactory.getLogger(RtyHttpClientWithHTTP2Support.class.getSimpleName());
 
 	@Override
 	public void get(String url, String outFile, Header[] headers) throws Exception {
@@ -61,17 +64,17 @@ public class RtyHttpClientWithHTTP2Support extends HttpClient {
 
 						@Override
 						public void completed(final SimpleHttpResponse response) {
-							System.out.println(request.getRequestUri() + " -> " + response.getCode());
+							LOGGER.info("{} -> {}", request.getRequestUri(), response.getCode());
 						}
 
 						@Override
 						public void failed(final Exception ex) {
-							System.out.println(request.getRequestUri() + " -> " + ex);
+							LOGGER.error("{}", request.getRequestUri(), ex);
 						}
 
 						@Override
 						public void cancelled() {
-							System.out.println(request.getRequestUri() + " cancelled");
+							LOGGER.warn("{} cancelled", request.getRequestUri());
 						}
 					});
 

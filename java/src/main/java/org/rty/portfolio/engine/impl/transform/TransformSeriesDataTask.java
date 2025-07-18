@@ -45,7 +45,7 @@ public class TransformSeriesDataTask extends AbstractTask {
 
 		final List<String[]> lines = readAllLinesFrom(inputFile);
 		if (lines.isEmpty()) {
-			say("Nothing to read from " + inputFile);
+			say("Nothing to read from '{}'", inputFile);
 			return accumulator;
 		}
 
@@ -57,9 +57,10 @@ public class TransformSeriesDataTask extends AbstractTask {
 					final double price = Double.parseDouble(line[closePriceColumn].replace(",", ""));
 					accumulator.add(date, price);
 				} catch (Exception ex) {
-					say("parse error at line " + i
-							+ ", date='" + line[dateColumn]
-							+ "', price=" + line[closePriceColumn]);
+					say("parse error at line {}, date='{}', price='{}'", 
+							i,
+							line[dateColumn],
+							line[closePriceColumn]);
 					ex.printStackTrace();
 				}
 			}
