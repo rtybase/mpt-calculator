@@ -6,11 +6,11 @@ import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.rty.portfolio.core.AssetsStatistics;
 import org.rty.portfolio.core.utils.ConcurrentTaskExecutorWithBatching;
 import org.rty.portfolio.core.utils.DatesAndSetUtil;
 import org.rty.portfolio.db.DbManager;
 import org.rty.portfolio.engine.AbstractDbTask;
-import org.rty.portfolio.engine.impl.dbtask.AssetsStatsCalculationTask.AssetsStatsCalculationResult;
 
 import com.mysql.jdbc.Statement;
 
@@ -35,12 +35,13 @@ public class Calculate2AssetsPortfolioStatsTask extends AbstractDbTask {
 		final AtomicInteger totalFail  = new AtomicInteger(0);
 
 		dbManager.setAutoCommit(false);
-		final ConcurrentTaskExecutorWithBatching<AssetsStatsCalculationResult> taskExecutor = new ConcurrentTaskExecutorWithBatching<>(
+		final ConcurrentTaskExecutorWithBatching<AssetsStatistics> taskExecutor = new ConcurrentTaskExecutorWithBatching<>(
 				8, 4096, 3072, listOfFutures -> {
-					final List<AssetsStatsCalculationResult> listOfResults = new ArrayList<>(listOfFutures.size());
+					final List<AssetsStatistics> listOfResults = new ArrayList<>(listOfFutures.size());
 
-					for (Future<AssetsStatsCalculationResult> futureResult : listOfFutures) {
-						AssetsStatsCalculationResult calculationResult = futureResult.get();
+					for (Future<AssetsStatistics> futureResult : listOfFutures) {
+						final AssetsStatistics calculationResult = futureResult.get();
+
 						if (calculationResult.hasSufficientContent) {
 							listOfResults.add(calculationResult);
 						} else {
@@ -76,7 +77,7 @@ public class Calculate2AssetsPortfolioStatsTask extends AbstractDbTask {
 
 	}
 
-	private void saveResults(List<AssetsStatsCalculationResult> resultsToSave, AtomicInteger totalFail)
+	private void saveResults(List<AssetsStatistics> resultsToSave, AtomicInteger totalFail)
 			throws Exception {
 		try {
 			int[] executionResults = dbManager.addNew2AssetsPortfolioInfo(resultsToSave);

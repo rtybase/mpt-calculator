@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import org.rty.portfolio.engine.impl.dbtask.AssetsStatsCalculationTask.AssetsStatsCalculationResult;
+import org.rty.portfolio.core.AssetsStatistics;
 
 public class DbManager {
 	private final Connection connection;
@@ -87,19 +87,19 @@ public class DbManager {
 	 * Adds new 2 assets portfolio record with associated statistics.
 	 * 
 	 */
-	public int[] addNew2AssetsPortfolioInfo(List<AssetsStatsCalculationResult> results) throws Exception {
+	public int[] addNew2AssetsPortfolioInfo(List<AssetsStatistics> results) throws Exception {
 		try (PreparedStatement pStmt = connection.prepareStatement(
 				"INSERT INTO tbl_correlations (fk_asset1ID, fk_asset2ID, dbl_covariance, dbl_correlation, dbl_weight1, dbl_weight2, dbl_portret, dbl_portvar) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");) {
 
-			for (AssetsStatsCalculationResult result : results) {
+			for (AssetsStatistics result : results) {
 				pStmt.setInt(1, result.assetIds.get(0));
 				pStmt.setInt(2, result.assetIds.get(1));
 				pStmt.setDouble(3, result.covarianceMatrix[0][1]);
 				pStmt.setDouble(4, result.correlationMatrix[0][1]);
-				pStmt.setDouble(5, result.portflioStats.getPortfolioWeights()[0]);
-				pStmt.setDouble(6, result.portflioStats.getPortfolioWeights()[1]);
-				pStmt.setDouble(7, result.portflioStats.getPortfolioReturn());
-				pStmt.setDouble(8, result.portflioStats.getPorfolioVariance());
+				pStmt.setDouble(5, result.portflioStats.portfolioWeights[0]);
+				pStmt.setDouble(6, result.portflioStats.portfolioWeights[1]);
+				pStmt.setDouble(7, result.portflioStats.portfolioReturn);
+				pStmt.setDouble(8, result.portflioStats.porfolioVariance);
 
 				pStmt.addBatch();
 			}

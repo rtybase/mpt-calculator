@@ -31,11 +31,11 @@ public class CsvWriter implements Closeable {
 
 	public void write(AssetPriceInfo priceInfo) {
 		writer.writeNext(new String[] {
-				priceInfo.getAssetName(),
-				"" + priceInfo.getPrice(),
-				"" + priceInfo.getChange(),
-				"" + priceInfo.getRate(), 
-				SCAN_DATE_FORMAT.format(priceInfo.getDate())
+				priceInfo.assetName,
+				"" + priceInfo.price,
+				"" + priceInfo.change,
+				"" + priceInfo.rate, 
+				SCAN_DATE_FORMAT.format(priceInfo.date)
 		});
 	}
 

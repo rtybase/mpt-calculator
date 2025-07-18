@@ -10,6 +10,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class AssetPriceInfoAccumulatorTest {
+	private static final double ERROR_TOLERANCE = 0.00001D;
+
 	private static final String ASSET_NAME = "asset";
 
 	private AssetPriceInfoAccumulator accumulator;
@@ -30,29 +32,29 @@ class AssetPriceInfoAccumulatorTest {
 		List<AssetPriceInfo> history = accumulator.getChangeHistory();
 		assertEquals(history.size(), 4);
 
-		assertEquals(history.get(0).getDate(), new Date(101, 1, 2));
-		assertEquals(history.get(0).getPrice(), 0.3D, 0.00001D);
-		assertEquals(history.get(0).getChange(), 0.2D, 0.00001D);
-		assertEquals(history.get(0).getAssetName(), ASSET_NAME);
-		assertEquals(history.get(0).getRate(), 200.0D, 0.00001D);
+		assertEquals(new Date(101, 1, 2), history.get(0).date);
+		assertEquals(0.3D, history.get(0).price, ERROR_TOLERANCE);
+		assertEquals(0.2D, history.get(0).change, ERROR_TOLERANCE);
+		assertEquals(ASSET_NAME, history.get(3).assetName);
+		assertEquals(200.0D, history.get(0).rate, ERROR_TOLERANCE);
 
-		assertEquals(history.get(1).getDate(), new Date(101, 1, 3));
-		assertEquals(history.get(1).getPrice(), 0.6D, 0.00001D);
-		assertEquals(history.get(1).getChange(), 0.3D, 0.00001D);
-		assertEquals(history.get(1).getAssetName(), ASSET_NAME);
-		assertEquals(history.get(1).getRate(), 100.0D, 0.00001D);
+		assertEquals(new Date(101, 1, 3), history.get(1).date);
+		assertEquals(0.6D, history.get(1).price, ERROR_TOLERANCE);
+		assertEquals(0.3D, history.get(1).change, ERROR_TOLERANCE);
+		assertEquals(ASSET_NAME, history.get(3).assetName);
+		assertEquals(100.0D, history.get(1).rate, ERROR_TOLERANCE);
 
-		assertEquals(history.get(2).getDate(), new Date(101, 1, 4));
-		assertEquals(history.get(2).getPrice(), 1.0D, 0.00001D);
-		assertEquals(history.get(2).getChange(), 0.4D, 0.00001D);
-		assertEquals(history.get(2).getAssetName(), ASSET_NAME);
-		assertEquals(history.get(2).getRate(), 66.66666D, 0.0001D);
+		assertEquals(new Date(101, 1, 4), history.get(2).date);
+		assertEquals(1.0D, history.get(2).price, ERROR_TOLERANCE);
+		assertEquals(0.4D, history.get(2).change, ERROR_TOLERANCE);
+		assertEquals(ASSET_NAME, history.get(3).assetName);
+		assertEquals(66.66666D, history.get(2).rate, ERROR_TOLERANCE);
 
-		assertEquals(history.get(3).getDate(), new Date(101, 1, 5));
-		assertEquals(history.get(3).getPrice(), 1.5D, 0.00001D);
-		assertEquals(history.get(3).getChange(), 0.5D, 0.00001D);
-		assertEquals(history.get(3).getAssetName(), ASSET_NAME);
-		assertEquals(history.get(3).getRate(), 50.0D, 0.0001D);
+		assertEquals(new Date(101, 1, 5), history.get(3).date);
+		assertEquals(1.5D, history.get(3).price, ERROR_TOLERANCE);
+		assertEquals(0.5D, history.get(3).change, ERROR_TOLERANCE);
+		assertEquals(ASSET_NAME, history.get(3).assetName);
+		assertEquals(50.0D, history.get(3).rate, ERROR_TOLERANCE);
 	}
 
 	@Test

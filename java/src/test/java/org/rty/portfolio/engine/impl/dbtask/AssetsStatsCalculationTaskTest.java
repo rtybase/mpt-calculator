@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
-import org.rty.portfolio.engine.impl.dbtask.AssetsStatsCalculationTask.AssetsStatsCalculationResult;
+import org.rty.portfolio.core.AssetsStatistics;
 
 class AssetsStatsCalculationTaskTest {
 	private static final double ERROR_TOLERANCE = 0.000001D;
@@ -22,7 +22,7 @@ class AssetsStatsCalculationTaskTest {
 						2, Map.of("1", 2D, "2", 4D, "3", 6D, "4", 8D, "5", 10D)),
 				List.of(1, 2));
 
-		AssetsStatsCalculationResult result = task.call();
+		AssetsStatistics result = task.call();
 
 		assertTrue(result.hasSufficientContent);
 		assertArrayEquals(new double[] { 1D, 2D, 3D, 4D, 5D }, result.assetValues.get(0));
@@ -35,10 +35,10 @@ class AssetsStatsCalculationTaskTest {
 		assertEquals(4D, result.covarianceMatrix[0][1], ERROR_TOLERANCE);
 		assertEquals(1D, result.correlationMatrix[0][1], ERROR_TOLERANCE);
 
-		assertEquals(4.999999D, result.portflioStats.getPortfolioReturn(), ERROR_TOLERANCE);
-		assertEquals(5.555555D, result.portflioStats.getPorfolioVariance(), ERROR_TOLERANCE);
+		assertEquals(4.999999D, result.portflioStats.portfolioReturn, ERROR_TOLERANCE);
+		assertEquals(5.555555D, result.portflioStats.porfolioVariance, ERROR_TOLERANCE);
 
-		verifyListsOfDoublesAreEqual(List.of(0.333333D, 0.666666D), result.portflioStats.getPortfolioWeights());
+		verifyListsOfDoublesAreEqual(List.of(0.333333D, 0.666666D), result.portflioStats.portfolioWeights);
 
 		assertEquals("{\"assetIds\":[1,2],\"dates\":[\"1\",\"2\",\"3\",\"4\",\"5\"],"
 				+ "\"hasSufficientContent\":true,\"assetValues\":[[1.0,2.0,3.0,4.0,5.0],[2.0,4.0,6.0,8.0,10.0]],"
@@ -57,7 +57,7 @@ class AssetsStatsCalculationTaskTest {
 						3, Map.of("1", 3D, "2", 6D, "3", 9D, "4", 12D, "5", 15D)),
 				List.of(1, 2, 3));
 
-		AssetsStatsCalculationResult result = task.call();
+		AssetsStatistics result = task.call();
 
 		assertTrue(result.hasSufficientContent);
 		assertArrayEquals(new double[] { 1D, 2D, 3D, 4D, 5D }, result.assetValues.get(0));
@@ -73,10 +73,10 @@ class AssetsStatsCalculationTaskTest {
 		assertEquals(1D, result.correlationMatrix[0][1], ERROR_TOLERANCE);
 		assertEquals(1D, result.correlationMatrix[0][2], ERROR_TOLERANCE);
 
-		assertEquals(7D, result.portflioStats.getPortfolioReturn(), ERROR_TOLERANCE);
-		assertEquals(10.888888D, result.portflioStats.getPorfolioVariance(), ERROR_TOLERANCE);
+		assertEquals(7D, result.portflioStats.portfolioReturn, ERROR_TOLERANCE);
+		assertEquals(10.888888D, result.portflioStats.porfolioVariance, ERROR_TOLERANCE);
 
-		verifyListsOfDoublesAreEqual(List.of(0.166666D, 0.333333D, 0.5D), result.portflioStats.getPortfolioWeights());
+		verifyListsOfDoublesAreEqual(List.of(0.166666D, 0.333333D, 0.5D), result.portflioStats.portfolioWeights);
 
 		assertEquals("{\"assetIds\":[1,2,3],\"dates\":[\"1\",\"2\",\"3\",\"4\",\"5\"],"
 				+ "\"hasSufficientContent\":true,\"assetValues\":[[1.0,2.0,3.0,4.0,5.0],[2.0,4.0,6.0,8.0,10.0],[3.0,6.0,9.0,12.0,15.0]],"
@@ -94,7 +94,7 @@ class AssetsStatsCalculationTaskTest {
 						2, Map.of("1", 2D, "2", 4D)),
 				List.of(1, 2));
 
-		AssetsStatsCalculationResult result = task.call();
+		AssetsStatistics result = task.call();
 
 		verifyAssetIds(result);
 		assertFalse(result.hasSufficientContent);
@@ -112,7 +112,7 @@ class AssetsStatsCalculationTaskTest {
 				+ "\"portflioStats\":null}", result.toString());
 	}
 
-	private static void verifyAssetIds(AssetsStatsCalculationResult result) {
+	private static void verifyAssetIds(AssetsStatistics result) {
 		for (int i = 0; i < result.assetIds.size(); i++) {
 			assertEquals(i + 1, result.assetIds.get(i));
 		}
