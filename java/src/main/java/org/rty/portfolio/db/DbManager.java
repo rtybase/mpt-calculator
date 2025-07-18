@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -14,13 +15,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.rty.portfolio.core.AssetPriceInfo;
 import org.rty.portfolio.core.AssetsStatistics;
+
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 
 public class DbManager {
 	private final Connection connection;
+	private final LoadingCache<String, Integer> cache;
 
 	public DbManager(Connection connection) {
 		this.connection = Objects.requireNonNull(connection, "connection must not be null.");
+
+		this.cache = Caffeine.newBuilder()
+				  .maximumSize(1000)
+				  .build(this::queryDbForAssetIdFromName);
 	}
 
 	public void setAutoCommit(boolean autoCommitFlag) throws Exception {
@@ -53,6 +63,63 @@ public class DbManager {
 		}
 
 		return ret;
+	}
+
+	/**
+	 * Attempts to resolve asset name to ID.
+	 * 
+	 */
+	public Integer resolveAssetNameToId(String assetName) throws Exception {
+		return cache.get(assetName);
+	}
+
+	/**
+	 * Adds price records to DB.
+	 * 
+	 */
+	public 	List<String> addBulkPrices(List<AssetPriceInfo> prices) throws Exception {
+		final List<String> failedResults = new ArrayList<>(prices.size());
+		final List<String> possiblyGoodResults = new ArrayList<>(prices.size());
+
+		try (PreparedStatement pStmt = connection.prepareStatement(
+				"INSERT INTO tbl_prices (fk_assetID, dbl_price, dbl_change,dbl_return, dtm_date, dtm_time)"
+						+ " VALUES (?,?,?,?,?,?)"
+						+ " ON DUPLICATE KEY UPDATE"
+						+ "	 dbl_price=VALUES(dbl_price),"
+						+ "	 dbl_change=VALUES(dbl_change),"
+						+ "	 dbl_return=VALUES(dbl_return)")) {
+
+			for (AssetPriceInfo price : prices) {
+				Integer assetId = resolveAssetNameToId(price.assetName);
+
+				if (assetId < 0) {
+					failedResults.add(price.assetName);
+				} else {
+					possiblyGoodResults.add(price.assetName);
+
+					pStmt.setInt(1, assetId);
+					pStmt.setDouble(2, price.price);
+					pStmt.setDouble(3, price.change);
+					pStmt.setDouble(4, price.rate);
+					pStmt.setDate(5, new java.sql.Date(price.date.getTime()));
+					pStmt.setTime(6, new java.sql.Time(price.date.getTime()));
+
+					pStmt.addBatch();
+				}
+			}
+
+			if (!possiblyGoodResults.isEmpty()) {
+				final int[] executionResults = pStmt.executeBatch();
+
+				for (int result : executionResults) {
+					if (result == Statement.EXECUTE_FAILED) {
+						failedResults.add(possiblyGoodResults.get(result));
+					}
+				}
+			}
+		}
+
+		return failedResults;
 	}
 
 	/**
@@ -89,7 +156,8 @@ public class DbManager {
 	 */
 	public int[] addNew2AssetsPortfolioInfo(List<AssetsStatistics> results) throws Exception {
 		try (PreparedStatement pStmt = connection.prepareStatement(
-				"INSERT INTO tbl_correlations (fk_asset1ID, fk_asset2ID, dbl_covariance, dbl_correlation, dbl_weight1, dbl_weight2, dbl_portret, dbl_portvar) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");) {
+				"INSERT INTO tbl_correlations (fk_asset1ID, fk_asset2ID, dbl_covariance, dbl_correlation, dbl_weight1, dbl_weight2, dbl_portret, dbl_portvar)"
+						+ " VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
 
 			for (AssetsStatistics result : results) {
 				pStmt.setInt(1, result.assetIds.get(0));
@@ -136,5 +204,20 @@ public class DbManager {
 
 		final Map<String, Double> row = storage.computeIfAbsent(id, key -> new HashMap<>());
 		row.put(date, rate);
+	}
+
+	private Integer queryDbForAssetIdFromName(String assetName) throws Exception {
+		try (PreparedStatement pStmt = connection
+				.prepareStatement("SELECT int_assetID FROM tbl_assets WHERE UPPER(vchr_name)=UPPER(?)")) {
+			pStmt.setString(1, assetName);
+
+			try (ResultSet rs = pStmt.executeQuery()) {
+				while (rs.next()) {
+					return rs.getInt(1);
+				}
+			}
+		}
+
+		return -1;
 	}
 }
