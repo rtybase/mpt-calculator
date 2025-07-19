@@ -1,19 +1,19 @@
 package org.rty.portfolio.engine.impl.transform;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.rty.portfolio.core.AssetPriceInfo;
 import org.rty.portfolio.core.AssetPriceInfoAccumulator;
+import org.rty.portfolio.core.utils.DatesAndSetUtil;
 import org.rty.portfolio.engine.AbstractTask;
 import org.rty.portfolio.io.CsvWriter;
 
 /**
- * General purposes history prices data loader.
+ * General purposes history prices data transformer.
  */
 public class TransformSeriesDataTask extends AbstractTask {
 	@Override
@@ -31,7 +31,7 @@ public class TransformSeriesDataTask extends AbstractTask {
 				Integer.parseInt(dateValueIndex),
 				DateTimeFormatter.ofPattern(dateFormat, Locale.US));
 
-		CsvWriter writer = new CsvWriter(outputFile);
+		CsvWriter<AssetPriceInfo> writer = new CsvWriter<>(outputFile);
 		writer.write(accumulator.getChangeHistory());
 		writer.close();
 
@@ -53,7 +53,7 @@ public class TransformSeriesDataTask extends AbstractTask {
 		for (String[] line : lines) {
 			if (line.length > minimumColumnsToHave) {
 				try {
-					final Date date = strToDate(dateFormatter, line[dateColumn]);
+					final Date date = DatesAndSetUtil.strToDate(dateFormatter, line[dateColumn]);
 					final double price = Double.parseDouble(line[closePriceColumn].replace(",", ""));
 					accumulator.add(date, price);
 				} catch (Exception ex) {
@@ -68,13 +68,5 @@ public class TransformSeriesDataTask extends AbstractTask {
 		}
 
 		return accumulator;
-	}
-
-	private static Date strToDate(DateTimeFormatter dateFormatter, String value) {
-		final LocalDate dateTime = LocalDate.parse(value, dateFormatter);
-		return java.util.Date.from(dateTime
-				.atStartOfDay()
-				.atZone(ZoneId.systemDefault())
-				.toInstant());
 	}
 }

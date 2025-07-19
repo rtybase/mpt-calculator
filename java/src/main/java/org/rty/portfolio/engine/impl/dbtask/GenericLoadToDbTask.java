@@ -8,52 +8,41 @@ import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.rty.portfolio.core.AssetPriceInfo;
 import org.rty.portfolio.db.DbManager;
 import org.rty.portfolio.engine.AbstractDbTask;
 import org.rty.portfolio.io.CsvWriter;
 
 import au.com.bytecode.opencsv.CSVReader;
 
-/**
- * A general purpose CSV loader. The format must be assetName, price, change,
- * rate, date
- * 
- * date is in format of yyyy-MM-dd
- *
- */
-public class LoadCsvToDbTask extends AbstractDbTask {
-	private static final int DATE_COLUMN = 4;
-	private static final int RATE_OF_CHANGE_COLUMN = 3;
-	private static final int PRICE_CHANGE_COLUMN = 2;
-	private static final int PRICE_COLUMN = 1;
+public abstract class GenericLoadToDbTask<T> extends AbstractDbTask {
 	private static final int NAME_COLUMN = 0;
-
 	private static final SimpleDateFormat REP_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-	private static final int NO_OF_COLUMNS = 5;
 
-	private final Set<String> errorAssets = new HashSet<String>();
+	protected final Set<String> errorAssets = new HashSet<String>();
+	private final int expectedNumberOfColumns;
 
-	public LoadCsvToDbTask(DbManager dbManager) {
+	public GenericLoadToDbTask(DbManager dbManager, int expectedNumberOfColumns) {
 		super(dbManager);
+		this.expectedNumberOfColumns = expectedNumberOfColumns;
 	}
 
 	@Override
-	public void execute(Map<String, String> parameters) throws Exception {
-		String inputFile = getValidParameterValue(parameters, INPUT_FILE_PARAM);
+	public final void execute(Map<String, String> parameters) throws Exception {
+		final String inputFile = getValidParameterValue(parameters, INPUT_FILE_PARAM);
 
 		final File toLoadFrom = new File(inputFile);
 		if (toLoadFrom.isFile()) {
 			loadFromOneFile(inputFile);
 		} else if (toLoadFrom.isDirectory()) {
-			File[] folderContent = toLoadFrom.listFiles();
-			
+			final File[] folderContent = toLoadFrom.listFiles();
+
 			for (File file : folderContent) {
 				if (file.isFile()) {
 					loadFromOneFile(file.getPath());
@@ -70,13 +59,13 @@ public class LoadCsvToDbTask extends AbstractDbTask {
 		say("Load data from '{}' ... ", inputFile);
 
 		final AtomicInteger total = new AtomicInteger(0);
-		final AtomicInteger totalFail  = new AtomicInteger(0);
+		final AtomicInteger totalFail = new AtomicInteger(0);
 
-		final List<AssetPriceInfo> pricesToAdd = loadDataFromFile(inputFile, total, totalFail);
+		final List<T> dataToAdd = loadDataFromFile(inputFile, total, totalFail);
 
-		if (!pricesToAdd.isEmpty()) {
+		if (!dataToAdd.isEmpty()) {
 			dbManager.setAutoCommit(false);
-			saveResults(pricesToAdd, totalFail);
+			saveResults(dataToAdd, totalFail);
 			dbManager.commit();
 			dbManager.setAutoCommit(true);
 		}
@@ -85,20 +74,20 @@ public class LoadCsvToDbTask extends AbstractDbTask {
 		say("File: '{}'. Operations failed {}", inputFile, totalFail);
 	}
 
-	private List<AssetPriceInfo> loadDataFromFile(String inputFile, final AtomicInteger total,
-			final AtomicInteger totalFail) throws Exception {
-		final List<AssetPriceInfo> pricesToAdd = new ArrayList<>(1024);
+	private List<T> loadDataFromFile(String inputFile, AtomicInteger total, AtomicInteger totalFail)
+			throws Exception {
+		final List<T> dataToAdd = new ArrayList<>(1024);
 		final CSVReader reader = new CSVReader(new FileReader(inputFile));
 
 		String[] nextLine;
 		while ((nextLine = reader.readNext()) != null) {
-			if (nextLine.length == NO_OF_COLUMNS) {
+			if (nextLine.length == expectedNumberOfColumns) {
 				total.incrementAndGet();
 
 				final String assetName = nextLine[NAME_COLUMN].trim();
 
 				try {
-					pricesToAdd.add(toPriceInfo(assetName, nextLine));
+					dataToAdd.add(toEntity(assetName, nextLine));
 				} catch (Exception e) {
 					say(e.toString());
 
@@ -108,25 +97,7 @@ public class LoadCsvToDbTask extends AbstractDbTask {
 			}
 		}
 		reader.close();
-		return pricesToAdd;
-	}
-
-	private void saveResults(List<AssetPriceInfo> pricesToAdd, AtomicInteger totalFail) throws Exception {
-		List<String> executionResults = dbManager.addBulkPrices(pricesToAdd);
-
-		for (String failedAsset : executionResults) {
-			errorAssets.add(failedAsset);
-			totalFail.incrementAndGet();
-		}
-
-	}
-
-	private AssetPriceInfo toPriceInfo(String assetName, String[] line) {
-		return new AssetPriceInfo(assetName,
-				Double.parseDouble(line[PRICE_COLUMN].trim()),
-				Double.parseDouble(line[PRICE_CHANGE_COLUMN].trim()),
-				Double.parseDouble(line[RATE_OF_CHANGE_COLUMN].trim()),
-				CsvWriter.SCAN_DATE_FORMAT.parse(line[DATE_COLUMN].trim(), new ParsePosition(0)));
+		return dataToAdd;
 	}
 
 	private void reportErrors() throws IOException {
@@ -136,12 +107,25 @@ public class LoadCsvToDbTask extends AbstractDbTask {
 			Calendar cal = Calendar.getInstance();
 			FileWriter fw = new FileWriter(ERROR_REPORT_FILE, true);
 
-			fw.write(REP_DATE_FORMAT.format(cal.getTime()) + " Check the following assets:\n");
+			fw.write(REP_DATE_FORMAT.format(cal.getTime())
+					+ " "
+					+ this.getClass().getSimpleName()
+					+ ". Check the following assets:\n");
+
 			for (String s : errorAssets) {
 				fw.write(s);
 				fw.write("\n");
 			}
+
 			fw.close();
 		}
 	}
+
+	protected final Date toDate(String value) {
+		return CsvWriter.SCAN_DATE_FORMAT.parse(value, new ParsePosition(0));
+	}
+
+	protected abstract void saveResults(List<T> dataToAdd, AtomicInteger totalFail) throws Exception;
+
+	protected abstract T toEntity(String assetName, String[] line);
 }

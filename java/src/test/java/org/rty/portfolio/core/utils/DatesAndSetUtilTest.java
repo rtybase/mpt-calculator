@@ -5,14 +5,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
 class DatesAndSetUtilTest {
+	private static final Date D_2025_07_17 = new Date(125, 6, 17);
 
 	@Test
 	void testHasSufficientContent() {
@@ -95,5 +99,20 @@ class DatesAndSetUtilTest {
 
 		Arrays.sort(result);
 		assertArrayEquals(new double[] { 1D, 3D }, result);
+	}
+
+	@Test
+	void testStrToDate() {
+		final Date result = DatesAndSetUtil.strToDate(DateTimeFormatter.ofPattern("MMM d, yyyy", Locale.US),
+				"Jul 17, 2025");
+
+		assertEquals(D_2025_07_17, result);
+	}
+
+	@Test
+	void testDateToStr() {
+		final String result = DatesAndSetUtil.dateToStr(D_2025_07_17);
+
+		assertEquals("2025-07-17", result);
 	}
 }

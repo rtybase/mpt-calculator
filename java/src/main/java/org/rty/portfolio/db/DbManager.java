@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.rty.portfolio.core.AssetDividendInfo;
 import org.rty.portfolio.core.AssetPriceInfo;
 import org.rty.portfolio.core.AssetsStatistics;
 
@@ -108,15 +109,43 @@ public class DbManager {
 				}
 			}
 
-			if (!possiblyGoodResults.isEmpty()) {
-				final int[] executionResults = pStmt.executeBatch();
+			executeAndProcessResult(pStmt, possiblyGoodResults, failedResults);
+		}
 
-				for (int result : executionResults) {
-					if (result == Statement.EXECUTE_FAILED) {
-						failedResults.add(possiblyGoodResults.get(result));
-					}
+		return failedResults;
+	}
+
+	/**
+	 * Adds price records to DB.
+	 * 
+	 */
+	public 	List<String> addBulkDividends(List<AssetDividendInfo> dividends) throws Exception {
+		final List<String> failedResults = new ArrayList<>(dividends.size());
+		final List<String> possiblyGoodResults = new ArrayList<>(dividends.size());
+
+		try (PreparedStatement pStmt = connection.prepareStatement(
+				"INSERT INTO tbl_dividends (fk_assetID, dbl_pay, dtm_date)"
+						+ " VALUES (?,?,?)"
+						+ " ON DUPLICATE KEY UPDATE"
+						+ "	 dbl_pay=VALUES(dbl_pay)")) {
+
+			for (AssetDividendInfo dividend : dividends) {
+				Integer assetId = resolveAssetNameToId(dividend.assetName);
+
+				if (assetId < 0) {
+					failedResults.add(dividend.assetName);
+				} else {
+					possiblyGoodResults.add(dividend.assetName);
+
+					pStmt.setInt(1, assetId);
+					pStmt.setDouble(2, dividend.pay);
+					pStmt.setDate(3, new java.sql.Date(dividend.date.getTime()));
+
+					pStmt.addBatch();
 				}
 			}
+
+			executeAndProcessResult(pStmt, possiblyGoodResults, failedResults);
 		}
 
 		return failedResults;
@@ -219,5 +248,18 @@ public class DbManager {
 		}
 
 		return -1;
+	}
+
+	private static void executeAndProcessResult(PreparedStatement pStmt, final List<String> possiblyGoodResults,
+			final List<String> failedResults) throws Exception {
+		if (!possiblyGoodResults.isEmpty()) {
+			final int[] executionResults = pStmt.executeBatch();
+
+			for (int result : executionResults) {
+				if (result == Statement.EXECUTE_FAILED) {
+					failedResults.add(possiblyGoodResults.get(result));
+				}
+			}
+		}
 	}
 }

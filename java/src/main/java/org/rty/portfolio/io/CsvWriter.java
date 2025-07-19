@@ -7,11 +7,11 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Objects;
 
-import org.rty.portfolio.core.AssetPriceInfo;
+import org.rty.portfolio.core.CsvWritable;
 
 import au.com.bytecode.opencsv.CSVWriter;
 
-public class CsvWriter implements Closeable {
+public class CsvWriter<T extends CsvWritable> implements Closeable {
 	public static final SimpleDateFormat SCAN_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
 	private final CSVWriter writer;
@@ -24,19 +24,13 @@ public class CsvWriter implements Closeable {
 				CSVWriter.DEFAULT_QUOTE_CHARACTER);
 	}
 
-	public void write(List<AssetPriceInfo> priceDetails) {
-		Objects.requireNonNull(priceDetails, "priceDetails must not be null!");
-		priceDetails.forEach(this::write);
+	public void write(List<T> lines) {
+		Objects.requireNonNull(lines, "lines must not be null!");
+		lines.forEach(this::write);
 	}
 
-	public void write(AssetPriceInfo priceInfo) {
-		writer.writeNext(new String[] {
-				priceInfo.assetName,
-				"" + priceInfo.price,
-				"" + priceInfo.change,
-				"" + priceInfo.rate, 
-				SCAN_DATE_FORMAT.format(priceInfo.date)
-		});
+	public void write(T line) {
+		writer.writeNext(line.toCsvLine());
 	}
 
 	@Override

@@ -1,6 +1,11 @@
 package org.rty.portfolio.core.utils;
 
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -8,6 +13,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 public final class DatesAndSetUtil {
+	public static final SimpleDateFormat SCAN_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 	private static final int MIN_COMMON_DATE = 5;
 
 	private DatesAndSetUtil() {
@@ -61,4 +67,15 @@ public final class DatesAndSetUtil {
 		return ret;
 	}
 
+	public static Date strToDate(DateTimeFormatter dateFormatter, String value) {
+		final LocalDate dateTime = LocalDate.parse(value, dateFormatter);
+		return java.util.Date.from(dateTime
+				.atStartOfDay()
+				.atZone(ZoneId.systemDefault())
+				.toInstant());
+	}
+
+	public static String dateToStr(Date value) {
+		return SCAN_DATE_FORMAT.format(value);
+	}
 }

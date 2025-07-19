@@ -7,20 +7,16 @@ import org.rty.portfolio.core.utils.DatesAndSetUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class AssetPriceInfo implements CsvWritable {
+public class AssetDividendInfo implements CsvWritable {
 	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
 	public final String assetName;
-	public final double price;
-	public final double change;
-	public final double rate;
+	public final double pay;
 	public final Date date;
 
-	public AssetPriceInfo(String assetName, double price, double change, double rate, Date date) {
+	public AssetDividendInfo(String assetName, double pay, Date date) {
 		this.assetName = assetName;
-		this.price = price;
-		this.change = change;
-		this.rate = rate;
+		this.pay = pay;
 		this.date = date;
 
 	}
@@ -39,9 +35,7 @@ public class AssetPriceInfo implements CsvWritable {
 	public String[] toCsvLine() {
 		return new String[] {
 				assetName,
-				"" + price,
-				"" + change,
-				"" + rate,
+				"" + pay,
 				DatesAndSetUtil.dateToStr(date)
 		};
 	}

@@ -41,7 +41,7 @@ class CsvWriterTest {
 
 	@Test
 	void testWriteOne() throws IOException {
-		CsvWriter writer = new CsvWriter(FILE);
+		CsvWriter<AssetPriceInfo> writer = new CsvWriter<>(FILE);
 		writer.write(priceInfo);
 		writer.close();
 
@@ -50,7 +50,7 @@ class CsvWriterTest {
 
 	@Test
 	void testWriteList() throws IOException {
-		CsvWriter writer = new CsvWriter(FILE);
+		CsvWriter<AssetPriceInfo> writer = new CsvWriter<>(FILE);
 		writer.write(Arrays.asList(priceInfo));
 		writer.close();
 
@@ -59,7 +59,7 @@ class CsvWriterTest {
 
 	private static void verifyFileContent() throws IOException {
 		List<String> content = Files.readAllLines(Paths.get(FILE));
-		assertEquals(content.size(), 1);
-		assertEquals(content.get(0), CSV_CONTENT);
+		assertEquals(1, content.size());
+		assertEquals(CSV_CONTENT, content.get(0));
 	}
 }
