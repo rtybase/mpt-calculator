@@ -144,10 +144,11 @@
 
 	function showMenu() {
  ?>
-		<a href="./">Home</a><br/>
-		<a href="./top_r.php">Top returns</a><br/>
-		<a href="./top_p.php">Top pairs</a><br/>
-		<a href="./stale_d.php">Stale data</a>
+	<a href="./">Home</a><br/>
+	<a href="./top_r.php">Top returns</a><br/>
+	<a href="./top_p.php">Top pairs</a><br/>
+	<a href="./top_d.php">Dividends</a><br/>
+	<a href="./stale_d.php">Stale data</a>
 <?php	}
 
 	function linkToAsset($id, $name) {

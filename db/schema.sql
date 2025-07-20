@@ -19,6 +19,9 @@ create table tbl_prices (
 	foreign key(fk_assetID) references tbl_assets (int_assetID)
 ) ENGINE = InnoDB;
 
+CREATE INDEX idx_prices_id_date
+ON tbl_prices (fk_assetID, dtm_date);
+
 create table tbl_dividends (
 	fk_assetID int(10) unsigned NOT NULL,
 	dbl_pay DOUBLE not null,
@@ -26,6 +29,9 @@ create table tbl_dividends (
 	primary key(fk_assetID, dtm_date),
 	foreign key(fk_assetID) references tbl_assets (int_assetID)
 ) ENGINE = InnoDB;
+
+CREATE INDEX idx_dividends_id_date
+ON tbl_dividends (fk_assetID, dtm_date);
 
 create table tbl_avgreturns (
 	fk_assetID int(10) unsigned NOT NULL,
