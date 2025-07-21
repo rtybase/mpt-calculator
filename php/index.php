@@ -29,6 +29,20 @@
 		return $result;
 	}
 
+	function loadDividendsFor($assetId, $link) {
+		$res = mysql_query("select dtm_date, dbl_pay from tbl_dividends where fk_assetID=$assetId order by dtm_date asc", $link);
+
+		if (!$res) die("Invalid query: ". mysql_error());
+
+		$result = "";
+		while ($row = mysql_fetch_array($res)) {
+			$result .= ",['".$row[0]."',".$row[1]."]";
+		}
+		mysql_free_result($res);
+
+		return $result;
+	}
+
 	$id = (int) $_GET["id"];
 	if ($id < 1) $id = 1;
 
@@ -63,6 +77,8 @@
 	$rates["2y"] = getRatesDataFor($id, "2y", $link);
 	$rates["5y"] = getRatesDataFor($id, "5y", $link);
 	$rates["All"] = getRatesDataFor($id, "All", $link);
+
+	$dividendsDetails = loadDividendsFor($id, $link);
 ?>
 <html>
   <head>
@@ -207,6 +223,11 @@
 	}
 
 	function drawChart() {
+		drawPricesChart();
+		drawDividendsChart();
+	}
+
+	function drawPricesChart() {
 		var data = google.visualization.arrayToDataTable([
 			['Date', 'price']
 <?php
@@ -222,8 +243,23 @@
 		var options = {
 			title: "<?php echo $mainAsset;?>"
 		};
-		var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+		var chart = new google.visualization.LineChart(document.getElementById('prices_chart_div'));
 		chart.draw(data, options);
+	}
+
+	function drawDividendsChart() {
+		<?php if (!empty($dividendsDetails)) { ?>
+		var data = google.visualization.arrayToDataTable([
+			['Date', 'pay']
+			<?php echo $dividendsDetails; ?>
+		]);
+
+		var options = {
+			title: "<?php echo $mainAsset;?> - Dividends"
+		};
+		var chart = new google.visualization.LineChart(document.getElementById('dividends_chart_div'));
+		chart.draw(data, options);
+		<?php } ?>
 	}
     </script>
   </head>
@@ -245,7 +281,10 @@
 
 	<tr><td><div id="table_base_data_div" style="width: 1044px;"></div></td></tr>
 	<tr><td><font face="verdana">Betas:</font><div id="table_betas_div" style="width: 1044px;"></div></td></tr>
-	<tr><td><div id="chart_div" style="width: 1044px; height: 350px;"></div></td></tr>
+	<tr><td><div id="prices_chart_div" style="width: 1044px; height: 350px;"></div></td></tr>
+<?php if (!empty($dividendsDetails)) { ?>
+	<tr><td><div id="dividends_chart_div" style="width: 1044px; height: 350px;"></div></td></tr>
+<?php } ?>
 	<tr><td><font face="verdana">Rates:</font><div id="table_rates_data_div" style="width: 1044px;"></div></td></tr>
 	<tr><td><hr/></td></tr>
 	<tr><td align="right"><a href="./all_p.php?id=<?php echo $id?>"><i>All correlations &gt;&gt;</i></a></td></tr>
