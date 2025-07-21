@@ -34,7 +34,7 @@ public class RtyHttpClientWithHTTP2Support extends HttpClient {
 	private static final Logger LOGGER = LoggerFactory.getLogger(RtyHttpClientWithHTTP2Support.class.getSimpleName());
 
 	@Override
-	public void get(String url, String outFile, Header[] headers) throws Exception {
+	protected void get(String url, String outFile, Header[] headers) throws Exception {
 		try (CloseableHttpAsyncClient client = HttpAsyncClients.customHttp2()
 			      .setTlsStrategy(ClientTlsStrategyBuilder.create()
 			              .setSslContext(SSLContexts.createSystemDefault())

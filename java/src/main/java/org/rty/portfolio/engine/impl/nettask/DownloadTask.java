@@ -28,7 +28,7 @@ public class DownloadTask extends AbstractTask {
 	}
 
 	@Override
-	public void execute(Map<String, String> parameters) throws Exception {
+	public void execute(Map<String, String> parameters) throws Throwable {
 		final String url = getValidParameterValue(parameters, URL_PARAM);
 		final String outFile = getValidParameterValue(parameters, OUTPUT_FILE_PARAM);
 		final String httpHeadersFile = headersFileValues(parameters);

@@ -30,7 +30,7 @@ public class TaskExecutor {
 	private static final String CONN_STRING = "connection_string";
 	private static DbManager dbManager;
 
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) throws Throwable {
 		if (args.length > 0) {
 			Class.forName("com.mysql.jdbc.Driver").newInstance();
 			initialiseDbManager(loadProperties());
@@ -98,7 +98,7 @@ public class TaskExecutor {
 		return params;
 	}
 
-	private static void execute(String taskName, Map<String, String> taskParams) throws Exception {
+	private static void execute(String taskName, Map<String, String> taskParams) throws Throwable {
 		Objects.requireNonNull(taskParams, "taskParams must not be null.");
 
 		if (!Strings.isNullOrEmpty(taskName)) {

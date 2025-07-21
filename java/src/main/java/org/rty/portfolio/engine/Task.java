@@ -5,5 +5,5 @@ import java.util.Map;
 public interface Task {
 	String getName();
 
-	void execute(Map<String, String> parameters) throws Exception;
+	void execute(Map<String, String> parameters) throws Throwable;
 }

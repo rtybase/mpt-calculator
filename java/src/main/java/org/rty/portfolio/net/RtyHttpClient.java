@@ -13,7 +13,7 @@ import org.apache.hc.core5.http.Header;
 public class RtyHttpClient extends HttpClient {
 
 	@Override
-	public void get(String url, String outFile, Header[] headers) throws Exception {
+	protected void get(String url, String outFile, Header[] headers) throws Exception {
 		CloseableHttpClient client = HttpClientBuilder.create().build();
 		HttpGet request = new HttpGet(url);
 
