@@ -18,7 +18,6 @@ public class RetryPolicy {
 	private static final RetryConfig RETRY_ALL_EXCEPTIONS_CONFIG = RetryConfig.custom()
 			  .maxAttempts(MAX_RETRY)
 			  .failAfterMaxAttempts(true)
-//			  .retryExceptions(Throwable.class)
 			  .intervalFunction(IntervalFunction.ofExponentialBackoff(INITIAL_WAIT_IN_MS,
 					  2,
 					  MAXIMUM_WAIT_IN_MS))
@@ -26,20 +25,14 @@ public class RetryPolicy {
 
 	private static final RetryRegistry REGISTRY = RetryRegistry
 			.of(Map.of(RETRY_ALL_EXCEPTIONS_NAME, RETRY_ALL_EXCEPTIONS_CONFIG));
-//	private static final RetryRegistry REGISTRY = RetryRegistry
-//			.of(RETRY_ALL_EXCEPTIONS_CONFIG);
-
 
 	private static final Retry RETRY_ALL_EXCEPTIONS = REGISTRY.retry(RETRY_ALL_EXCEPTIONS_NAME,
 			RETRY_ALL_EXCEPTIONS_NAME);
-//	private static final Retry RETRY_ALL_EXCEPTIONS = REGISTRY.retry(RETRY_ALL_EXCEPTIONS_NAME,
-//			RETRY_ALL_EXCEPTIONS_CONFIG);
 
 	private RetryPolicy() {
 	}
 
 	public static <T> T execute(CheckedSupplier<T> checkedSupplier) throws Throwable {
-		//return RETRY_ALL_EXCEPTIONS.executeSupplier(checkedSupplier.unchecked());
 		return RETRY_ALL_EXCEPTIONS.executeCheckedSupplier(checkedSupplier);
 	}
 }
