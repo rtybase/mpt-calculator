@@ -6,18 +6,17 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 
 import org.apache.commons.math3.stat.StatUtils;
-import org.apache.commons.math3.stat.correlation.Covariance;
 import org.rty.portfolio.core.AssetsStatistics;
 import org.rty.portfolio.core.PortflioStats;
 import org.rty.portfolio.core.utils.DatesAndSetUtil;
 import org.rty.portfolio.math.Calculator;
 
 
-public class AssetsStatsCalculationTask implements Callable<AssetsStatistics> {
+public class AssetsStatsCalculator implements Callable<AssetsStatistics> {
 	private final List<Integer> assetIds;
 	private final Map<Integer, Map<String, Double>> storage;
 
-	AssetsStatsCalculationTask(Map<Integer, Map<String, Double>> storage, List<Integer> assetIds) {
+	AssetsStatsCalculator(Map<Integer, Map<String, Double>> storage, List<Integer> assetIds) {
 		this.storage = storage;
 		this.assetIds = assetIds;
 	}
@@ -43,9 +42,8 @@ public class AssetsStatsCalculationTask implements Callable<AssetsStatistics> {
 				correlationMatrix[i][i] = 1D;
 
 				for (int j = i + 1; j < assetIds.size(); j++) {
-					final double covariance = new Covariance().covariance(values.get(i),
-							values.get(j),
-							false);
+					final double covariance = Calculator.calculateCovariance(values.get(i),
+							values.get(j));
 
 					final double correlation = Calculator.calculateCorrelation(covariance,
 							variances.get(i),

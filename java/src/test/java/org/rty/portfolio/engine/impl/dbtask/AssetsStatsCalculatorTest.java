@@ -12,12 +12,12 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.rty.portfolio.core.AssetsStatistics;
 
-class AssetsStatsCalculationTaskTest {
+class AssetsStatsCalculatorTest {
 	private static final double ERROR_TOLERANCE = 0.000001D;
 
 	@Test
 	void testCalculationResultsWith2Assets() throws Exception {
-		final AssetsStatsCalculationTask task = new AssetsStatsCalculationTask(
+		final AssetsStatsCalculator task = new AssetsStatsCalculator(
 				Map.of(1, Map.of("1", 1D, "2", 2D, "3", 3D, "4", 4D, "5", 5D),
 						2, Map.of("1", 2D, "2", 4D, "3", 6D, "4", 8D, "5", 10D)),
 				List.of(1, 2));
@@ -51,7 +51,7 @@ class AssetsStatsCalculationTaskTest {
 
 	@Test
 	void testCalculationResultsWith3Assets() throws Exception {
-		final AssetsStatsCalculationTask task = new AssetsStatsCalculationTask(
+		final AssetsStatsCalculator task = new AssetsStatsCalculator(
 				Map.of(1, Map.of("1", 1D, "2", 2D, "3", 3D, "4", 4D, "5", 5D),
 						2, Map.of("1", 2D, "2", 4D, "3", 6D, "4", 8D, "5", 10D),
 						3, Map.of("1", 3D, "2", 6D, "3", 9D, "4", 12D, "5", 15D)),
@@ -89,7 +89,7 @@ class AssetsStatsCalculationTaskTest {
 
 	@Test
 	void testCalculationResultsWithInsufficientContent() throws Exception {
-		final AssetsStatsCalculationTask task = new AssetsStatsCalculationTask(
+		final AssetsStatsCalculator task = new AssetsStatsCalculator(
 				Map.of(1, Map.of("1", 1D, "2", 2D),
 						2, Map.of("1", 2D, "2", 4D)),
 				List.of(1, 2));

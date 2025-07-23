@@ -50,7 +50,7 @@ public class CalculateMultiAssetsPortfolioStatsTask extends AbstractDbTask {
 				});
 
 		for (List<Integer> portfolio : portfolios) {
-			taskExecutor.addTask(new AssetsStatsCalculationTask(storage, portfolio));
+			taskExecutor.addTask(new AssetsStatsCalculator(storage, portfolio));
 			total.incrementAndGet();
 		}
 

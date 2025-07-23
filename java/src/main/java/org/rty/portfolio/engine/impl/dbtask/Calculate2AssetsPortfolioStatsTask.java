@@ -59,7 +59,7 @@ public class Calculate2AssetsPortfolioStatsTask extends AbstractDbTask {
 
 		for (int i = 0; i < indexes.length; ++i) {
 			for (int j = i + 1; j < indexes.length; ++j) {
-				taskExecutor.addTask(new AssetsStatsCalculationTask(storage,
+				taskExecutor.addTask(new AssetsStatsCalculator(storage,
 						List.of(indexes[i], indexes[j])));
 				total.incrementAndGet();
 			}
