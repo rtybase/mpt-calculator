@@ -22,7 +22,7 @@ public class AssetsStatsCalculator implements Callable<AssetsStatistics> {
 	}
 
 	@Override
-	public AssetsStatistics call() throws Exception {
+	public AssetsStatistics call() {
 		final List<Map<String, Double>> assetsRates = assetIds.stream().map(storage::get).toList();
 		final Set<String> dates = DatesAndSetUtil
 				.computeCommonValues(assetsRates.stream().map(assetRates -> assetRates.keySet()).toList());

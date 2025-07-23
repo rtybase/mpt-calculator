@@ -16,7 +16,7 @@ class AssetsStatsCalculatorTest {
 	private static final double ERROR_TOLERANCE = 0.000001D;
 
 	@Test
-	void testCalculationResultsWith2Assets() throws Exception {
+	void testCalculateResultsWith2Assets() {
 		final AssetsStatsCalculator task = new AssetsStatsCalculator(
 				Map.of(1, Map.of("1", 1D, "2", 2D, "3", 3D, "4", 4D, "5", 5D),
 						2, Map.of("1", 2D, "2", 4D, "3", 6D, "4", 8D, "5", 10D)),
@@ -50,7 +50,7 @@ class AssetsStatsCalculatorTest {
 	}
 
 	@Test
-	void testCalculationResultsWith3Assets() throws Exception {
+	void testCalculateResultsWith3Assets() {
 		final AssetsStatsCalculator task = new AssetsStatsCalculator(
 				Map.of(1, Map.of("1", 1D, "2", 2D, "3", 3D, "4", 4D, "5", 5D),
 						2, Map.of("1", 2D, "2", 4D, "3", 6D, "4", 8D, "5", 10D),
@@ -88,7 +88,7 @@ class AssetsStatsCalculatorTest {
 	}
 
 	@Test
-	void testCalculationResultsWithInsufficientContent() throws Exception {
+	void testCalculateResultsWithInsufficientContent() {
 		final AssetsStatsCalculator task = new AssetsStatsCalculator(
 				Map.of(1, Map.of("1", 1D, "2", 2D),
 						2, Map.of("1", 2D, "2", 4D)),
