@@ -1,6 +1,7 @@
 <?php
 	$RETURN_ROUND_PRECISION = 5;
 	$VOLATILITY_ROUND_PRECISION = 4;
+	$ASSET_NAMES_CACHE = array();
 
 	$PERIODS = array("1w", "1m", "6m", "1y", "2y", "5y");
 
@@ -23,8 +24,14 @@
 	}
 
 	function getName($assetId, $link) {
-		$asset = getSingleValyeByPK("tbl_assets", "int_assetID", $assetId, $link);
-		return $asset["vchr_name"];
+		global $ASSET_NAMES_CACHE;
+		if (array_key_exists($assetId, $ASSET_NAMES_CACHE)) {
+			return $ASSET_NAMES_CACHE[$assetId]["vchr_name"];
+		} else { 
+			$assetRecord = getSingleValyeByPK("tbl_assets", "int_assetID", $assetId, $link);
+			$ASSET_NAMES_CACHE[$assetId] = $assetRecord;
+			return $assetRecord["vchr_name"];
+		}
 	}
 
 	function printAssets($assetId, $link) {
@@ -148,6 +155,7 @@
 	<a href="./top_r.php">Top returns</a><br/>
 	<a href="./top_p.php">Top pairs</a><br/>
 	<a href="./top_d.php">Dividends</a><br/>
+	<a href="./top_sc.php">Top shift correlations</a><br/>
 	<a href="./stale_d.php">Stale data</a>
 <?php	}
 

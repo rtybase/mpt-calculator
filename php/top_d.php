@@ -25,6 +25,7 @@ function getDividends($link) {
 		$ret[$assetId]["d_pay"] = $row[2];
 		$ret[$assetId]["d_date"] = $row[3];
 	}
+	mysql_free_result($res);
 
 	return $ret;
 }
@@ -47,6 +48,7 @@ function addLatestPrices($link, $dividendsData) {
 			$dividendsData[$assetId]["pay_by_price"] = ($d / $row[1]) * 100;
 		}
 	}
+	mysql_free_result($res);
 
 	return $dividendsData;
 }
@@ -68,7 +70,6 @@ function addLatestPrices($link, $dividendsData) {
 		$tableResult.= toChartNumber(round($value["pay_by_price"], 5))."]";
 		$i++;
 	}
-	mysql_free_result($res);
 ?>
 <html>
   <head>
