@@ -13,9 +13,10 @@ import org.rty.portfolio.db.DbManager;
 import org.rty.portfolio.engine.Task;
 import org.rty.portfolio.engine.impl.dbtask.Calculate2AssetsPortfolioStatsTask;
 import org.rty.portfolio.engine.impl.dbtask.CalculateAssetStatsTask;
+import org.rty.portfolio.engine.impl.dbtask.CalculateAssetsShiftCorrelationTask;
 import org.rty.portfolio.engine.impl.dbtask.CalculateMultiAssetsPortfolioStatsTask;
-import org.rty.portfolio.engine.impl.dbtask.LoadDividendsToDbTask;
-import org.rty.portfolio.engine.impl.dbtask.LoadPricesToDbTask;
+import org.rty.portfolio.engine.impl.dbtask.load.LoadDividendsToDbTask;
+import org.rty.portfolio.engine.impl.dbtask.load.LoadPricesToDbTask;
 import org.rty.portfolio.engine.impl.nettask.DownloadTask;
 import org.rty.portfolio.engine.impl.transform.TransformDividendsDataTask;
 import org.rty.portfolio.engine.impl.transform.TransformEcbRatesTask;
@@ -64,6 +65,7 @@ public class TaskExecutor {
 		registerTask(new TransformDividendsDataTask());
 		registerTask(new LoadPricesToDbTask(dbManager));
 		registerTask(new LoadDividendsToDbTask(dbManager));
+		registerTask(new CalculateAssetsShiftCorrelationTask(dbManager));
 	}
 
 	private static void registerTask(Task task) {

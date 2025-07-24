@@ -224,3 +224,4 @@ rm -rf ${FOLDER_FOR_DIVIDEND_FILES}
 
 java -Xmx512m -jar portfolio-0.0.1-SNAPSHOT.jar CalculateAssetStatsTask
 java -Xmx768m -jar portfolio-0.0.1-SNAPSHOT.jar Calculate2AssetsPortfolioStatsTask
+java -Xmx768m -jar portfolio-0.0.1-SNAPSHOT.jar CalculateAssetsShiftCorrelationTask

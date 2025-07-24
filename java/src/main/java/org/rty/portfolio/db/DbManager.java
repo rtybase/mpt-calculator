@@ -17,6 +17,7 @@ import java.util.Objects;
 
 import org.rty.portfolio.core.AssetDividendInfo;
 import org.rty.portfolio.core.AssetPriceInfo;
+import org.rty.portfolio.core.AssetsCorrelationInfo;
 import org.rty.portfolio.core.PortfolioStatistics;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -149,6 +150,28 @@ public class DbManager {
 		}
 
 		return failedResults;
+	}
+
+	/**
+	 * Adds time shift correlation records to DB.
+	 * 
+	 */
+	public 	int[] addBulkShiftCorrelations(List<AssetsCorrelationInfo> assetsShiftCorrelations) throws Exception {
+		try (PreparedStatement pStmt = connection.prepareStatement(
+				"INSERT INTO tbl_shift_correlations (fk_asset1ID, fk_asset2ID, int_shift, dbl_correlation)"
+						+ " VALUES (?,?,?,?)")) {
+
+			for (AssetsCorrelationInfo assetsShiftCorrelation : assetsShiftCorrelations) {
+				pStmt.setInt(1, assetsShiftCorrelation.asset1Id);
+				pStmt.setInt(2, assetsShiftCorrelation.asset2Id);
+				pStmt.setInt(3, assetsShiftCorrelation.bestShift);
+				pStmt.setDouble(4, assetsShiftCorrelation.bestCorrelation);
+
+				pStmt.addBatch();
+			}
+
+			return pStmt.executeBatch();
+		}
 	}
 
 	/**

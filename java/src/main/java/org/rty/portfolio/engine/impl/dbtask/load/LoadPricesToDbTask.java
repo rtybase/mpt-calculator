@@ -1,4 +1,4 @@
-package org.rty.portfolio.engine.impl.dbtask;
+package org.rty.portfolio.engine.impl.dbtask.load;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;

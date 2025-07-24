@@ -103,6 +103,16 @@ create table tbl_correlations (
 	foreign key(fk_asset2ID) references tbl_assets (int_assetID)
 ) ENGINE = InnoDB;
 
+create table tbl_shift_correlations (
+	fk_asset1ID int(10) unsigned NOT NULL,
+	fk_asset2ID int(10) unsigned NOT NULL,
+	int_shift int(10) NOT NULL,
+	dbl_correlation DOUBLE not null,
+	primary key(fk_asset1ID,fk_asset2ID),
+	foreign key(fk_asset1ID) references tbl_assets (int_assetID),
+	foreign key(fk_asset2ID) references tbl_assets (int_assetID)
+) ENGINE = InnoDB;
+
 ----------------
 delimiter //
 
@@ -158,6 +168,7 @@ BEGIN
 	DELETE FROM tbl_avgreturns_2y;
 	DELETE FROM tbl_avgreturns_5y;
 	DELETE FROM tbl_correlations;
+	DELETE FROM tbl_shift_correlations;
 
 	INSERT INTO tbl_avgreturns (fk_assetID, dbl_avgreturn, dbl_varience)
 	SELECT fk_assetID, AVG(dbl_return), VAR_POP(dbl_return)
