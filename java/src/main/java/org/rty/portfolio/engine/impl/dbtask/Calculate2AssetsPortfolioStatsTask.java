@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.rty.portfolio.core.AssetsStatistics;
+import org.rty.portfolio.core.PortfolioStatistics;
 import org.rty.portfolio.core.utils.ConcurrentTaskExecutorWithBatching;
 import org.rty.portfolio.core.utils.DatesAndSetUtil;
 import org.rty.portfolio.db.DbManager;
@@ -35,12 +35,12 @@ public class Calculate2AssetsPortfolioStatsTask extends AbstractDbTask {
 		final AtomicInteger totalFail  = new AtomicInteger(0);
 
 		dbManager.setAutoCommit(false);
-		final ConcurrentTaskExecutorWithBatching<AssetsStatistics> taskExecutor = new ConcurrentTaskExecutorWithBatching<>(
+		final ConcurrentTaskExecutorWithBatching<PortfolioStatistics> taskExecutor = new ConcurrentTaskExecutorWithBatching<>(
 				8, 4096, 3072, listOfFutures -> {
-					final List<AssetsStatistics> listOfResults = new ArrayList<>(listOfFutures.size());
+					final List<PortfolioStatistics> listOfResults = new ArrayList<>(listOfFutures.size());
 
-					for (Future<AssetsStatistics> futureResult : listOfFutures) {
-						final AssetsStatistics calculationResult = futureResult.get();
+					for (Future<PortfolioStatistics> futureResult : listOfFutures) {
+						final PortfolioStatistics calculationResult = futureResult.get();
 
 						if (calculationResult.hasSufficientContent) {
 							listOfResults.add(calculationResult);
@@ -59,7 +59,7 @@ public class Calculate2AssetsPortfolioStatsTask extends AbstractDbTask {
 
 		for (int i = 0; i < indexes.length; ++i) {
 			for (int j = i + 1; j < indexes.length; ++j) {
-				taskExecutor.addTask(new AssetsStatsCalculator(storage,
+				taskExecutor.addTask(new PortfolioStatsCalculator(storage,
 						List.of(indexes[i], indexes[j])));
 				total.incrementAndGet();
 			}
@@ -77,7 +77,7 @@ public class Calculate2AssetsPortfolioStatsTask extends AbstractDbTask {
 
 	}
 
-	private void saveResults(List<AssetsStatistics> resultsToSave, AtomicInteger totalFail)
+	private void saveResults(List<PortfolioStatistics> resultsToSave, AtomicInteger totalFail)
 			throws Exception {
 		try {
 			int[] executionResults = dbManager.addNew2AssetsPortfolioInfo(resultsToSave);

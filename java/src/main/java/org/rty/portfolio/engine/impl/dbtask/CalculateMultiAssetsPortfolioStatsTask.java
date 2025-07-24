@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.rty.portfolio.core.AssetsStatistics;
+import org.rty.portfolio.core.PortfolioStatistics;
 import org.rty.portfolio.core.utils.ConcurrentTaskExecutorWithBatching;
 import org.rty.portfolio.db.DbManager;
 import org.rty.portfolio.engine.AbstractDbTask;
@@ -37,11 +37,11 @@ public class CalculateMultiAssetsPortfolioStatsTask extends AbstractDbTask {
 
 		final AtomicInteger total = new AtomicInteger(0);
 
-		final ConcurrentTaskExecutorWithBatching<AssetsStatistics> taskExecutor = new ConcurrentTaskExecutorWithBatching<>(
+		final ConcurrentTaskExecutorWithBatching<PortfolioStatistics> taskExecutor = new ConcurrentTaskExecutorWithBatching<>(
 				8, 4096, 3072, listOfFutures -> {
 					try (FileWriter fw = new FileWriter(outFile, true)) {
-						for (Future<AssetsStatistics> futureResult : listOfFutures) {
-							final AssetsStatistics calculationResult = futureResult.get();
+						for (Future<PortfolioStatistics> futureResult : listOfFutures) {
+							final PortfolioStatistics calculationResult = futureResult.get();
 							fw.write(calculationResult.toString());
 							fw.write("\n");
 						}
@@ -50,7 +50,7 @@ public class CalculateMultiAssetsPortfolioStatsTask extends AbstractDbTask {
 				});
 
 		for (List<Integer> portfolio : portfolios) {
-			taskExecutor.addTask(new AssetsStatsCalculator(storage, portfolio));
+			taskExecutor.addTask(new PortfolioStatsCalculator(storage, portfolio));
 			total.incrementAndGet();
 		}
 

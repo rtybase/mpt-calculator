@@ -7,7 +7,7 @@ import java.util.Set;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class AssetsStatistics {
+public class PortfolioStatistics {
 	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
 	public final List<Integer> assetIds;
@@ -21,7 +21,7 @@ public class AssetsStatistics {
 	public final double[][] correlationMatrix;
 	public final PortflioStats portflioStats;
 
-	public AssetsStatistics(List<Integer> assetIds, Set<String> dates, boolean hasSufficientContent,
+	public PortfolioStatistics(List<Integer> assetIds, Set<String> dates, boolean hasSufficientContent,
 			List<double[]> assetValues, List<Double> assetMeans, List<Double> assetVariances,
 			double[][] covarianceMatrix, double[][] correlationMatrix, PortflioStats portflioStats) {
 		this.assetIds = Collections.unmodifiableList(assetIds);

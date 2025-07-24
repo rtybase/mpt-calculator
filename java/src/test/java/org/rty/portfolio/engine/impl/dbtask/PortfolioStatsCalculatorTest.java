@@ -10,19 +10,19 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
-import org.rty.portfolio.core.AssetsStatistics;
+import org.rty.portfolio.core.PortfolioStatistics;
 
-class AssetsStatsCalculatorTest {
+class PortfolioStatsCalculatorTest {
 	private static final double ERROR_TOLERANCE = 0.000001D;
 
 	@Test
 	void testCalculateResultsWith2Assets() {
-		final AssetsStatsCalculator task = new AssetsStatsCalculator(
+		final PortfolioStatsCalculator task = new PortfolioStatsCalculator(
 				Map.of(1, Map.of("1", 1D, "2", 2D, "3", 3D, "4", 4D, "5", 5D),
 						2, Map.of("1", 2D, "2", 4D, "3", 6D, "4", 8D, "5", 10D)),
 				List.of(1, 2));
 
-		AssetsStatistics result = task.call();
+		PortfolioStatistics result = task.call();
 
 		assertTrue(result.hasSufficientContent);
 		assertArrayEquals(new double[] { 1D, 2D, 3D, 4D, 5D }, result.assetValues.get(0));
@@ -51,13 +51,13 @@ class AssetsStatsCalculatorTest {
 
 	@Test
 	void testCalculateResultsWith3Assets() {
-		final AssetsStatsCalculator task = new AssetsStatsCalculator(
+		final PortfolioStatsCalculator task = new PortfolioStatsCalculator(
 				Map.of(1, Map.of("1", 1D, "2", 2D, "3", 3D, "4", 4D, "5", 5D),
 						2, Map.of("1", 2D, "2", 4D, "3", 6D, "4", 8D, "5", 10D),
 						3, Map.of("1", 3D, "2", 6D, "3", 9D, "4", 12D, "5", 15D)),
 				List.of(1, 2, 3));
 
-		AssetsStatistics result = task.call();
+		PortfolioStatistics result = task.call();
 
 		assertTrue(result.hasSufficientContent);
 		assertArrayEquals(new double[] { 1D, 2D, 3D, 4D, 5D }, result.assetValues.get(0));
@@ -89,12 +89,12 @@ class AssetsStatsCalculatorTest {
 
 	@Test
 	void testCalculateResultsWithInsufficientContent() {
-		final AssetsStatsCalculator task = new AssetsStatsCalculator(
+		final PortfolioStatsCalculator task = new PortfolioStatsCalculator(
 				Map.of(1, Map.of("1", 1D, "2", 2D),
 						2, Map.of("1", 2D, "2", 4D)),
 				List.of(1, 2));
 
-		AssetsStatistics result = task.call();
+		PortfolioStatistics result = task.call();
 
 		verifyAssetIds(result);
 		assertFalse(result.hasSufficientContent);
@@ -112,7 +112,7 @@ class AssetsStatsCalculatorTest {
 				+ "\"portflioStats\":null}", result.toString());
 	}
 
-	private static void verifyAssetIds(AssetsStatistics result) {
+	private static void verifyAssetIds(PortfolioStatistics result) {
 		for (int i = 0; i < result.assetIds.size(); i++) {
 			assertEquals(i + 1, result.assetIds.get(i));
 		}

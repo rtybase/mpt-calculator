@@ -6,23 +6,23 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 
 import org.apache.commons.math3.stat.StatUtils;
-import org.rty.portfolio.core.AssetsStatistics;
+import org.rty.portfolio.core.PortfolioStatistics;
 import org.rty.portfolio.core.PortflioStats;
 import org.rty.portfolio.core.utils.DatesAndSetUtil;
 import org.rty.portfolio.math.Calculator;
 
 
-public class AssetsStatsCalculator implements Callable<AssetsStatistics> {
+public class PortfolioStatsCalculator implements Callable<PortfolioStatistics> {
 	private final List<Integer> assetIds;
 	private final Map<Integer, Map<String, Double>> storage;
 
-	AssetsStatsCalculator(Map<Integer, Map<String, Double>> storage, List<Integer> assetIds) {
+	PortfolioStatsCalculator(Map<Integer, Map<String, Double>> storage, List<Integer> assetIds) {
 		this.storage = storage;
 		this.assetIds = assetIds;
 	}
 
 	@Override
-	public AssetsStatistics call() {
+	public PortfolioStatistics call() {
 		final List<Map<String, Double>> assetsRates = assetIds.stream().map(storage::get).toList();
 		final Set<String> dates = DatesAndSetUtil
 				.computeCommonValues(assetsRates.stream().map(assetRates -> assetRates.keySet()).toList());
@@ -59,7 +59,7 @@ public class AssetsStatsCalculator implements Callable<AssetsStatistics> {
 
 			PortflioStats portStats = calculatePortfolioStats(means, covarianceMatrix);
 
-			return new AssetsStatistics(assetIds, dates,
+			return new PortfolioStatistics(assetIds, dates,
 					true, 
 					values,
 					means,
@@ -68,7 +68,7 @@ public class AssetsStatsCalculator implements Callable<AssetsStatistics> {
 					correlationMatrix,
 					portStats);
 		} else {
-			return new AssetsStatistics(assetIds, dates,
+			return new PortfolioStatistics(assetIds, dates,
 					false,
 					null,
 					null,
