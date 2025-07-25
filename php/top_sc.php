@@ -46,7 +46,8 @@ function getTopShiftCorrelations($link) {
 		$tableResult.= "'".linkToAsset($value["asset1Id"], $value["asset1Name"])."',";
 		$tableResult.= "'".linkToAsset($value["asset2Id"], $value["asset2Name"])."',";
 		$tableResult.= toChartNumber($value["shift"]).",";
-		$tableResult.= toChartNumber(round($value["correlation"], 5))."]";
+		$tableResult.= toChartNumber(round($value["correlation"], 5)).",";
+		$tableResult.= "'<a href=\"./show_sc.php?asset1=".$value["asset1Id"]."&asset2=".$value["asset2Id"]."\">details ...</a>']";
 		$i++;
 	}
 ?>
@@ -71,7 +72,7 @@ function getTopShiftCorrelations($link) {
 	}
 
 	function drawTable(element, data) {
-		data.setProperty(0, 0, 'style', 'width:400px');
+		data.setProperty(0, 0, 'style', 'width:345px');
 		var table = new google.visualization.Table(document.getElementById(element));
 		table.draw(data, {showRowNumber: false, allowHtml: true});
 	}
@@ -82,6 +83,7 @@ function getTopShiftCorrelations($link) {
 		dataTable.addColumn('string', 'Asset 2');
 		dataTable.addColumn('number', 'Shift (days)');
 		dataTable.addColumn('number', 'Correlation');
+		dataTable.addColumn('string', 'More');
 		return dataTable;
 	}
     </script>
