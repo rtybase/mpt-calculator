@@ -11,8 +11,10 @@ import org.rty.portfolio.db.DbManager;
 import com.mysql.jdbc.Statement;
 
 public class CalculateAssetsShiftCorrelationTask extends Generic2AssetsCalculateTask<AssetsCorrelationInfo> {
+	private static final int YEARS_BACK = 1;
+
 	public CalculateAssetsShiftCorrelationTask(DbManager dbManager) {
-		super(dbManager);
+		super(dbManager, YEARS_BACK);
 	}
 
 	@Override

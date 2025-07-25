@@ -11,8 +11,10 @@ import org.rty.portfolio.db.DbManager;
 import com.mysql.jdbc.Statement;
 
 public class Calculate2AssetsPortfolioStatsTask extends Generic2AssetsCalculateTask<PortfolioStatistics> {
+	private static final int YEARS_BACK = 5;
+
 	public Calculate2AssetsPortfolioStatsTask(DbManager dbManager) {
-		super(dbManager);
+		super(dbManager, YEARS_BACK);
 	}
 
 	@Override

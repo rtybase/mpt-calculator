@@ -13,14 +13,18 @@ import org.rty.portfolio.db.DbManager;
 import org.rty.portfolio.engine.AbstractDbTask;
 
 public abstract class Generic2AssetsCalculateTask<T> extends AbstractDbTask {
-	public Generic2AssetsCalculateTask(DbManager dbManager) {
+	private final int yearsBack;
+
+	public Generic2AssetsCalculateTask(DbManager dbManager, int yearsBack) {
 		super(dbManager);
+
+		this.yearsBack = yearsBack;
 	}
 
 	@Override
 	public final void execute(Map<String, String> params) throws Exception {
 		say("Prepare storage... ");
-		Map<Integer, Map<String, Double>> storage = dbManager.getAllDailyRates();
+		Map<Integer, Map<String, Double>> storage = dbManager.getAllDailyRates(yearsBack);
 		say(DONE);
 		say("Prepare indexes... ");
 		int[] indexes = DatesAndSetUtil.getIndexesFrom(storage);

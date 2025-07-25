@@ -17,6 +17,8 @@ import org.rty.portfolio.engine.AbstractDbTask;
 import au.com.bytecode.opencsv.CSVReader;
 
 public class CalculateMultiAssetsPortfolioStatsTask extends AbstractDbTask {
+	private static final int YEARS_BACK = 5;
+
 	public CalculateMultiAssetsPortfolioStatsTask(DbManager dbManager) {
 		super(dbManager);
 	}
@@ -29,7 +31,7 @@ public class CalculateMultiAssetsPortfolioStatsTask extends AbstractDbTask {
 		final List<List<Integer>> portfolios = loadPortfolioDefinitions(inputFile);
 
 		say("Prepare storage... ");
-		Map<Integer, Map<String, Double>> storage = dbManager.getAllDailyRates();
+		Map<Integer, Map<String, Double>> storage = dbManager.getAllDailyRates(YEARS_BACK);
 		say(DONE);
 
 		say("Running calculations... ");

@@ -22,6 +22,7 @@ import org.rty.portfolio.core.PortfolioStatistics;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
+import com.google.common.base.Preconditions;
 
 public class DbManager {
 	private final Connection connection;
@@ -230,18 +231,24 @@ public class DbManager {
 
 	/**
 	 * Returns all the daily rates for all the assets. Key is the assetId. Value is
-	 * a map where key is the date and value is rate at that date.
-	 * 
+	 * a map where key is the date and value is rate on that date.
 	 */
-	public Map<Integer, Map<String, Double>> getAllDailyRates() throws Exception {
+	public Map<Integer, Map<String, Double>> getAllDailyRates(int yearsBack) throws Exception {
+		Preconditions.checkArgument(yearsBack > 0, "yearsBack must be > 0!");
+
 		final Map<Integer, HashMap<String, Double>> storage = new HashMap<>();
 
-		try (Statement stmt = connection.createStatement();
-				ResultSet rs = stmt.executeQuery(
-						"select fk_assetID, dtm_date, dbl_return from tbl_prices order by fk_assetID, dtm_date desc, dtm_time desc")) {
+		try (PreparedStatement pStmt = connection.prepareStatement("select fk_assetID, dtm_date, dbl_return"
+				+ " from tbl_prices"
+				+ " where dtm_date between (NOW() - INTERVAL ? YEAR) and NOW()"
+				+ " order by fk_assetID, dtm_date desc, dtm_time desc")) {
+			pStmt.setInt(1, yearsBack);
 
-			while (rs.next()) {
-				addResultToStorage(storage, rs);
+			try (ResultSet rs = pStmt.executeQuery()) {
+
+				while (rs.next()) {
+					addResultToStorage(storage, rs);
+				}
 			}
 		}
 
