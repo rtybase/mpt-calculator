@@ -108,10 +108,11 @@ create table tbl_shift_correlations (
 	fk_asset2ID int(10) unsigned NOT NULL,
 	int_shift int(10) NOT NULL,
 	dbl_correlation DOUBLE not null,
+	txt_json text NOT NULL,
 	primary key(fk_asset1ID,fk_asset2ID),
 	foreign key(fk_asset1ID) references tbl_assets (int_assetID),
 	foreign key(fk_asset2ID) references tbl_assets (int_assetID)
-) ENGINE = InnoDB;
+) ENGINE = InnoDB DEFAULT CHARSET=utf8;
 
 ----------------
 delimiter //

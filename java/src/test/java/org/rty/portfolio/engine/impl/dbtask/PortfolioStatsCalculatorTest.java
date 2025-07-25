@@ -25,8 +25,8 @@ class PortfolioStatsCalculatorTest {
 		PortfolioStatistics result = task.call();
 
 		assertTrue(result.hasSufficientContent);
-		assertArrayEquals(new double[] { 1D, 2D, 3D, 4D, 5D }, result.assetValues.get(0));
-		assertArrayEquals(new double[] { 2D, 4D, 6D, 8D, 10D }, result.assetValues.get(1));
+		assertArrayEquals(new double[] { 1D, 2D, 3D, 4D, 5D }, result.assetRates.get(0));
+		assertArrayEquals(new double[] { 2D, 4D, 6D, 8D, 10D }, result.assetRates.get(1));
 
 		verifyAssetIds(result);
 		verifyListsOfDoublesAreEqual(List.of(3D, 6D), result.assetMeans);
@@ -41,7 +41,7 @@ class PortfolioStatsCalculatorTest {
 		verifyListsOfDoublesAreEqual(List.of(0.333333D, 0.666666D), result.portflioStats.portfolioWeights);
 
 		assertEquals("{\"assetIds\":[1,2],\"dates\":[\"1\",\"2\",\"3\",\"4\",\"5\"],"
-				+ "\"hasSufficientContent\":true,\"assetValues\":[[1.0,2.0,3.0,4.0,5.0],[2.0,4.0,6.0,8.0,10.0]],"
+				+ "\"hasSufficientContent\":true,\"assetRates\":[[1.0,2.0,3.0,4.0,5.0],[2.0,4.0,6.0,8.0,10.0]],"
 				+ "\"assetMeans\":[3.0,6.0],\"assetVariances\":[2.0,8.0],"
 				+ "\"covarianceMatrix\":[[2.0,4.0],[4.0,8.0]],"
 				+ "\"correlationMatrix\":[[1.0,1.0],[1.0,1.0]],"
@@ -60,9 +60,9 @@ class PortfolioStatsCalculatorTest {
 		PortfolioStatistics result = task.call();
 
 		assertTrue(result.hasSufficientContent);
-		assertArrayEquals(new double[] { 1D, 2D, 3D, 4D, 5D }, result.assetValues.get(0));
-		assertArrayEquals(new double[] { 2D, 4D, 6D, 8D, 10D }, result.assetValues.get(1));
-		assertArrayEquals(new double[] { 3D, 6D, 9D, 12D, 15D }, result.assetValues.get(2));
+		assertArrayEquals(new double[] { 1D, 2D, 3D, 4D, 5D }, result.assetRates.get(0));
+		assertArrayEquals(new double[] { 2D, 4D, 6D, 8D, 10D }, result.assetRates.get(1));
+		assertArrayEquals(new double[] { 3D, 6D, 9D, 12D, 15D }, result.assetRates.get(2));
 
 		verifyAssetIds(result);
 		verifyListsOfDoublesAreEqual(List.of(3D, 6D, 9D), result.assetMeans);
@@ -79,7 +79,7 @@ class PortfolioStatsCalculatorTest {
 		verifyListsOfDoublesAreEqual(List.of(0.166666D, 0.333333D, 0.5D), result.portflioStats.portfolioWeights);
 
 		assertEquals("{\"assetIds\":[1,2,3],\"dates\":[\"1\",\"2\",\"3\",\"4\",\"5\"],"
-				+ "\"hasSufficientContent\":true,\"assetValues\":[[1.0,2.0,3.0,4.0,5.0],[2.0,4.0,6.0,8.0,10.0],[3.0,6.0,9.0,12.0,15.0]],"
+				+ "\"hasSufficientContent\":true,\"assetRates\":[[1.0,2.0,3.0,4.0,5.0],[2.0,4.0,6.0,8.0,10.0],[3.0,6.0,9.0,12.0,15.0]],"
 				+ "\"assetMeans\":[3.0,6.0,9.0],\"assetVariances\":[2.0,8.0,18.0],"
 				+ "\"covarianceMatrix\":[[2.0,4.0,6.0],[4.0,8.0,12.0],[6.0,12.0,18.0]],"
 				+ "\"correlationMatrix\":[[1.0,1.0,1.0],[1.0,1.0,1.0],[1.0,1.0,1.0]],"
@@ -98,7 +98,7 @@ class PortfolioStatsCalculatorTest {
 
 		verifyAssetIds(result);
 		assertFalse(result.hasSufficientContent);
-		assertNull(result.assetValues);
+		assertNull(result.assetRates);
 		assertNull(result.assetMeans);
 		assertNull(result.assetVariances);
 		assertNull(result.covarianceMatrix);
@@ -106,7 +106,7 @@ class PortfolioStatsCalculatorTest {
 		assertNull(result.portflioStats);
 
 		assertEquals("{\"assetIds\":[1,2],\"dates\":[\"1\",\"2\"],"
-				+ "\"hasSufficientContent\":false,\"assetValues\":null,"
+				+ "\"hasSufficientContent\":false,\"assetRates\":null,"
 				+ "\"assetMeans\":null,\"assetVariances\":null,"
 				+ "\"covarianceMatrix\":null,\"correlationMatrix\":null,"
 				+ "\"portflioStats\":null}", result.toString());

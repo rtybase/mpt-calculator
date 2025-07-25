@@ -14,7 +14,7 @@ public class PortfolioStatistics {
 	public final Set<String> dates;
 	public final boolean hasSufficientContent;
 
-	public final List<double[]> assetValues;
+	public final List<double[]> assetRates;
 	public final List<Double> assetMeans;
 	public final List<Double> assetVariances;
 	public final double[][] covarianceMatrix;
@@ -22,12 +22,12 @@ public class PortfolioStatistics {
 	public final PortflioStats portflioStats;
 
 	public PortfolioStatistics(List<Integer> assetIds, Set<String> dates, boolean hasSufficientContent,
-			List<double[]> assetValues, List<Double> assetMeans, List<Double> assetVariances,
+			List<double[]> assetRates, List<Double> assetMeans, List<Double> assetVariances,
 			double[][] covarianceMatrix, double[][] correlationMatrix, PortflioStats portflioStats) {
 		this.assetIds = Collections.unmodifiableList(assetIds);
 		this.dates = dates;
 		this.hasSufficientContent = hasSufficientContent;
-		this.assetValues = toUnmodifiableList(assetValues);
+		this.assetRates = toUnmodifiableList(assetRates);
 		this.assetMeans = toUnmodifiableList(assetMeans);
 		this.assetVariances = toUnmodifiableList(assetVariances);
 		this.covarianceMatrix = covarianceMatrix;

@@ -159,14 +159,15 @@ public class DbManager {
 	 */
 	public 	int[] addBulkShiftCorrelations(List<AssetsCorrelationInfo> assetsShiftCorrelations) throws Exception {
 		try (PreparedStatement pStmt = connection.prepareStatement(
-				"INSERT INTO tbl_shift_correlations (fk_asset1ID, fk_asset2ID, int_shift, dbl_correlation)"
-						+ " VALUES (?,?,?,?)")) {
+				"INSERT INTO tbl_shift_correlations (fk_asset1ID, fk_asset2ID, int_shift, dbl_correlation, txt_json)"
+						+ " VALUES (?,?,?,?,?)")) {
 
 			for (AssetsCorrelationInfo assetsShiftCorrelation : assetsShiftCorrelations) {
 				pStmt.setInt(1, assetsShiftCorrelation.asset1Id);
 				pStmt.setInt(2, assetsShiftCorrelation.asset2Id);
 				pStmt.setInt(3, assetsShiftCorrelation.bestShift);
 				pStmt.setDouble(4, assetsShiftCorrelation.bestCorrelation);
+				pStmt.setString(5, assetsShiftCorrelation.toString());
 
 				pStmt.addBatch();
 			}

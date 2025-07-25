@@ -31,12 +31,14 @@ public class AssetsShiftCorrelationCalculator implements Callable<AssetsCorrelat
 
 		Pair<Integer, Double> result = new Pair<>(Integer.MIN_VALUE, Double.NaN);
 		boolean hasSufficientContent = false;
+		double[] asset1CommonRates = null;
+		double[] asset2CommonRates = null;
 
 		if (DatesAndSetUtil.hasSufficientContent(dates)) {
-			final double[] asset1Values = DatesAndSetUtil.getValuesByIndex(dates, asset1Rates);
-			final double[] asset2Values = DatesAndSetUtil.getValuesByIndex(dates, asset2Rates);
+			asset1CommonRates = DatesAndSetUtil.getValuesByIndex(dates, asset1Rates);
+			asset2CommonRates = DatesAndSetUtil.getValuesByIndex(dates, asset2Rates);
 
-			result = computeBestCorrelation(asset1Values, asset2Values);
+			result = computeBestCorrelation(asset1CommonRates, asset2CommonRates);
 			hasSufficientContent = true;
 		}
 
@@ -44,7 +46,10 @@ public class AssetsShiftCorrelationCalculator implements Callable<AssetsCorrelat
 				asset2Id,
 				hasSufficientContent,
 				result.getFirst(),
-				result.getSecond()); 
+				result.getSecond(),
+				dates,
+				asset1CommonRates,
+				asset2CommonRates);
 	}
 
 	private static Pair<Integer, Double> computeBestCorrelation(double[] asset1Values, double[] asset2Values) {

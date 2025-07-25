@@ -27,9 +27,10 @@ class AssetsShiftCorrelationCalculatorTest {
 		assertEquals(Integer.MIN_VALUE, result.bestShift);
 		assertTrue(Double.isNaN(result.bestCorrelation));
 
-		assertEquals("{\"asset1Id\":1,\"asset2Id\":2,"
-				+ "\"hasSufficientContent\":false,\"bestShift\":-2147483648,"
-				+ "\"bestCorrelation\":\"NaN\"}", result.toString());
+		assertEquals("{\"asset1Id\":1,\"asset2Id\":2,\"hasSufficientContent\":false,"
+				+ "\"bestShift\":-2147483648,\"bestCorrelation\":\"NaN\","
+				+ "\"dates\":[\"1\",\"2\"],"
+				+ "\"asset1Rates\":null,\"asset2Rates\":null}", result.toString());
 	}
 
 	@Test
@@ -47,8 +48,10 @@ class AssetsShiftCorrelationCalculatorTest {
 		assertEquals(-2, result.bestShift);
 		assertEquals(1D, result.bestCorrelation, ERROR_TOLERANCE);
 
-		assertEquals("{\"asset1Id\":1,\"asset2Id\":2,"
-				+ "\"hasSufficientContent\":true,\"bestShift\":-2,"
-				+ "\"bestCorrelation\":1.0}", result.toString());
+		assertEquals("{\"asset1Id\":1,\"asset2Id\":2,\"hasSufficientContent\":true,"
+				+ "\"bestShift\":-2,\"bestCorrelation\":1.0,"
+				+ "\"dates\":[\"1\",\"2\",\"3\",\"4\",\"5\"],"
+				+ "\"asset1Rates\":[1.0,2.0,3.0,4.0,5.0],"
+				+ "\"asset2Rates\":[2.0,4.0,6.0,8.0,10.0]}", result.toString());
 	}
 }
