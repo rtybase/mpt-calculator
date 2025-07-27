@@ -45,7 +45,7 @@ function addLatestPrices($link, $dividendsData) {
 		if (array_key_exists($assetId, $dividendsData)) {
 			$d = $dividendsData[$assetId]["d_pay"];
 			$dividendsData[$assetId]["price"] = $row[1];
-			$dividendsData[$assetId]["pay_by_price"] = ($d / $row[1]) * 100;
+			$dividendsData[$assetId]["pay_by_price"] = percentWeightFrom($d / $row[1]);
 		}
 	}
 	mysql_free_result($res);

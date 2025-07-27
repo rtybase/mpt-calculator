@@ -58,7 +58,7 @@
 			$ret[$i] = array();
 			$ret[$i]["correlation"] = round($row[3], $VOLATILITY_ROUND_PRECISION);
 			$ret[$i]["portret"] = round($row[6], $RETURN_ROUND_PRECISION);
-			$ret[$i]["portvol"] = round(sqrt(abs($row[7])), $VOLATILITY_ROUND_PRECISION);
+			$ret[$i]["portvol"] = volatilityFrom($row[7]);
 			if ($row[0] == $id) {
 				$ret[$i]["asset1"] = $mainAsset;
 				$ret[$i]["asset2"] = $row[2];
@@ -94,8 +94,8 @@
 				."<a href=\"./".$link."?id=".$data[$i]["asset2Id"]."\">".$data[$i]["asset2"]."</a>',";
 			echo toChartNumber($data[$i]["correlation"]).",";
 			echo "'<i><font color=\"#5D6D7E\">"
-				.round($data[$i]["weight1"] * 100, 3)."&percnt;</font></i><br/>"
-				.round($data[$i]["weight2"] * 100, 3)."&percnt;',";
+				.percentWeightFrom($data[$i]["weight1"])."&percnt;</font></i><br/>"
+				.percentWeightFrom($data[$i]["weight2"])."&percnt;',";
 			echo toChartNumber($data[$i]["portret"]).",";
 			echo toChartNumber($data[$i]["portvol"])."]";
 		}
@@ -156,10 +156,20 @@
 	<a href="./top_p.php">Top pairs</a><br/>
 	<a href="./top_d.php">Dividends</a><br/>
 	<a href="./top_sc.php">Top shift correlations</a><br/>
+	<a href="./port_f.php">Custom portfolios</a><br/>
 	<a href="./stale_d.php">Stale data</a>
 <?php	}
 
 	function linkToAsset($id, $name) {
 		return "<a href=\"./?id=".$id."\">".$name."</a>";
+	}
+
+	function volatilityFrom($variance) {
+		global $VOLATILITY_ROUND_PRECISION;
+		return round(sqrt(abs($variance)), $VOLATILITY_ROUND_PRECISION);
+	}
+
+	function percentWeightFrom($value) {
+		return round($value * 100, 3);
 	}
 ?>

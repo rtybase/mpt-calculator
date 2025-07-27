@@ -26,7 +26,7 @@
 
 		$tableResult.= "'".linkToAsset($row[0], $row[1])."',";
 		$tableResult.= toChartNumber(round($row[2], $RETURN_ROUND_PRECISION)).",";
-		$tableResult.= toChartNumber(round(sqrt(abs($row[3])), $VOLATILITY_ROUND_PRECISION))."]";
+		$tableResult.= toChartNumber(volatilityFrom($row[3]))."]";
 		$i++;
 	}
 	mysql_free_result($res);

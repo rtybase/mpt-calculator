@@ -28,11 +28,11 @@
 			.linkToAsset($row[1], $row[2])."',";
 
 		$tableResult.= toChartNumber(round($row[3], $VOLATILITY_ROUND_PRECISION)).",";
-		$tableResult.= "'".round($row[4] * 100, 3)."&percnt;<br/>"
-			.round($row[5] * 100, 3)."&percnt;',";
+		$tableResult.= "'".percentWeightFrom($row[4])."&percnt;<br/>"
+			.percentWeightFrom($row[5])."&percnt;',";
 
 		$tableResult.= toChartNumber(round($row[6], $RETURN_ROUND_PRECISION)).",";
-		$tableResult.= toChartNumber(round(sqrt(abs($row[7])), $VOLATILITY_ROUND_PRECISION))."]";
+		$tableResult.= toChartNumber(volatilityFrom($row[7]))."]";
 		$i++;
 	}
 	mysql_free_result($res);

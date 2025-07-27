@@ -5,7 +5,7 @@
 	header("Content-Type:text/html; charset=UTF-8");
 
 	function getRatesDataFor($assetId, $period, $link) {
-		global $RETURN_ROUND_PRECISION, $VOLATILITY_ROUND_PRECISION;
+		global $RETURN_ROUND_PRECISION;
 		$result = array();
 		$data = getSingleValyeByPK("tbl_avgreturns".periodTableFrom($period), "fk_assetID", $assetId, $link);
 
@@ -18,7 +18,7 @@
 			$expectedReturn = $data["dbl_avgreturn"];
 
 			$result["expectedReturn"] = indicatorText(round($expectedReturn, $RETURN_ROUND_PRECISION), $expectedReturn);
-			$result["volatility"] = round(sqrt($variance), $VOLATILITY_ROUND_PRECISION);
+			$result["volatility"] = volatilityFrom($variance);
 
 			if ($variance > 0.0) {
 				$result["kelly"] = calculateKellyFraction($expectedReturn, $variance);
