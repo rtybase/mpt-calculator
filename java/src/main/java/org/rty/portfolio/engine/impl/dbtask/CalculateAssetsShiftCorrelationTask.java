@@ -3,12 +3,9 @@ package org.rty.portfolio.engine.impl.dbtask;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.rty.portfolio.core.AssetsCorrelationInfo;
 import org.rty.portfolio.db.DbManager;
-
-import com.mysql.jdbc.Statement;
 
 public class CalculateAssetsShiftCorrelationTask extends Generic2AssetsCalculateTask<AssetsCorrelationInfo> {
 	private static final int YEARS_BACK = 1;
@@ -26,12 +23,12 @@ public class CalculateAssetsShiftCorrelationTask extends Generic2AssetsCalculate
 
 		if (Double.isNaN(result.bestCorrelation)) {
 			say("Skipping {} - correlation is NaN.", result);
-			return false;			
+			return false;
 		}
 
 		if (Integer.MIN_VALUE == result.bestShift) {
 			say("Skipping {} - correlation not found.", result);
-			return false;			
+			return false;
 		}
 
 		return true;
@@ -44,18 +41,7 @@ public class CalculateAssetsShiftCorrelationTask extends Generic2AssetsCalculate
 	}
 
 	@Override
-	protected void saveResults(List<AssetsCorrelationInfo> resultsToSave, AtomicInteger totalFail) throws Exception {
-		try {
-			int[] executionResults = dbManager.addBulkShiftCorrelations(resultsToSave);
-
-			for (int result : executionResults) {
-				if (result == Statement.EXECUTE_FAILED) {
-					say("Failed: {}", resultsToSave.get(result));
-					totalFail.incrementAndGet();
-				}
-			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
+	protected int[] saveResults(List<AssetsCorrelationInfo> resultsToSave) throws Exception {
+		return dbManager.addBulkShiftCorrelations(resultsToSave);
 	}
 }

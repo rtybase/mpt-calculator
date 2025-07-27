@@ -1,22 +1,16 @@
 package org.rty.portfolio.engine.impl.dbtask;
 
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.rty.portfolio.core.PortfolioStatistics;
 import org.rty.portfolio.core.utils.ConcurrentTaskExecutorWithBatching;
+import org.rty.portfolio.core.utils.JsonUtil;
 import org.rty.portfolio.db.DbManager;
-import org.rty.portfolio.engine.AbstractDbTask;
 
-import au.com.bytecode.opencsv.CSVReader;
-
-public class CalculateMultiAssetsPortfolioStatsTask extends AbstractDbTask {
+public class CalculateMultiAssetsPortfolioStatsTask extends GenericCalculateTask<PortfolioStatistics> {
 	private static final int YEARS_BACK = 5;
 
 	public CalculateMultiAssetsPortfolioStatsTask(DbManager dbManager) {
@@ -25,10 +19,7 @@ public class CalculateMultiAssetsPortfolioStatsTask extends AbstractDbTask {
 
 	@Override
 	public void execute(Map<String, String> parameters) throws Exception {
-		final String inputFile = getValidParameterValue(parameters, INPUT_FILE_PARAM);
-		final String outFile = getValidParameterValue(parameters, OUTPUT_FILE_PARAM);
-
-		final List<List<Integer>> portfolios = loadPortfolioDefinitions(inputFile);
+		final Map<Integer, List<Integer>> portfolios = loadPortfolioDefinitions();
 
 		say("Prepare storage... ");
 		Map<Integer, Map<String, Double>> storage = dbManager.getAllDailyRates(YEARS_BACK);
@@ -38,21 +29,12 @@ public class CalculateMultiAssetsPortfolioStatsTask extends AbstractDbTask {
 		final long start = System.currentTimeMillis();
 
 		final AtomicInteger total = new AtomicInteger(0);
+		final AtomicInteger totalFail = new AtomicInteger(0);
 
-		final ConcurrentTaskExecutorWithBatching<PortfolioStatistics> taskExecutor = new ConcurrentTaskExecutorWithBatching<>(
-				8, 4096, 3072, listOfFutures -> {
-					try (FileWriter fw = new FileWriter(outFile, true)) {
-						for (Future<PortfolioStatistics> futureResult : listOfFutures) {
-							final PortfolioStatistics calculationResult = futureResult.get();
-							fw.write(calculationResult.toString());
-							fw.write("\n");
-						}
-						fw.flush();
-					}
-				});
+		final ConcurrentTaskExecutorWithBatching<PortfolioStatistics> taskExecutor = createExecutor(totalFail);
 
-		for (List<Integer> portfolio : portfolios) {
-			taskExecutor.addTask(new PortfolioStatsCalculator(storage, portfolio));
+		for (Map.Entry<Integer, List<Integer>> portfolio : portfolios.entrySet()) {
+			taskExecutor.addTask(new PortfolioStatsCalculator(portfolio.getKey(), storage, portfolio.getValue()));
 			total.incrementAndGet();
 		}
 
@@ -63,49 +45,43 @@ public class CalculateMultiAssetsPortfolioStatsTask extends AbstractDbTask {
 		say("Total processed {}", total);
 	}
 
-	private List<List<Integer>> loadPortfolioDefinitions(String inputFile) throws Exception {
-		say("Load portfolio definitions from '{}' ... ", inputFile);
+	@Override
+	protected boolean validateResult(PortfolioStatistics result) {
+		if (!result.hasSufficientContent) {
+			say("Skipping {} - have insufficient common dates.", result);
+			return false;
+		}
 
-		List<List<Integer>> result = new ArrayList<>();
-		final CSVReader reader = new CSVReader(new FileReader(inputFile));
+		return true;
+	}
+
+	@Override
+	protected int[] saveResults(List<PortfolioStatistics> resultsToSave) throws Exception {
+		return dbManager.addBulkCustomPortfolioOptimalResults(
+				resultsToSave.stream().map(v -> v.portflioOptimalResults).toList());
+	}
+
+	private Map<Integer, List<Integer>> loadPortfolioDefinitions() throws Exception {
+		say("Load custom portfolio definitions... ");
+
+		final Map<Integer, String> rawCustomPortfolios = dbManager.getAllCustomPortfolios();
+		final Map<Integer, List<Integer>> portfolios = new HashMap<>();
 
 		int total = 0;
 		int failed = 0;
 
-		String[] nextLine;
-		while ((nextLine = reader.readNext()) != null) {
-			if (nextLine.length > 0) {
-				total++;
-
-				List<Integer> portfolio = stringsToInts(nextLine);
-				if (portfolio.isEmpty()) {
-					failed++;
-				} else {
-					result.add(portfolio);
-				}
+		for (Map.Entry<Integer, String> entry : rawCustomPortfolios.entrySet()) {
+			total++;
+			try {
+				portfolios.put(entry.getKey(), JsonUtil.toList(entry.getValue()));
+			} catch (Exception ex) {
+				say("JSON conversion to list failed for portfolio ID '{}'", entry.getKey());
+				failed++;
 			}
 		}
-
-		reader.close();
 
 		say("Total portfolio definitions loaded {}", total);
 		say("Operations failed {}", failed);
-		return result;
-	}
-
-	private List<Integer> stringsToInts(String[] nextLine) {
-		try {
-			List<Integer> portfolio = new ArrayList<>(nextLine.length);
-
-			for (String s : nextLine) {
-				portfolio.add(Integer.parseInt(s));
-			}
-
-			return portfolio;
-		} catch (Exception ex) {
-			say(ex.toString());
-		}
-
-		return Collections.emptyList();
+		return portfolios;
 	}
 }

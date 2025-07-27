@@ -7,18 +7,23 @@ import java.util.concurrent.Callable;
 
 import org.apache.commons.math3.stat.StatUtils;
 import org.rty.portfolio.core.PortfolioStatistics;
-import org.rty.portfolio.core.PortflioStats;
+import org.rty.portfolio.core.PortflioOptimalResults;
 import org.rty.portfolio.core.utils.DatesAndSetUtil;
 import org.rty.portfolio.math.Calculator;
 
 
 public class PortfolioStatsCalculator implements Callable<PortfolioStatistics> {
+	private final Integer portfolioId;
 	private final List<Integer> assetIds;
 	private final Map<Integer, Map<String, Double>> storage;
 
-	PortfolioStatsCalculator(Map<Integer, Map<String, Double>> storage, List<Integer> assetIds) {
+	/**
+	 * @param portfolioId	can be null, ie. optional
+	 */
+	PortfolioStatsCalculator(Integer portfolioId, Map<Integer, Map<String, Double>> storage, List<Integer> assetIds) {
 		this.storage = storage;
 		this.assetIds = assetIds;
+		this.portfolioId = portfolioId;
 	}
 
 	@Override
@@ -57,7 +62,7 @@ public class PortfolioStatsCalculator implements Callable<PortfolioStatistics> {
 				}
 			}
 
-			PortflioStats portStats = calculatePortfolioStats(means, covarianceMatrix);
+			PortflioOptimalResults portStats = calculatePortfolioStats(means, covarianceMatrix);
 
 			return new PortfolioStatistics(assetIds, dates,
 					true, 
@@ -79,8 +84,8 @@ public class PortfolioStatsCalculator implements Callable<PortfolioStatistics> {
 		}
 	}
 
-	private static PortflioStats calculatePortfolioStats(List<Double> means, double[][] covarianceMatrix) {
+	private PortflioOptimalResults calculatePortfolioStats(List<Double> means, double[][] covarianceMatrix) {
 		final double[] rates = means.stream().mapToDouble(Double::doubleValue).toArray();
-		return Calculator.calculateWeights(rates, covarianceMatrix);
+		return Calculator.calculateWeights(rates, covarianceMatrix, portfolioId);
 	}
 }

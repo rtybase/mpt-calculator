@@ -18,6 +18,7 @@ import java.util.Objects;
 import org.rty.portfolio.core.AssetDividendInfo;
 import org.rty.portfolio.core.AssetPriceInfo;
 import org.rty.portfolio.core.AssetsCorrelationInfo;
+import org.rty.portfolio.core.PortflioOptimalResults;
 import org.rty.portfolio.core.PortfolioStatistics;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -218,10 +219,10 @@ public class DbManager {
 				pStmt.setInt(2, result.assetIds.get(1));
 				pStmt.setDouble(3, result.covarianceMatrix[0][1]);
 				pStmt.setDouble(4, result.correlationMatrix[0][1]);
-				pStmt.setDouble(5, result.portflioStats.portfolioWeights[0]);
-				pStmt.setDouble(6, result.portflioStats.portfolioWeights[1]);
-				pStmt.setDouble(7, result.portflioStats.portfolioReturn);
-				pStmt.setDouble(8, result.portflioStats.porfolioVariance);
+				pStmt.setDouble(5, result.portflioOptimalResults.portfolioWeights[0]);
+				pStmt.setDouble(6, result.portflioOptimalResults.portfolioWeights[1]);
+				pStmt.setDouble(7, result.portflioOptimalResults.portfolioReturn);
+				pStmt.setDouble(8, result.portflioOptimalResults.porfolioVariance);
 
 				pStmt.addBatch();
 			}
@@ -254,6 +255,48 @@ public class DbManager {
 		}
 
 		return Collections.unmodifiableMap(storage);
+	}
+
+	/**
+	 * Returns all custom portfolios. Key is the portfolioId. Value is portfolio
+	 * composition, json array of int's.
+	 */
+	public Map<Integer, String> getAllCustomPortfolios() throws Exception {
+		final Map<Integer, String> portfolios = new HashMap<>();
+
+		try (Statement stmt = connection.createStatement();
+				ResultSet rs = stmt.executeQuery(
+						"select int_portfolioID, txt_json_composition from tbl_custom_portfolios"
+						+ " order by int_portfolioID")) {
+			while (rs.next()) {
+				portfolios.put(rs.getInt(1), rs.getString(2));
+			}
+
+		}
+
+		return Collections.unmodifiableMap(portfolios);
+	}
+
+	/**
+	 * Adds optimal custom portfolio results to DB.
+	 * 
+	 */
+	public int[] addBulkCustomPortfolioOptimalResults(List<PortflioOptimalResults> results) throws Exception {
+		try (PreparedStatement pStmt = connection.prepareStatement(
+				"INSERT INTO tbl_custom_portfolios_data (fk_portfolioID, dtm_date, txt_json_stats)"
+						+ " VALUES (?, now(), ?)"
+						+ " ON DUPLICATE KEY UPDATE"
+						+ "	 txt_json_stats=VALUES(txt_json_stats)")) {
+
+			for (PortflioOptimalResults result : results) {
+				pStmt.setInt(1, result.portfolioId);
+				pStmt.setString(2, result.toString());
+
+				pStmt.addBatch();
+			}
+
+			return pStmt.executeBatch();
+		}
 	}
 
 	private final void addResultToStorage(final Map<Integer, HashMap<String, Double>> storage, ResultSet rs)

@@ -114,6 +114,22 @@ create table tbl_shift_correlations (
 	foreign key(fk_asset2ID) references tbl_assets (int_assetID)
 ) ENGINE = InnoDB DEFAULT CHARSET=utf8;
 
+create table tbl_custom_portfolios (
+	int_portfolioID int(10) unsigned NOT NULL auto_increment,
+	vchr_name varchar(100) not null,
+	txt_json_composition text NOT NULL,
+	primary key (int_portfolioID),
+	unique (vchr_name)
+) ENGINE = InnoDB DEFAULT CHARSET=utf8;
+
+create table tbl_custom_portfolios_data (
+	fk_portfolioID int(10) unsigned NOT NULL,
+	dtm_date DATE not null, -- dd-mm-yy
+	txt_json_stats text NOT NULL,
+	primary key (fk_portfolioID,dtm_date),
+	foreign key(fk_portfolioID) references tbl_custom_portfolios (int_portfolioID)
+) ENGINE = InnoDB DEFAULT CHARSET=utf8;
+
 ----------------
 delimiter //
 

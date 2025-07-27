@@ -150,6 +150,7 @@ load_yf "LGEN.L" "Legal & General" "lgen-l.csv"
 load_yf "ULVR.L" "Unilever" "ulvr-l.csv"
 load_yf "BT-A.L" "BT Group" "bt-a-l.csv"
 load_yf "PSN.L" "Persimmon" "psn-l.csv"
+load_yf "GSK.L" "GSK plc" "gsk-l.csv"
 
 load_yf "BTC-USD" "BITCOIN" "btc-usd.csv"
 load_yf "DOGE-USD" "DOGECOIN" "doge-usd.csv"
@@ -231,3 +232,4 @@ rm -rf ${FOLDER_FOR_DIVIDEND_FILES}
 java -Xmx512m -jar portfolio-0.0.1-SNAPSHOT.jar CalculateAssetStatsTask
 java -Xmx768m -jar portfolio-0.0.1-SNAPSHOT.jar Calculate2AssetsPortfolioStatsTask
 java -Xmx768m -jar portfolio-0.0.1-SNAPSHOT.jar CalculateAssetsShiftCorrelationTask
+java -Xmx768m -jar portfolio-0.0.1-SNAPSHOT.jar CalculateMultiAssetsPortfolioStatsTask

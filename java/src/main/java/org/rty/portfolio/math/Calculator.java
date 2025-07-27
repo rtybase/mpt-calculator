@@ -6,7 +6,7 @@ import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
 import org.apache.commons.math3.stat.correlation.Covariance;
 import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
-import org.rty.portfolio.core.PortflioStats;
+import org.rty.portfolio.core.PortflioOptimalResults;
 
 import com.google.common.base.Preconditions;
 
@@ -14,7 +14,10 @@ public class Calculator {
 	private static final double CORRECTION = 1000000.0D;
 	private static final double ERROR = 0.0000001D;
 
-	public static PortflioStats calculateWeights(double[] rates, double[][] covariance) {
+	/**
+	 * @param portfolioId	can be null, ie. optional
+	 */
+	public static PortflioOptimalResults calculateWeights(double[] rates, double[][] covariance, Integer portfolioId) {
 		RealMatrix ratesVector = new Array2DRowRealMatrix(rates);
 		RealMatrix covMatrix = new Array2DRowRealMatrix(covariance);
 		RealMatrix unitVector = generateUnitVector(covMatrix.getRowDimension());
@@ -24,7 +27,10 @@ public class Calculator {
 		double portfolioReturn = calculatePorfolioReturn(unitVector, covMatxInverse, ratesVector, portfolioVariance);
 		RealMatrix weights = covMatxInverse.multiply(unitVector).scalarMultiply(portfolioVariance);
 
-		return new PortflioStats(portfolioReturn, portfolioVariance, weights.getColumn(0));
+		return new PortflioOptimalResults(portfolioReturn,
+				portfolioVariance,
+				weights.getColumn(0),
+				portfolioId);
 	}
 
 	/**

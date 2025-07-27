@@ -19,11 +19,11 @@ public class PortfolioStatistics {
 	public final List<Double> assetVariances;
 	public final double[][] covarianceMatrix;
 	public final double[][] correlationMatrix;
-	public final PortflioStats portflioStats;
+	public final PortflioOptimalResults portflioOptimalResults;
 
 	public PortfolioStatistics(List<Integer> assetIds, Set<String> dates, boolean hasSufficientContent,
 			List<double[]> assetRates, List<Double> assetMeans, List<Double> assetVariances,
-			double[][] covarianceMatrix, double[][] correlationMatrix, PortflioStats portflioStats) {
+			double[][] covarianceMatrix, double[][] correlationMatrix, PortflioOptimalResults portflioOptimalResults) {
 		this.assetIds = Collections.unmodifiableList(assetIds);
 		this.dates = dates;
 		this.hasSufficientContent = hasSufficientContent;
@@ -32,7 +32,7 @@ public class PortfolioStatistics {
 		this.assetVariances = toUnmodifiableList(assetVariances);
 		this.covarianceMatrix = covarianceMatrix;
 		this.correlationMatrix = correlationMatrix;
-		this.portflioStats = portflioStats;
+		this.portflioOptimalResults = portflioOptimalResults;
 	}
 
 	@Override
