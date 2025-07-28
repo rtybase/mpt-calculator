@@ -58,9 +58,9 @@ public class OptimalPortfolioFinderTask extends AbstractDbTask {
 			total.incrementAndGet();
 
 			if (resultPortfolioStatistics.hasSufficientContent) {
-				final Set<Integer> negativeWeightsIndexes = indexesWithNegativeWeights(resultPortfolioStatistics);
+				final Set<Integer> negativeWeightsOrMeansIndexes = indexesWithNegativeWeightsOrMeans(resultPortfolioStatistics);
 
-				if (negativeWeightsIndexes.isEmpty()) {
+				if (negativeWeightsOrMeansIndexes.isEmpty()) {
 					if (maxReturnSoFar <= resultPortfolioStatistics.portflioOptimalResults.portfolioReturn) {
 						maxReturnSoFar = resultPortfolioStatistics.portflioOptimalResults.portfolioReturn;
 						saveResults(outFile, resultPortfolioStatistics);
@@ -72,7 +72,7 @@ public class OptimalPortfolioFinderTask extends AbstractDbTask {
 
 				} else {
 					updateAssetIdsAndAddToQueue(queue, alreadyAddedHashes, resultPortfolioStatistics,
-							negativeWeightsIndexes);
+							negativeWeightsOrMeansIndexes);
 				}
 			} else {
 				for (int i = 0; i < resultPortfolioStatistics.assetIds.size(); i++) {
@@ -118,10 +118,16 @@ public class OptimalPortfolioFinderTask extends AbstractDbTask {
 		return result;
 	}
 
-	private static Set<Integer> indexesWithNegativeWeights(PortfolioStatistics stats) {
+	private static Set<Integer> indexesWithNegativeWeightsOrMeans(PortfolioStatistics stats) {
 		Set<Integer> result = new HashSet<>(stats.portflioOptimalResults.portfolioWeights.length);
 		for (int i = 0; i < stats.portflioOptimalResults.portfolioWeights.length; i++) {
 			if (stats.portflioOptimalResults.portfolioWeights[i] < 0.0D) {
+				result.add(i);
+			}
+		}
+
+		for (int i = 0; i < stats.assetMeans.size(); i++) {
+			if (stats.assetMeans.get(i) < 0.0D) {
 				result.add(i);
 			}
 		}

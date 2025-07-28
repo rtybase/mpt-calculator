@@ -182,8 +182,8 @@ function getPortfolioData($portfolioId, $link) {
 	</td></tr>
 	<tr><td><hr/></td></tr>
 	<tr><td><div id='table_div' style="width: 1044px;"></div></td></tr>
-	<tr><td><div id="chart1_div" style="width: 1044px; height: 350px;"></div></td></tr>
-	<tr><td><div id="chart2_div" style="width: 1044px; height: 650px;"></div></td></tr>
+	<tr><td><div id="chart1_div" style="width: 1044px; height: 250px;"></div></td></tr>
+	<tr><td><div id="chart2_div" style="width: 1044px; height: 1050px;"></div></td></tr>
       </table></td>
     </tr></table>
   </body>
