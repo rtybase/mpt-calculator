@@ -33,6 +33,17 @@ create table tbl_dividends (
 CREATE INDEX idx_dividends_id_date
 ON tbl_dividends (fk_assetID, dtm_date);
 
+create table tbl_eps (
+	fk_assetID int(10) unsigned NOT NULL,
+	dbl_eps DOUBLE not null,
+	dtm_date DATE not null, -- dd-mm-yy
+	primary key(fk_assetID, dtm_date),
+	foreign key(fk_assetID) references tbl_assets (int_assetID)
+) ENGINE = InnoDB;
+
+CREATE INDEX idx_eps_id_date
+ON tbl_eps (fk_assetID, dtm_date);
+
 create table tbl_avgreturns (
 	fk_assetID int(10) unsigned NOT NULL,
 	dbl_avgreturn DOUBLE not null,

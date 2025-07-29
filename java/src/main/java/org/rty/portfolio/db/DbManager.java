@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.rty.portfolio.core.AssetDividendInfo;
+import org.rty.portfolio.core.AssetEpsInfo;
 import org.rty.portfolio.core.AssetPriceInfo;
 import org.rty.portfolio.core.AssetsCorrelationInfo;
 import org.rty.portfolio.core.PortflioOptimalResults;
@@ -119,7 +120,7 @@ public class DbManager {
 	}
 
 	/**
-	 * Adds price records to DB.
+	 * Adds dividends records to DB.
 	 * 
 	 */
 	public 	List<String> addBulkDividends(List<AssetDividendInfo> dividends) throws Exception {
@@ -143,6 +144,42 @@ public class DbManager {
 					pStmt.setInt(1, assetId);
 					pStmt.setDouble(2, dividend.pay);
 					pStmt.setDate(3, new java.sql.Date(dividend.date.getTime()));
+
+					pStmt.addBatch();
+				}
+			}
+
+			executeAndProcessResult(pStmt, possiblyGoodResults, failedResults);
+		}
+
+		return failedResults;
+	}
+
+	/**
+	 * Adds EPS records to DB.
+	 * 
+	 */
+	public 	List<String> addBulkEps(List<AssetEpsInfo> assetsEps) throws Exception {
+		final List<String> failedResults = new ArrayList<>(assetsEps.size());
+		final List<String> possiblyGoodResults = new ArrayList<>(assetsEps.size());
+
+		try (PreparedStatement pStmt = connection.prepareStatement(
+				"INSERT INTO tbl_eps (fk_assetID, dbl_eps, dtm_date)"
+						+ " VALUES (?,?,?)"
+						+ " ON DUPLICATE KEY UPDATE"
+						+ "	 dbl_eps=VALUES(dbl_eps)")) {
+
+			for (AssetEpsInfo eps : assetsEps) {
+				final Integer assetId = resolveAssetNameToId(eps.assetName);
+
+				if (assetId < 0) {
+					failedResults.add(eps.assetName);
+				} else {
+					possiblyGoodResults.add(eps.assetName);
+
+					pStmt.setInt(1, assetId);
+					pStmt.setDouble(2, eps.eps);
+					pStmt.setDate(3, new java.sql.Date(eps.date.getTime()));
 
 					pStmt.addBatch();
 				}

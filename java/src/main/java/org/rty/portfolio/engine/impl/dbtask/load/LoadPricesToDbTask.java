@@ -1,7 +1,6 @@
 package org.rty.portfolio.engine.impl.dbtask.load;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.rty.portfolio.core.AssetPriceInfo;
 import org.rty.portfolio.db.DbManager;
@@ -25,13 +24,8 @@ public class LoadPricesToDbTask extends GenericLoadToDbTask<AssetPriceInfo> {
 	}
 
 	@Override
-	protected void saveResults(List<AssetPriceInfo> pricesToAdd, AtomicInteger totalFail) throws Exception {
-		List<String> executionResults = dbManager.addBulkPrices(pricesToAdd);
-
-		for (String failedAsset : executionResults) {
-			errorAssets.add(failedAsset);
-			totalFail.incrementAndGet();
-		}
+	protected List<String> saveResults(List<AssetPriceInfo> pricesToAdd) throws Exception {
+		return dbManager.addBulkPrices(pricesToAdd);
 	}
 
 	@Override

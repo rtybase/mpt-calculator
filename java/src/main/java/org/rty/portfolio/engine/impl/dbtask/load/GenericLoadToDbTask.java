@@ -65,7 +65,7 @@ public abstract class GenericLoadToDbTask<T> extends AbstractDbTask {
 
 		if (!dataToAdd.isEmpty()) {
 			dbManager.setAutoCommit(false);
-			saveResults(dataToAdd, totalFail);
+			saveResultsAndCollectErrors(dataToAdd, totalFail);
 			dbManager.commit();
 			dbManager.setAutoCommit(true);
 		}
@@ -121,11 +121,27 @@ public abstract class GenericLoadToDbTask<T> extends AbstractDbTask {
 		}
 	}
 
-	protected final Date toDate(String value) {
-		return CsvWriter.SCAN_DATE_FORMAT.parse(value, new ParsePosition(0));
+	private void saveResultsAndCollectErrors(List<T> dataToAdd, AtomicInteger totalFail) throws Exception {
+		List<String> executionResults = saveResults(dataToAdd);
+
+		for (String failedAsset : executionResults) {
+			errorAssets.add(failedAsset);
+			totalFail.incrementAndGet();
+		}
 	}
 
-	protected abstract void saveResults(List<T> dataToAdd, AtomicInteger totalFail) throws Exception;
+	protected final Date toDate(String value) {
+		return toDate(value, CsvWriter.SCAN_DATE_FORMAT);
+	}
+
+	protected final Date toDate(String value, SimpleDateFormat format) {
+		return format.parse(value, new ParsePosition(0));
+	}
+
+	/**
+	 * Returns a list of assets that failed to save.
+	 */
+	protected abstract List<String> saveResults(List<T> dataToAdd) throws Exception;
 
 	protected abstract T toEntity(String assetName, String[] line);
 }

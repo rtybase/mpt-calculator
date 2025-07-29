@@ -1,7 +1,6 @@
 package org.rty.portfolio.engine.impl.dbtask.load;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.rty.portfolio.core.AssetDividendInfo;
 import org.rty.portfolio.db.DbManager;
@@ -23,13 +22,8 @@ public class LoadDividendsToDbTask extends GenericLoadToDbTask<AssetDividendInfo
 	}
 
 	@Override
-	protected void saveResults(List<AssetDividendInfo> dataToAdd, AtomicInteger totalFail) throws Exception {
-		List<String> executionResults = dbManager.addBulkDividends(dataToAdd);
-
-		for (String failedAsset : executionResults) {
-			errorAssets.add(failedAsset);
-			totalFail.incrementAndGet();
-		}
+	protected List<String> saveResults(List<AssetDividendInfo> dataToAdd) throws Exception {
+		return dbManager.addBulkDividends(dataToAdd);
 	}
 
 	@Override
