@@ -1,5 +1,5 @@
 <?php
-// Top rates script
+// Custom portfolio data script
 	include_once("../lib/mysql.php");
 	include_once("../lib/utils.php");
 	include_once("./funcs.php");

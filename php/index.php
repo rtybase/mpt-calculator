@@ -29,16 +29,13 @@
 		return $result;
 	}
 
-	function loadDividendsFor($assetId, $link) {
-		$res = mysql_query("select dtm_date, dbl_pay from tbl_dividends where fk_assetID=$assetId order by dtm_date asc", $link);
-
-		if (!$res) die("Invalid query: ". mysql_error());
+	function loadDividendsAndEpsFor($assetId, $link) {
+		$divsAndEps = mergeDivsAndEps(loadDividendsFor($assetId, $link), loadEpsFor($assetId, $link));
 
 		$result = "";
-		while ($row = mysql_fetch_array($res)) {
-			$result .= ",['".$row[0]."',".$row[1]."]";
+		foreach ($divsAndEps as $key => $value) {
+			$result .= ",['".$key."',".valueOrNullFrom($value["dividend"]).",".valueOrNullFrom($value["eps"])."]";
 		}
-		mysql_free_result($res);
 
 		return $result;
 	}
@@ -78,7 +75,7 @@
 	$rates["5y"] = getRatesDataFor($id, "5y", $link);
 	$rates["All"] = getRatesDataFor($id, "All", $link);
 
-	$dividendsDetails = loadDividendsFor($id, $link);
+	$dividendsAndEpsDetails = loadDividendsAndEpsFor($id, $link);
 ?>
 <html>
   <head>
@@ -224,7 +221,7 @@
 
 	function drawChart() {
 		drawPricesChart();
-		drawDividendsChart();
+		drawDividendsAndEpsChart();
 	}
 
 	function drawPricesChart() {
@@ -247,17 +244,20 @@
 		chart.draw(data, options);
 	}
 
-	function drawDividendsChart() {
-		<?php if (!empty($dividendsDetails)) { ?>
+	function drawDividendsAndEpsChart() {
+		<?php if (!empty($dividendsAndEpsDetails)) { ?>
 		var data = google.visualization.arrayToDataTable([
-			['Date', 'pay']
-			<?php echo $dividendsDetails; ?>
+			[{label: 'Date', id: 'Date', type: 'string'},
+			 {label: 'Dividend Pay', id: 'Dividend Pay', type: 'number'},
+			 {label: 'EPS', id: 'EPS', type: 'number'}]
+			<?php echo $dividendsAndEpsDetails; ?>
 		]);
 
 		var options = {
-			title: "<?php echo $mainAsset;?> - Dividends"
+			title: "<?php echo $mainAsset;?> - Dividends and EPS",
+			interpolateNulls: true,
 		};
-		var chart = new google.visualization.LineChart(document.getElementById('dividends_chart_div'));
+		var chart = new google.visualization.LineChart(document.getElementById('div_eps_chart_div'));
 		chart.draw(data, options);
 		<?php } ?>
 	}
@@ -282,8 +282,8 @@
 	<tr><td><div id="table_base_data_div" style="width: 1044px;"></div></td></tr>
 	<tr><td><font face="verdana">Betas:</font><div id="table_betas_div" style="width: 1044px;"></div></td></tr>
 	<tr><td><div id="prices_chart_div" style="width: 1044px; height: 350px;"></div></td></tr>
-<?php if (!empty($dividendsDetails)) { ?>
-	<tr><td><div id="dividends_chart_div" style="width: 1044px; height: 350px;"></div></td></tr>
+<?php if (!empty($dividendsAndEpsDetails)) { ?>
+	<tr><td><div id="div_eps_chart_div" style="width: 1044px; height: 350px;"></div></td></tr>
 <?php } ?>
 	<tr><td><font face="verdana">Rates:</font><div id="table_rates_data_div" style="width: 1044px;"></div></td></tr>
 	<tr><td><hr/></td></tr>

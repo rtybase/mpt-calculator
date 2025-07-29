@@ -155,6 +155,7 @@
 	<a href="./top_r.php">Top returns</a><br/>
 	<a href="./top_p.php">Top pairs</a><br/>
 	<a href="./top_d.php">Dividends</a><br/>
+	<a href="./top_eps.php">EPS</a><br/>
 	<a href="./top_sc.php">Top shift correlations</a><br/>
 	<a href="./port_f.php">Custom portfolios</a><br/>
 	<a href="./stale_d.php">Stale data</a>
@@ -171,5 +172,57 @@
 
 	function percentWeightFrom($value) {
 		return round($value * 100, 3);
+	}
+
+	function loadDividendsFor($assetId, $link) {
+		$res = mysql_query("select dtm_date, dbl_pay from tbl_dividends where fk_assetID=$assetId order by dtm_date asc", $link);
+
+		if (!$res) die("Invalid query: ". mysql_error());
+
+		$result = array();
+		while ($row = mysql_fetch_array($res)) {
+			$result[$row[0]] = $row[1];
+		}
+		mysql_free_result($res);
+
+		return $result;
+	}
+
+	function loadEpsFor($assetId, $link) {
+		$res = mysql_query("select dtm_date, dbl_eps from tbl_eps where fk_assetID=$assetId order by dtm_date asc", $link);
+
+		if (!$res) die("Invalid query: ". mysql_error());
+
+		$result = array();
+		while ($row = mysql_fetch_array($res)) {
+			$result[$row[0]] = $row[1];
+		}
+		mysql_free_result($res);
+
+		return $result;
+	}
+
+	function valueOrNullFrom($value) {
+		if (is_numeric($value)) {
+			return "".$value;
+		} else if (empty($value)) {
+			return "null";
+		}
+		return "".$value;
+	}
+
+	function mergeDivsAndEps($dividends, $eps) {
+		$result = array();
+
+		foreach ($dividends as $key => $value) {
+			$result[$key] = array();
+			$result[$key]["dividend"] = $value;
+		}
+
+		foreach ($eps as $key => $value) {
+			$result[$key]["eps"] = $value;
+		}
+		ksort($result);
+		return $result;
 	}
 ?>
