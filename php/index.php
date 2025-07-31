@@ -30,11 +30,15 @@
 	}
 
 	function loadDividendsAndEpsFor($assetId, $link) {
-		$divsAndEps = mergeDivsAndEps(loadDividendsFor($assetId, $link), loadEpsFor($assetId, $link));
+		$divsAndEps = mergeDivsAndEps($assetId, $link);
 
 		$result = "";
 		foreach ($divsAndEps as $key => $value) {
-			$result .= ",['".$key."',".valueOrNullFrom($value["dividend"]).",".valueOrNullFrom($value["eps"])."]";
+			$result .= ",['".$key."',";
+			$result .= valueOrNullFrom($value["dividend"]).",";
+			$result .= valueOrNullFrom($value["eps"]).",";
+			$result .= valueOrNullFrom($value["eps_predicted"]).",";
+			$result .= valueOrNullFrom($value["eps_eofp"])."]";
 		}
 
 		return $result;
@@ -249,7 +253,9 @@
 		var data = google.visualization.arrayToDataTable([
 			[{label: 'Date', id: 'Date', type: 'string'},
 			 {label: 'Dividend Pay', id: 'Dividend Pay', type: 'number'},
-			 {label: 'EPS', id: 'EPS', type: 'number'}]
+			 {label: 'EPS', id: 'EPS', type: 'number'},
+			 {label: 'Predicted EPS', id: 'Predicted EPS', type: 'number'},
+			 {label: 'End of Financial Period EPS', id: 'End of Financial Period EPS', type: 'number'}]
 			<?php echo $dividendsAndEpsDetails; ?>
 		]);
 

@@ -6,7 +6,7 @@
 	header("Content-Type:text/html; charset=UTF-8");
 
 	function mergeDividendsEpsAndPricesFor($assetId, $link) {
-		$divsAndEps = mergeDivsAndEps(loadDividendsFor($assetId, $link), loadEpsFor($assetId, $link));
+		$divsAndEps = mergeDivsAndEps($assetId, $link);
 
 		reset($divsAndEps);
 		$minDate = key($divsAndEps);
@@ -19,6 +19,10 @@
 		if (!$res) die("Invalid query: ". mysql_error());
 
 		while ($row = mysql_fetch_array($res)) {
+			if (!array_key_exists($row[0], $divsAndEps)) {
+				$divsAndEps[$row[0]] = array();
+			}
+
 			$divsAndEps[$row[0]]["price"] = $row[1];
 		}
 		mysql_free_result($res);
@@ -30,9 +34,11 @@
 	function loadDividendsAndEpsFrom($dividendsEpsAndPrices) {
 		$result = "";
 		foreach ($dividendsEpsAndPrices as $key => $value) {
-			$result .= ",['".$key."',".valueOrNullFrom($value["dividend"]);
-			$result .= ",".valueOrNullFrom($value["eps"]);
-			$result .= ",null]";
+			$result .= ",['".$key."',";
+			$result .= valueOrNullFrom($value["dividend"]).",";
+			$result .= valueOrNullFrom($value["eps"]).",";
+			$result .= valueOrNullFrom($value["eps_predicted"]).",";
+			$result .= valueOrNullFrom($value["eps_eofp"]).",null]";
 		}
 
 		return $result;
@@ -41,7 +47,7 @@
 	function loadPricesFrom($dividendsEpsAndPrices) {
 		$result = "";
 		foreach ($dividendsEpsAndPrices as $key => $value) {
-			$result .= ",['".$key."',null,null";
+			$result .= ",['".$key."',null,null,null,null";
 			$result .= ",".valueOrNullFrom($value["price"])."]";
 		}
 
@@ -85,6 +91,8 @@
 			[{label: 'Date', id: 'Date', type: 'string'},
 			 {label: 'Dividend Pay', id: 'Dividend Pay', type: 'number'},
 			 {label: 'EPS', id: 'EPS', type: 'number'},
+			 {label: 'Predicted EPS', id: 'Predicted EPS', type: 'number'},
+			 {label: 'End of Financial Period EPS', id: 'End of Financial Period EPS', type: 'number'},
 			 {label: 'Price', id: 'Price', type: 'number'}]
 			<?php echo $dividendsAndEpsDetails; ?>
 		]);
@@ -104,6 +112,8 @@
 			[{label: 'Date', id: 'Date', type: 'string'},
 			 {label: 'Dividend Pay', id: 'Dividend Pay', type: 'number'},
 			 {label: 'EPS', id: 'EPS', type: 'number'},
+			 {label: 'Predicted EPS', id: 'Predicted EPS', type: 'number'},
+			 {label: 'End of Financial Period EPS', id: 'End of Financial Period EPS', type: 'number'},
 			 {label: 'Price', id: 'Price', type: 'number'}]
 			<?php echo $prices; ?>
 		]);

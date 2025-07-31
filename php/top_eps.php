@@ -6,7 +6,7 @@
 	header("Content-Type:text/html; charset=UTF-8");
 
 function getEps($link) {
-	$query = "SELECT a.fk_assetID, c.vchr_name, a.dbl_eps, a.dtm_date ";
+	$query = "SELECT a.fk_assetID, c.vchr_name, a.dbl_eps, dbl_prd_eps, a.dtm_date ";
 	$query.= "FROM tbl_eps a ";
 	$query.= "INNER JOIN (";
 	$query.= "  SELECT fk_assetID, MAX( dtm_date ) dtm_date ";
@@ -23,7 +23,8 @@ function getEps($link) {
 		$ret[$assetId] = array();
 		$ret[$assetId]["asset"] = $row[1];
 		$ret[$assetId]["eps"] = $row[2];
-		$ret[$assetId]["d_date"] = $row[3];
+		$ret[$assetId]["prd_eps"] = $row[3];
+		$ret[$assetId]["d_date"] = $row[4];
 	}
 	mysql_free_result($res);
 
@@ -46,7 +47,7 @@ function addLatestPrices($link, $epsData) {
 			$eps = $epsData[$assetId]["eps"];
 			$epsData[$assetId]["price"] = $row[1];
 			if (abs($eps) < 0.00001) {
-				$epsData[$assetId]["p_by_e"] = 10.0;
+				$epsData[$assetId]["p_by_e"] = 0.0;
 			} else {
 				$epsData[$assetId]["p_by_e"] = $row[1] / $eps;
 			}
@@ -70,6 +71,7 @@ function addLatestPrices($link, $epsData) {
 		$tableResult.= "'".linkToAsset($key, $value["asset"])."',";
 		$tableResult.= "'".$value["d_date"]."',";
 		$tableResult.= toChartNumber(round($value["eps"], 5)).",";
+		$tableResult.= toChartNumber(round($value["prd_eps"], 5)).",";
 		$tableResult.= toChartNumber(round($value["price"], 5)).",";
 		$tableResult.= toChartNumber(round($value["p_by_e"], 5)).",";
 		$tableResult.= "'<a href=\"./show_eps.php?id=".$key."\">details ...</a>']";
@@ -97,7 +99,7 @@ function addLatestPrices($link, $epsData) {
 	}
 
 	function drawTable(element, data) {
-		data.setProperty(0, 0, 'style', 'width:600px');
+		data.setProperty(0, 0, 'style', 'width:500px');
 		var table = new google.visualization.Table(document.getElementById(element));
 		table.draw(data, {showRowNumber: false, allowHtml: true});
 	}
@@ -107,6 +109,7 @@ function addLatestPrices($link, $epsData) {
 		dataTable.addColumn('string', 'Asset');
 		dataTable.addColumn('string', 'Last EPS Report Day');
 		dataTable.addColumn('number', 'EPS');
+		dataTable.addColumn('number', 'EPS Predicted');
 		dataTable.addColumn('number', 'Last Price');
 		dataTable.addColumn('number', 'P/E');
 		dataTable.addColumn('string', 'More');

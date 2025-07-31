@@ -174,6 +174,15 @@
 		return round($value * 100, 3);
 	}
 
+	function valueOrNullFrom($value) {
+		if (is_numeric($value)) {
+			return "".$value;
+		} else if (empty($value)) {
+			return "null";
+		}
+		return "".$value;
+	}
+
 	function loadDividendsFor($assetId, $link) {
 		$res = mysql_query("select dtm_date, dbl_pay from tbl_dividends where fk_assetID=$assetId order by dtm_date asc", $link);
 
@@ -189,7 +198,23 @@
 	}
 
 	function loadEpsFor($assetId, $link) {
-		$res = mysql_query("select dtm_date, dbl_eps from tbl_eps where fk_assetID=$assetId order by dtm_date asc", $link);
+		$res = mysql_query("select dtm_date, dbl_eps, dbl_prd_eps from tbl_eps where fk_assetID=$assetId order by dtm_date asc", $link);
+
+		if (!$res) die("Invalid query: ". mysql_error());
+
+		$result = array();
+		while ($row = mysql_fetch_array($res)) {
+			$result[$row[0]] = array();
+			$result[$row[0]]["eps"] = $row[1];
+			$result[$row[0]]["eps_predicted"] = $row[2];
+		}
+		mysql_free_result($res);
+
+		return $result;
+	}
+
+	function loadEarningsFor($assetId, $link) {
+		$res = mysql_query("select dtm_date, dbl_eps from tbl_earnings where fk_assetID=$assetId order by dtm_date asc", $link);
 
 		if (!$res) die("Invalid query: ". mysql_error());
 
@@ -202,26 +227,29 @@
 		return $result;
 	}
 
-	function valueOrNullFrom($value) {
-		if (is_numeric($value)) {
-			return "".$value;
-		} else if (empty($value)) {
-			return "null";
-		}
-		return "".$value;
-	}
+	function mergeDivsAndEps($assetId, $link) {
+		$eps = loadEpsFor($assetId, $link);
+		$dividends = loadDividendsFor($assetId, $link);
+		$earnings = loadEarningsFor($assetId, $link);
 
-	function mergeDivsAndEps($dividends, $eps) {
-		$result = array();
+		$result = $eps;
 
 		foreach ($dividends as $key => $value) {
-			$result[$key] = array();
+			if (!array_key_exists($key, $result)) {
+				$result[$key] = array();
+			}
+
 			$result[$key]["dividend"] = $value;
 		}
 
-		foreach ($eps as $key => $value) {
-			$result[$key]["eps"] = $value;
+		foreach ($earnings as $key => $value) {
+			if (!array_key_exists($key, $result)) {
+				$result[$key] = array();
+			}
+
+			$result[$key]["eps_eofp"] = $value;
 		}
+
 		ksort($result);
 		return $result;
 	}
