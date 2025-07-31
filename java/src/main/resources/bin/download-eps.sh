@@ -15,8 +15,13 @@ load_eps () {
 	if [ -f $eps_out_file ]; then
 		echo "${eps_out_file} already exists."
 	else 
-		java -Duse-http2=true -jar portfolio-0.0.1-SNAPSHOT.jar DownloadTask "-url=https://api.nasdaq.com/api/company/$1/revenue?limit=1" -outfile=eps.json
-		cat eps.json | python -m json.tool | grep -iE "value.*EPS" -A 3 | grep -iE "value[2-4].*\([0-9]{2}" | sed -e 's/[\",\$\(\)\:]//g' | awk -F ' ' -v 'OFS=,' -v TICKER="${ticker}" '{ print "\"" TICKER "\"", $2, $3}' > ${eps_out_file}
+		java -Duse-http2=true -jar portfolio-0.0.1-SNAPSHOT.jar DownloadTask "-url=https://api.nasdaq.com/api/company/$1/earnings-surprise" -outfile=eps.json
+
+		cat eps.json | python -m json.tool | \
+			grep -iE "(dateReported|eps|consensusForecast)" | \
+			sed -e 's/[\",\$\(\)\:]//g' | awk -F ' ' '{ print $2}' | paste -d " " - - - | \
+			tail -n +2 | \
+			awk -F ' ' -v 'OFS=,' -v TICKER="${ticker}" '{ print "\"" TICKER "\"", $2, $3, $1}'  > ${eps_out_file}
 
 		rm -rf eps.json
 	fi

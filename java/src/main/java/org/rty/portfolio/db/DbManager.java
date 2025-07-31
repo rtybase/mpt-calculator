@@ -156,15 +156,15 @@ public class DbManager {
 	}
 
 	/**
-	 * Adds EPS records to DB.
+	 * Adds earnings records to DB.
 	 * 
 	 */
-	public 	List<String> addBulkEps(List<AssetEpsInfo> assetsEps) throws Exception {
+	public 	List<String> addBulkEarnings(List<AssetEpsInfo> assetsEps) throws Exception {
 		final List<String> failedResults = new ArrayList<>(assetsEps.size());
 		final List<String> possiblyGoodResults = new ArrayList<>(assetsEps.size());
 
 		try (PreparedStatement pStmt = connection.prepareStatement(
-				"INSERT INTO tbl_eps (fk_assetID, dbl_eps, dtm_date)"
+				"INSERT INTO tbl_earnings (fk_assetID, dbl_eps, dtm_date)"
 						+ " VALUES (?,?,?)"
 						+ " ON DUPLICATE KEY UPDATE"
 						+ "	 dbl_eps=VALUES(dbl_eps)")) {
@@ -180,6 +180,50 @@ public class DbManager {
 					pStmt.setInt(1, assetId);
 					pStmt.setDouble(2, eps.eps);
 					pStmt.setDate(3, new java.sql.Date(eps.date.getTime()));
+
+					pStmt.addBatch();
+				}
+			}
+
+			executeAndProcessResult(pStmt, possiblyGoodResults, failedResults);
+		}
+
+		return failedResults;
+	}
+
+	/**
+	 * Adds EPS records to DB.
+	 * 
+	 */
+	public 	List<String> addBulkEps(List<AssetEpsInfo> assetsEps) throws Exception {
+		final List<String> failedResults = new ArrayList<>(assetsEps.size());
+		final List<String> possiblyGoodResults = new ArrayList<>(assetsEps.size());
+
+		try (PreparedStatement pStmt = connection.prepareStatement(
+				"INSERT INTO tbl_eps (fk_assetID, dbl_eps, dbl_prd_eps, dtm_date)"
+						+ " VALUES (?,?,?,?)"
+						+ " ON DUPLICATE KEY UPDATE"
+						+ "	 dbl_eps=VALUES(dbl_eps),"
+						+ "	 dbl_prd_eps=VALUES(dbl_prd_eps)")) {
+
+			for (AssetEpsInfo eps : assetsEps) {
+				final Integer assetId = resolveAssetNameToId(eps.assetName);
+
+				if (assetId < 0) {
+					failedResults.add(eps.assetName);
+				} else {
+					possiblyGoodResults.add(eps.assetName);
+
+					pStmt.setInt(1, assetId);
+					pStmt.setDouble(2, eps.eps);
+
+					if (eps.epsPredicted == null) {
+						pStmt.setNull(3, java.sql.Types.NULL);
+					} else {
+						pStmt.setDouble(3, eps.epsPredicted);
+					}
+
+					pStmt.setDate(4, new java.sql.Date(eps.date.getTime()));
 
 					pStmt.addBatch();
 				}
