@@ -17,7 +17,7 @@ load_eps () {
 	else 
 		java -Duse-http2=true -jar portfolio-0.0.1-SNAPSHOT.jar DownloadTask "-url=https://api.nasdaq.com/api/company/$1/revenue?limit=1" -outfile=earnings.json
 		cat earnings.json | python -m json.tool | grep -iE "value.*EPS" -A 3 | \
-			grep -iE "value[2-4].*\([0-9]{2}" | sed -e 's/[\",\$\(\)\:]//g' | \
+			grep -iE "value[2-4].*\([0-9]{2}" | sed -e 's/[(]\$/\-/g' | sed -e 's/[\",\$\(\)\:]//g' | \
 			awk -F ' ' -v 'OFS=,' -v TICKER="${ticker}" '{ print "\"" TICKER "\"", $2, $3}' > ${eps_out_file}
 
 		rm -rf earnings.json

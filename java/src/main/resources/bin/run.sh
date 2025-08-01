@@ -44,7 +44,7 @@ load_uk_in "indices/uk-100" "FTSE100" "ftse100-1.csv"
 java -jar portfolio-0.0.1-SNAPSHOT.jar LoadPricesToDbTask "-file=${FOLDER_FOR_PRICE_FILES}"
 java -jar portfolio-0.0.1-SNAPSHOT.jar LoadDividendsToDbTask "-file=${FOLDER_FOR_DIVIDEND_FILES}"
 java -jar portfolio-0.0.1-SNAPSHOT.jar LoadEpsToDbTask "-file=${FOLDER_FOR_EPS_FILES}"
-java -jar portfolio-0.0.1-SNAPSHOT.jar LoadEarningsToDbTask "-file=${FOLDER_FOR_EARNINGS_FILES}
+java -jar portfolio-0.0.1-SNAPSHOT.jar LoadEarningsToDbTask "-file=${FOLDER_FOR_EARNINGS_FILES}"
 
 rm -rf ${FOLDER_FOR_PRICE_FILES}
 rm -rf ${FOLDER_FOR_DIVIDEND_FILES}
