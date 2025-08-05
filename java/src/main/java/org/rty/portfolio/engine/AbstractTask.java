@@ -45,7 +45,7 @@ public abstract class AbstractTask implements Task {
 		String paremeterValue = parameters.get(parameterName);
 
 		if (Strings.isNullOrEmpty(paremeterValue)) {
-			throw new IllegalArgumentException(String.format("'%s' parameter is empty!", paremeterValue));
+			throw new IllegalArgumentException(String.format("'%s' parameter is empty!", parameterName));
 		}
 		return paremeterValue;
 	}
