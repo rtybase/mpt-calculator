@@ -1,6 +1,7 @@
 import sys
 import pandas as pd
 import joblib
+import numpy
 
 MAX_DEGREE = 16
 MODELS = {}
@@ -37,6 +38,7 @@ def predict_p(degree, X):
     return l.predict(X_poly)
 
 
+numpy.set_printoptions(suppress = True, threshold = sys.maxsize)
 
 if len(sys.argv) > 1:
     file = sys.argv[1]
