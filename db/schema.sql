@@ -47,6 +47,14 @@ create table tbl_earnings (
 	foreign key(fk_assetID) references tbl_assets (int_assetID)
 ) ENGINE = InnoDB;
 
+create table tbl_predictions (
+	fk_assetID int(10) unsigned NOT NULL,
+	dbl_prd_return DOUBLE not null,
+	dtm_date DATE not null, -- dd-mm-yy
+	primary key(fk_assetID, dtm_date),
+	foreign key(fk_assetID) references tbl_assets (int_assetID)
+) ENGINE = InnoDB;
+
 create table tbl_avgreturns (
 	fk_assetID int(10) unsigned NOT NULL,
 	dbl_avgreturn DOUBLE not null,
