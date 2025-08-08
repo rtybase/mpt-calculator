@@ -2,6 +2,7 @@ import sys
 import pandas as pd
 import joblib
 import numpy
+from sklearn.metrics import r2_score
 
 MAX_DEGREE = 16
 MODELS = {}
@@ -48,8 +49,14 @@ if len(sys.argv) > 1:
 
     print("linear prediction=%s" % (compute_matches(y_actual, predict_l(X))))
     for degree in range(2, MAX_DEGREE + 1):
-        print("polynomial d=%s prediction=%s" % (degree,\
-            compute_matches(y_actual, predict_p(degree, X))))
+        print("---------------------------")
+
+        y_predicted = predict_p(degree, X)
+        r2 = r2_score(y_actual, y_predicted)
+
+        print("polynomial d=%s distance=%s" % (degree,\
+            compute_matches(y_actual, y_predicted)))
+        print("polynomial d=%s r2=%s" % (degree, r2))
 
 else:
     print("Specify the file with data for prediction!")

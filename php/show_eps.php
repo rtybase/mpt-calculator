@@ -60,7 +60,10 @@
 
 	$link = connect("portfolio");
 
-	$assetName = getName($id, $link);
+	$assetRecord = getSingleValyeByPK("tbl_assets", "int_assetID", $id, $link);
+	$assetName = $assetRecord["vchr_name"];
+	$assetSymbol = $assetRecord["vchr_symbol"];
+
 	$dividendsEpsAndPrices = mergeDividendsEpsAndPricesFor($id, $link);
 
 	$dividendsAndEpsDetails = loadDividendsAndEpsFrom($dividendsEpsAndPrices);
@@ -133,7 +136,11 @@
       <td valign="top"><?php showMenu(); ?></td>
       <td><table align="center" border="0">
 	<tr><td  align="left">
-		<font face="verdana">EPS, dividends and prices: <?php echo linkToAsset($id, $assetName); ?></font>
+		<font face="verdana">EPS, dividends and prices: <?php 
+			echo linkToAsset($id, $assetName);
+			if (!empty($assetSymbol))
+			echo " or <a href=\"https://finance.yahoo.com/quote/".$assetSymbol."/\">YF=".$assetSymbol."</a>"; 
+		?></font>
 	</td></tr>
 	<tr><td><hr/></td></tr>
 	<tr><td><div id="chart1_div" style="width: 1044px; height: 350px;"></div></td></tr>
