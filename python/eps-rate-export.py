@@ -6,7 +6,6 @@ import sys
 def get_last_return_rates(asset_id, around_date):
     prices = {}
     start_date = util.dates.previous_working_date(around_date)
-    end_date = util.dates.next_working_date(around_date)
 
     with util.db.db_conection.cursor() as cursor:
         cursor.execute("""SELECT dtm_date, dbl_return FROM tbl_prices 
@@ -20,18 +19,8 @@ def get_last_return_rates(asset_id, around_date):
     return prices
 
 def check_if_dates_are_consecutive(dates_to_check, around_date):
-    if (len(dates_to_check) == 3):
-        expected_dates = [util.dates.previous_working_date(around_date),\
-                          around_date,\
-                          util.dates.next_working_date(around_date)]
-        return set(expected_dates) == set(dates_to_check)
-
-    if (len(dates_to_check) == 2):
-        expected_dates = [util.dates.previous_working_date(around_date),\
-                          around_date]
-        return set(expected_dates) == set(dates_to_check)
-
-    return False
+    return util.dates.check_if_3_consecutive_dates(dates_to_check, around_date) or\
+        util.dates.check_if_2_consecutive_dates(dates_to_check, around_date)
 
 def date_to_string_key_dictionary_from(date_indexed_dictionary):
     result = {}

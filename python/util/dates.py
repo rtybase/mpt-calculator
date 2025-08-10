@@ -38,3 +38,20 @@ def next_working_date(start_date):
 
     return date
 
+
+def check_if_3_consecutive_dates(dates_to_check, around_date):
+    if (len(dates_to_check) == 3):
+        expected_dates = [previous_working_date(around_date),\
+                          around_date,\
+                          next_working_date(around_date)]
+        return set(expected_dates) == set(dates_to_check)
+
+    return False
+
+def check_if_2_consecutive_dates(dates_to_check, around_date):
+    if (len(dates_to_check) == 2):
+        expected_dates = [previous_working_date(around_date),\
+                          around_date]
+        return set(expected_dates) == set(dates_to_check)
+
+    return False
