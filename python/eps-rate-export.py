@@ -1,53 +1,18 @@
-import mysql.connector
-import datetime
+import util.db
+import util.dates
 import json
 import sys
 
-mydb = mysql.connector.connect(
-  host="x.x.x.x",
-  user="",
-  password="",
-  database="",
-  charset="utf8"
-)
-
-def date_to_string(date):
-    return date.strftime('%Y-%m-%d')
-
-def subtract_days(start_date, no_of_days):
-    return start_date - datetime.timedelta(days = no_of_days)
-
-def add_days(start_date, no_of_days):
-    return start_date + datetime.timedelta(days = no_of_days)
-
-def previous_non_weekend_date(start_date):
-    week_day = start_date.weekday()
-
-    if week_day == 6:
-        return subtract_days(start_date, 2)
-    elif week_day == 5:
-        return subtract_days(start_date, 1)
-
-    return start_date
-
-def next_non_weekend_date(start_date):
-    week_day = start_date.weekday()
-
-    if week_day == 6:
-        return add_days(start_date, 1)
-    elif week_day == 5:
-        return add_days(start_date, 2)
-
-    return start_date
-
 def get_last_return_rates(asset_id, around_date):
     prices = {}
-    start_date = previous_non_weekend_date(subtract_days(around_date, 1))
-    with mydb.cursor() as cursor:
+    start_date = util.dates.previous_working_date(around_date)
+    end_date = util.dates.next_working_date(around_date)
+
+    with util.db.db_conection.cursor() as cursor:
         cursor.execute("""SELECT dtm_date, dbl_return FROM tbl_prices 
                            WHERE fk_assetID = %s AND dtm_date >= %s 
                            ORDER BY dtm_date LIMIT 0,3""",\
-            (asset_id, date_to_string(start_date)))
+            (asset_id, util.dates.date_to_string(start_date)))
         result = cursor.fetchall()
         for row in result:
             prices[row[0]] = row[1]
@@ -56,13 +21,13 @@ def get_last_return_rates(asset_id, around_date):
 
 def check_if_dates_are_consecutive(dates_to_check, around_date):
     if (len(dates_to_check) == 3):
-        expected_dates = [previous_non_weekend_date(subtract_days(around_date, 1)),\
+        expected_dates = [util.dates.previous_working_date(around_date),\
                           around_date,\
-                          next_non_weekend_date(add_days(around_date, 1))]
+                          util.dates.next_working_date(around_date)]
         return set(expected_dates) == set(dates_to_check)
 
     if (len(dates_to_check) == 2):
-        expected_dates = [previous_non_weekend_date(subtract_days(around_date, 1)),\
+        expected_dates = [util.dates.previous_working_date(around_date),\
                           around_date]
         return set(expected_dates) == set(dates_to_check)
 
@@ -72,7 +37,7 @@ def date_to_string_key_dictionary_from(date_indexed_dictionary):
     result = {}
 
     for k, v in date_indexed_dictionary.items():
-        result[date_to_string(k)] = v
+        result[util.dates.date_to_string(k)] = v
 
     return result
 
@@ -123,7 +88,7 @@ select_eps_query = """SELECT fk_assetID, dtm_date, dbl_eps, dbl_prd_eps
 
 eps_entries = {}
 
-with mydb.cursor() as cursor:
+with util.db.db_conection.cursor() as cursor:
     cursor.execute(select_eps_query)
     result = cursor.fetchall()
 
@@ -146,7 +111,7 @@ with mydb.cursor() as cursor:
             dates_only = [d for d in three_days_returns]
 
             if (check_if_dates_are_consecutive(dates_only, row[1])):
-                eps_entries[key][date_to_string(row[1])] = {"current": current_eps,\
+                eps_entries[key][util.dates.date_to_string(row[1])] = {"current": current_eps,\
                     "previous": prev_eps,\
                     "return_rates": date_to_string_key_dictionary_from(three_days_returns)}
 
@@ -160,5 +125,6 @@ if (print_as_csv(sys.argv)):
 else:
     print(json.dumps(eps_entries, indent=4))
 
+#print(util.dates.nyse_holidays)
 #print(len(eps_entries))
 

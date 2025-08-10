@@ -44,10 +44,15 @@ def compute_matches(y_actual, y_predicted):
 if len(sys.argv) > 1:
     file = sys.argv[1]
     dataset = pd.read_csv(file)
-    X = dataset[['asset_id','prev_pred_eps','prev_eps','pred_eps','eps','prev_rate','rate']].values
+    X = dataset[['prev_pred_eps','prev_eps','pred_eps','eps','prev_rate','rate']].values
     y_actual = dataset['next_rate'].values
 
-    print("linear prediction=%s" % (compute_matches(y_actual, predict_l(X))))
+    y_predicted = predict_l(X)
+    r2 = r2_score(y_actual, y_predicted)
+    print("---------------------------")
+    print("linear distance=%s" % (compute_matches(y_actual, y_predicted)))
+    print("linear r2=%s" % (r2))
+
     for degree in range(2, MAX_DEGREE + 1):
         print("---------------------------")
 
