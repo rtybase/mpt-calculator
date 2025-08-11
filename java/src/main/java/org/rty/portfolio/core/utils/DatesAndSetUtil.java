@@ -13,7 +13,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 public final class DatesAndSetUtil {
-	public static final SimpleDateFormat SCAN_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+	public static final SimpleDateFormat CSV_SCAN_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 	private static final int MIN_COMMON_DATE = 5;
 
 	private DatesAndSetUtil() {
@@ -76,6 +76,6 @@ public final class DatesAndSetUtil {
 	}
 
 	public static String dateToStr(Date value) {
-		return SCAN_DATE_FORMAT.format(value);
+		return CSV_SCAN_DATE_FORMAT.format(value);
 	}
 }

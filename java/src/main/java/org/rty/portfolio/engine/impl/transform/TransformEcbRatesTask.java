@@ -11,6 +11,7 @@ import java.util.Map;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.rty.portfolio.core.AssetPriceInfo;
 import org.rty.portfolio.core.AssetPriceInfoAccumulator;
 import org.rty.portfolio.engine.AbstractTask;
 import org.rty.portfolio.io.CsvWriter;
@@ -41,7 +42,7 @@ public class TransformEcbRatesTask extends AbstractTask {
 		say("Load data... ");
 		populateRates(inputFile);
 
-		CsvWriter writer = new CsvWriter(outputFile);
+		CsvWriter<AssetPriceInfo> writer = new CsvWriter<>(outputFile);
 		CURRENCIES.forEach(c -> writer.write(rates.get(c).getChangeHistory()));
 		writer.close();
 

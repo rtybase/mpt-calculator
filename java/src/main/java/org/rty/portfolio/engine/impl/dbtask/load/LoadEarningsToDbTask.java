@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 
 import org.rty.portfolio.core.AssetEpsInfo;
+import org.rty.portfolio.core.utils.ToEntityConvertorsUtil;
 import org.rty.portfolio.db.DbManager;
 
 /**
@@ -34,6 +35,6 @@ public class LoadEarningsToDbTask extends GenericLoadToDbTask<AssetEpsInfo> {
 	protected AssetEpsInfo toEntity(String assetName, String[] line) {
 		return new AssetEpsInfo(assetName,
 				Double.parseDouble(line[EPS_COLUMN].trim()),
-				toDate(line[DATE_COLUMN].trim(), DATE_FORMAT));
+				ToEntityConvertorsUtil.toDate(line[DATE_COLUMN].trim(), DATE_FORMAT));
 	}
 }

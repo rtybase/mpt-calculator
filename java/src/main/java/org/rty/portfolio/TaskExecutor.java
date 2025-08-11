@@ -23,6 +23,7 @@ import org.rty.portfolio.engine.impl.dbtask.load.LoadPricesToDbTask;
 import org.rty.portfolio.engine.impl.nettask.DownloadTask;
 import org.rty.portfolio.engine.impl.transform.TransformDividendsDataTask;
 import org.rty.portfolio.engine.impl.transform.TransformEcbRatesTask;
+import org.rty.portfolio.engine.impl.transform.TransformEpsDataForTrainingTask;
 import org.rty.portfolio.engine.impl.transform.TransformSeriesDataTask;
 import org.rty.portfolio.engine.impl.transform.TransformStdLifeJsonDataTask;
 
@@ -72,6 +73,7 @@ public class TaskExecutor {
 		registerTask(new OptimalPortfolioFinderTask(dbManager));
 		registerTask(new LoadEpsToDbTask(dbManager));
 		registerTask(new LoadEarningsToDbTask(dbManager));
+		registerTask(new TransformEpsDataForTrainingTask());
 	}
 
 	private static void registerTask(Task task) {

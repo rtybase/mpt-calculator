@@ -26,7 +26,6 @@ public abstract class AbstractTask implements Task {
 	public static final String INPUT_SYMBOL = "-in_symbol";
 	public static final String OUT_SYMBOL = "-out_symbol";
 
-	public static final String ERROR_REPORT_FILE = "assets.err";
 	public static final String DONE = "DONE";
 
 	@Override

@@ -3,6 +3,7 @@ package org.rty.portfolio.engine.impl.dbtask.load;
 import java.util.List;
 
 import org.rty.portfolio.core.AssetDividendInfo;
+import org.rty.portfolio.core.utils.ToEntityConvertorsUtil;
 import org.rty.portfolio.db.DbManager;
 
 /**
@@ -30,6 +31,6 @@ public class LoadDividendsToDbTask extends GenericLoadToDbTask<AssetDividendInfo
 	protected AssetDividendInfo toEntity(String assetName, String[] line) {
 		return new AssetDividendInfo(assetName,
 				Double.parseDouble(line[PAY_COLUMN].trim()),
-				toDate(line[DATE_COLUMN].trim()));
+				ToEntityConvertorsUtil.toDate(line[DATE_COLUMN].trim()));
 	}
 }
