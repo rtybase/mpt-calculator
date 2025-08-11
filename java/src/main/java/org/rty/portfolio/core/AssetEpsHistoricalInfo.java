@@ -13,7 +13,9 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 	public final AssetPriceInfo priceAtCurrentEps;
 	public final AssetPriceInfo priceAfterCurrentEps;
 
-	public AssetEpsHistoricalInfo(String assetName, AssetEpsInfo currentEps, AssetEpsInfo previousEps, AssetPriceInfo priceBeforeCurrentEps, AssetPriceInfo priceAtCurrentEps, AssetPriceInfo priceAfterCurrentEps) {
+	public AssetEpsHistoricalInfo(String assetName, AssetEpsInfo currentEps, AssetEpsInfo previousEps,
+			AssetPriceInfo priceBeforeCurrentEps, AssetPriceInfo priceAtCurrentEps,
+			AssetPriceInfo priceAfterCurrentEps) {
 		this.assetName = assetName;
 
 		this.currentEps = currentEps;
