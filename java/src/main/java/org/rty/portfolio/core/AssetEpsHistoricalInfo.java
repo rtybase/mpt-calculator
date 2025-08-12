@@ -40,10 +40,15 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 	public String[] toCsvLine() {
 		return new String[] {
 				assetName,
+				"" + currentEps.date.getMonth(),
 				"" + previousEps.epsPredicted,
 				"" + previousEps.eps,
 				"" + currentEps.epsPredicted,
 				"" + currentEps.eps,
+				"" + (previousEps.eps - previousEps.epsPredicted),
+				"" + (currentEps.eps - currentEps.epsPredicted),
+				"" + (currentEps.epsPredicted - previousEps.epsPredicted),
+				"" + (currentEps.eps - previousEps.eps),
 				"" + priceBeforeCurrentEps.rate,
 				"" + priceAtCurrentEps.rate,
 				"" + priceAfterCurrentEps.rate

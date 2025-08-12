@@ -4,7 +4,7 @@ import joblib
 import numpy
 from sklearn.metrics import r2_score
 
-MAX_DEGREE = 16
+MAX_DEGREE = 11
 MODELS = {}
 
 def load_model_from(file_name, model_key):
@@ -44,7 +44,7 @@ def compute_matches(y_actual, y_predicted):
 if len(sys.argv) > 1:
     file = sys.argv[1]
     dataset = pd.read_csv(file)
-    X = dataset[['prev_pred_eps','prev_eps','pred_eps','eps','prev_rate','rate']].values
+    X = dataset[['month','prev_pred_eps','prev_eps','pred_eps','eps','prev_rate','rate']].values
     y_actual = dataset['next_rate'].values
 
     y_predicted = predict_l(X)

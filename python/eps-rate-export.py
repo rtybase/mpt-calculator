@@ -37,35 +37,63 @@ def print_as_csv(args):
     return False
 
 def print_training_data(eps_entries):
-    print("asset_id,prev_pred_eps,prev_eps,pred_eps,eps,prev_rate,rate,next_rate")
+    print("asset_id,month,prev_pred_eps,prev_eps,pred_eps,eps,df_prev_eps_prev_pred_eps,df_eps_pred_eps,df_pred_eps_prev_pred_eps,df_eps_prev_eps,prev_rate,rate,next_rate")
 
     for key in eps_entries:
         for d in eps_entries[key]:
             values_only = [v for d, v in eps_entries[key][d]["return_rates"].items()]
 
+            month = prev_pred_eps = eps_entries[key][d]["month"]
+            prev_pred_eps = eps_entries[key][d]["previous"]["prdicted_eps"]
+            prev_eps = eps_entries[key][d]["previous"]["eps"]
+            df_prev_eps_prev_pred_eps = prev_eps - prev_pred_eps
+
+            pred_eps = eps_entries[key][d]["current"]["prdicted_eps"]
+            eps = eps_entries[key][d]["current"]["eps"]
+            df_eps_pred_eps = eps - pred_eps
+
+            df_pred_eps_prev_pred_eps = pred_eps - prev_pred_eps
+            df_eps_prev_eps = eps - prev_eps
+
             if (len(values_only) == 3):
-                print("%s,%s,%s,%s,%s,%s,%s,%s" % (key,\
-                    eps_entries[key][d]["previous"]["prdicted_eps"],\
-                    eps_entries[key][d]["previous"]["eps"],
-                    eps_entries[key][d]["current"]["prdicted_eps"],\
-                    eps_entries[key][d]["current"]["eps"],\
+                print("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s" % (key, month,\
+                    prev_pred_eps, prev_eps,\
+                    pred_eps, eps,\
+                    df_prev_eps_prev_pred_eps,\
+                    df_eps_pred_eps,\
+                    df_pred_eps_prev_pred_eps,\
+                    df_eps_prev_eps,\
                     values_only[0],\
                     values_only[1],\
                     values_only[2]), flush = True)
 
 def print_data_for_prediction(eps_entries):
-    print("asset_id,prev_pred_eps,prev_eps,pred_eps,eps,prev_rate,rate")
+    print("asset_id,month,prev_pred_eps,prev_eps,pred_eps,eps,df_prev_eps_prev_pred_eps,df_eps_pred_eps,df_pred_eps_prev_pred_eps,df_eps_prev_eps,prev_rate,rate,next_rate")
 
     for key in eps_entries:
         for d in eps_entries[key]:
             values_only = [v for d, v in eps_entries[key][d]["return_rates"].items()]
 
+            month = prev_pred_eps = eps_entries[key][d]["month"]
+            prev_pred_eps = eps_entries[key][d]["previous"]["prdicted_eps"]
+            prev_eps = eps_entries[key][d]["previous"]["eps"]
+            df_prev_eps_prev_pred_eps = prev_eps - prev_pred_eps
+
+            pred_eps = eps_entries[key][d]["current"]["prdicted_eps"]
+            eps = eps_entries[key][d]["current"]["eps"]
+            df_eps_pred_eps = eps - pred_eps
+
+            df_pred_eps_prev_pred_eps = pred_eps - prev_pred_eps
+            df_eps_prev_eps = eps - prev_eps
+
             if (len(values_only) == 2):
-                print("%s,%s,%s,%s,%s,%s,%s" % (key,\
-                    eps_entries[key][d]["previous"]["prdicted_eps"],\
-                    eps_entries[key][d]["previous"]["eps"],
-                    eps_entries[key][d]["current"]["prdicted_eps"],\
-                    eps_entries[key][d]["current"]["eps"],\
+                print("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s" % (key, month,\
+                    prev_pred_eps, prev_eps,\
+                    pred_eps, eps,\
+                    df_prev_eps_prev_pred_eps,\
+                    df_eps_pred_eps,\
+                    df_pred_eps_prev_pred_eps,\
+                    df_eps_prev_eps,\
                     values_only[0],\
                     values_only[1]), flush = True)
 
@@ -100,7 +128,8 @@ with util.db.db_conection.cursor() as cursor:
             dates_only = [d for d in three_days_returns]
 
             if (check_if_dates_are_consecutive(dates_only, row[1])):
-                eps_entries[key][util.dates.date_to_string(row[1])] = {"current": current_eps,\
+                eps_entries[key][util.dates.date_to_string(row[1])] = {"month": (row[1].month - 1),\
+                    "current": current_eps,\
                     "previous": prev_eps,\
                     "return_rates": date_to_string_key_dictionary_from(three_days_returns)}
 
@@ -116,4 +145,3 @@ else:
 
 #print(util.dates.nyse_holidays)
 #print(len(eps_entries))
-

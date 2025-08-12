@@ -3,7 +3,7 @@ import pandas as pd
 import joblib
 import numpy
 
-MAX_DEGREE = 16
+MAX_DEGREE = 11
 MODELS = {}
 
 def load_model_from(file_name, model_key):
@@ -43,7 +43,7 @@ numpy.set_printoptions(suppress = True, threshold = sys.maxsize)
 if len(sys.argv) > 1:
     file = sys.argv[1]
     dataset = pd.read_csv(file)
-    X = dataset[['asset_id','prev_pred_eps','prev_eps','pred_eps','eps','prev_rate','rate']].values
+    X = dataset[['month','prev_pred_eps','prev_eps','pred_eps','eps','prev_rate','rate']].values
 
     print("linear prediction=%s" % (predict_l(X)))
     for degree in range(2, MAX_DEGREE + 1):
