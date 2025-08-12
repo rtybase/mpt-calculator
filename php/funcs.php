@@ -90,8 +90,8 @@
 			else echo ",[";
 
 			echo "'<i><font color=\"#5D6D7E\">"
-				.$data[$i]["asset1"]."</font></i><br/>"
-				."<a href=\"./".$link."?id=".$data[$i]["asset2Id"]."\">".$data[$i]["asset2"]."</a>',";
+				.addslashes($data[$i]["asset1"])."</font></i><br/>"
+				."<a href=\"./".$link."?id=".addslashes($data[$i]["asset2Id"])."\">".addslashes($data[$i]["asset2"])."</a>',";
 			echo toChartNumber($data[$i]["correlation"]).",";
 			echo "'<i><font color=\"#5D6D7E\">"
 				.percentWeightFrom($data[$i]["weight1"])."&percnt;</font></i><br/>"
@@ -161,7 +161,10 @@
 	<a href="./stale_d.php">Stale data</a>
 <?php	}
 
-	function linkToAsset($id, $name) {
+	function linkToAsset($id, $name, $escape = true) {
+                if ($escape) {
+			return "<a href=\"./?id=".$id."\">".addslashes($name)."</a>";
+		}
 		return "<a href=\"./?id=".$id."\">".$name."</a>";
 	}
 

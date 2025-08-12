@@ -137,7 +137,7 @@
       <td><table align="center" border="0">
 	<tr><td  align="left">
 		<font face="verdana">EPS, dividends and prices: <?php 
-			echo linkToAsset($id, $assetName);
+			echo linkToAsset($id, $assetName, false);
 			if (!empty($assetSymbol))
 			echo " or <a href=\"https://finance.yahoo.com/quote/".$assetSymbol."/\">YF=".$assetSymbol."</a>"; 
 		?></font>
