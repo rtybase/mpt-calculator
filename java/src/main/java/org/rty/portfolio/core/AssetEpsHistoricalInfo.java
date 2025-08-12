@@ -7,16 +7,20 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
 	public final String assetName;
+	public final int sectorIndex;
+	public final String sector;
 	public final AssetEpsInfo currentEps;
 	public final AssetEpsInfo previousEps;
 	public final AssetPriceInfo priceBeforeCurrentEps;
 	public final AssetPriceInfo priceAtCurrentEps;
 	public final AssetPriceInfo priceAfterCurrentEps;
 
-	public AssetEpsHistoricalInfo(String assetName, AssetEpsInfo currentEps, AssetEpsInfo previousEps,
-			AssetPriceInfo priceBeforeCurrentEps, AssetPriceInfo priceAtCurrentEps,
+	public AssetEpsHistoricalInfo(String assetName, int sectorIndex, String sector, AssetEpsInfo currentEps,
+			AssetEpsInfo previousEps, AssetPriceInfo priceBeforeCurrentEps, AssetPriceInfo priceAtCurrentEps,
 			AssetPriceInfo priceAfterCurrentEps) {
 		this.assetName = assetName;
+		this.sectorIndex = sectorIndex;
+		this.sector = sector;
 
 		this.currentEps = currentEps;
 		this.previousEps = previousEps;
@@ -40,6 +44,7 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 	public String[] toCsvLine() {
 		return new String[] {
 				assetName,
+				"" + sectorIndex,
 				"" + currentEps.date.getMonth(),
 				"" + previousEps.epsPredicted,
 				"" + previousEps.eps,

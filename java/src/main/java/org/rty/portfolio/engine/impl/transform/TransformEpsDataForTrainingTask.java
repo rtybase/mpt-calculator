@@ -7,8 +7,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
+import org.apache.commons.math3.util.Pair;
 import org.rty.portfolio.core.AssetEpsHistoricalInfo;
 import org.rty.portfolio.core.AssetEpsInfo;
 import org.rty.portfolio.core.AssetPriceInfo;
@@ -25,18 +28,25 @@ import org.rty.portfolio.io.CsvWriter;
 public class TransformEpsDataForTrainingTask extends AbstractTask {
 	public static final String INPUT_FILE_WITH_PRICES_PARAM = "-prices";
 	public static final String INPUT_FILE_WITH_EPS_PARAM = "-eps";
+	public static final String INPUT_FILE_WITH_SECTORS_PARAM = "-sector";
 
 	@Override
 	public void execute(Map<String, String> parameters) throws Throwable {
 		final String pricesInputFile = getValidParameterValue(parameters, INPUT_FILE_WITH_PRICES_PARAM);
 		final String epsInputFile = getValidParameterValue(parameters, INPUT_FILE_WITH_EPS_PARAM);
+		final String sectorsInputFile = getValidParameterValue(parameters, INPUT_FILE_WITH_SECTORS_PARAM);
 		final String outputFile = getValidParameterValue(parameters, OUTPUT_FILE_PARAM);
 
 		final Map<String, NavigableMap<Date, AssetEpsInfo>> epsStore = new HashMap<>();
 		final Map<String, NavigableMap<Date, AssetPriceInfo>> priceStore = new HashMap<>();
 
-		loadEpsAndPrices(epsInputFile, epsStore, pricesInputFile, priceStore);
+		final Map<String, String> sectorsStore = new HashMap<>();
 
+		loadEpsAndPrices(epsInputFile, epsStore,
+				pricesInputFile, priceStore,
+				sectorsInputFile, sectorsStore);
+
+		final Map<String, Integer> sectorIndexes = indexSectors(sectorsStore);
 		final List<AssetEpsHistoricalInfo> dataForTraining = new ArrayList<>(1024);
 
 		epsStore.entrySet().forEach(entry -> {
@@ -59,12 +69,22 @@ public class TransformEpsDataForTrainingTask extends AbstractTask {
 						&& priceAfterCurrentEps != null
 						&& currentEps.epsPredicted != null
 						&& previousEps.epsPredicted != null) {
-					dataForTraining.add(new AssetEpsHistoricalInfo(assetName,
-							currentEps,
-							previousEps,
-							priceBeforeCurrentEps,
-							priceAtCurrentEps,
-							priceAfterCurrentEps));
+
+					try {
+						final String sector = sectorsStore.get(assetName);
+						final int sectorIndex = sectorIndexes.get(sector);
+
+						dataForTraining.add(new AssetEpsHistoricalInfo(assetName,
+								sectorIndex,
+								sector,
+								currentEps,
+								previousEps,
+								priceBeforeCurrentEps,
+								priceAtCurrentEps,
+								priceAfterCurrentEps));
+					} catch (Exception ex) {
+						say("Asset '{}' sector problem ...", assetName);
+					}
 				}
 			});
 		});
@@ -121,15 +141,36 @@ public class TransformEpsDataForTrainingTask extends AbstractTask {
 		return firstEntry.get(key);
 	}
 
+	private Map<String, Integer> indexSectors(Map<String, String> sectorsStore) {
+		final Map<String, Integer> result = new HashMap<>();
+		final Set<String> sectorsOrdered = new TreeSet<>(sectorsStore.values());
+
+		int i = 0;
+		for (String sector : sectorsOrdered) {
+			result.put(sector, i);
+			i++;
+		}
+
+		say("Sectors '{}'", sectorsOrdered);
+		say("Maps '{}'", result);
+		return result;
+	}
+
 	private void loadEpsAndPrices(String epsInputFile, Map<String, NavigableMap<Date, AssetEpsInfo>> epsStore,
-			String pricesInputFile, Map<String, NavigableMap<Date, AssetPriceInfo>> priceStore) throws Exception {
+			String pricesInputFile, Map<String, NavigableMap<Date, AssetPriceInfo>> priceStore,
+			String sectorsInputFile, Map<String, String> sectortorsStore) throws Exception {
 		final BulkCsvLoader<AssetEpsInfo> epsLoader = epsLoader(epsStore);
 		final BulkCsvLoader<AssetPriceInfo> priceLoader = priceLoader(priceStore);
+		final BulkCsvLoader<Pair<String, String>> sectorsLoader = sectorLoader(sectortorsStore);
 
-		say("Loading EPS data ...");
+		say("Loading EPS data from '{}' ...", epsInputFile);
 		epsLoader.load(epsInputFile);
-		say("Loading price data ...");
+
+		say("Loading prices data from '{}' ...", pricesInputFile);
 		priceLoader.load(pricesInputFile);
+
+		say("Loading sector data '{}' ...", sectorsInputFile);
+		sectorsLoader.load(sectorsInputFile);
 	}
 
 	private static BulkCsvLoader<AssetPriceInfo> priceLoader(
@@ -169,6 +210,24 @@ public class TransformEpsDataForTrainingTask extends AbstractTask {
 			@Override
 			protected AssetEpsInfo toEntity(String assetName, String[] line) {
 				return ToEntityConvertorsUtil.toAssetEpsInfoEntity(assetName, line);
+			}
+		};
+	}
+
+	private static BulkCsvLoader<Pair<String, String>> sectorLoader(Map<String, String> sectorStore) {
+		return new BulkCsvLoader<>(3) {
+
+			@Override
+			protected List<String> saveResults(List<Pair<String, String>> dataToAdd) throws Exception {
+				dataToAdd.forEach(entry -> {
+					sectorStore.put(entry.getKey(), entry.getValue());
+				});
+				return Collections.emptyList();
+			}
+
+			@Override
+			protected Pair<String, String> toEntity(String assetName, String[] line) {
+				return new Pair<>(assetName, line[1]);
 			}
 		};
 	}
