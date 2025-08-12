@@ -40,13 +40,15 @@ public class TransformEpsDataForTrainingTask extends AbstractTask {
 		final Map<String, NavigableMap<Date, AssetEpsInfo>> epsStore = new HashMap<>();
 		final Map<String, NavigableMap<Date, AssetPriceInfo>> priceStore = new HashMap<>();
 
-		final Map<String, String> sectorsStore = new HashMap<>();
+		final Map<String, Pair<String, String>> sectorsStore = new HashMap<>();
 
 		loadEpsAndPrices(epsInputFile, epsStore,
 				pricesInputFile, priceStore,
 				sectorsInputFile, sectorsStore);
 
 		final Map<String, Integer> sectorIndexes = indexSectors(sectorsStore);
+		final Map<String, Integer> industryIndexes = indexIndustry(sectorsStore);
+
 		final List<AssetEpsHistoricalInfo> dataForTraining = new ArrayList<>(1024);
 
 		epsStore.entrySet().forEach(entry -> {
@@ -71,12 +73,15 @@ public class TransformEpsDataForTrainingTask extends AbstractTask {
 						&& previousEps.epsPredicted != null) {
 
 					try {
-						final String sector = sectorsStore.get(assetName);
-						final int sectorIndex = sectorIndexes.get(sector);
+						final Pair<String, String> sectorIndustryPair = sectorsStore.get(assetName);
+						final int sectorIndex = sectorIndexes.get(sectorIndustryPair.getKey());
+						final int industryIndex = industryIndexes.get(sectorIndustryPair.getValue());
 
 						dataForTraining.add(new AssetEpsHistoricalInfo(assetName,
 								sectorIndex,
-								sector,
+								sectorIndustryPair.getKey(),
+								industryIndex,
+								sectorIndustryPair.getValue(),
 								currentEps,
 								previousEps,
 								priceBeforeCurrentEps,
@@ -141,9 +146,9 @@ public class TransformEpsDataForTrainingTask extends AbstractTask {
 		return firstEntry.get(key);
 	}
 
-	private Map<String, Integer> indexSectors(Map<String, String> sectorsStore) {
+	private Map<String, Integer> indexSectors(Map<String, Pair<String, String>> sectorsStore) {
 		final Map<String, Integer> result = new HashMap<>();
-		final Set<String> sectorsOrdered = new TreeSet<>(sectorsStore.values());
+		final Set<String> sectorsOrdered = new TreeSet<>(sectorsStore.values().stream().map(Pair::getKey).toList());
 
 		int i = 0;
 		for (String sector : sectorsOrdered) {
@@ -151,17 +156,32 @@ public class TransformEpsDataForTrainingTask extends AbstractTask {
 			i++;
 		}
 
-		say("Sectors '{}'", sectorsOrdered);
-		say("Maps '{}'", result);
+		say("Sectors: '{}'", sectorsOrdered);
+		say("Sectors map: '{}'", result);
+		return result;
+	}
+
+	private Map<String, Integer> indexIndustry(Map<String, Pair<String, String>> sectorsStore) {
+		final Map<String, Integer> result = new HashMap<>();
+		final Set<String> industriesOrdered = new TreeSet<>(sectorsStore.values().stream().map(Pair::getValue).toList());
+
+		int i = 0;
+		for (String industry : industriesOrdered) {
+			result.put(industry, i);
+			i++;
+		}
+
+		say("Industries: '{}'", industriesOrdered);
+		say("Industries map: '{}'", result);
 		return result;
 	}
 
 	private void loadEpsAndPrices(String epsInputFile, Map<String, NavigableMap<Date, AssetEpsInfo>> epsStore,
 			String pricesInputFile, Map<String, NavigableMap<Date, AssetPriceInfo>> priceStore,
-			String sectorsInputFile, Map<String, String> sectortorsStore) throws Exception {
+			String sectorsInputFile, Map<String, Pair<String, String>> sectortorsStore) throws Exception {
 		final BulkCsvLoader<AssetEpsInfo> epsLoader = epsLoader(epsStore);
 		final BulkCsvLoader<AssetPriceInfo> priceLoader = priceLoader(priceStore);
-		final BulkCsvLoader<Pair<String, String>> sectorsLoader = sectorLoader(sectortorsStore);
+		final BulkCsvLoader<Pair<String, Pair<String, String>>> sectorsLoader = sectorLoader(sectortorsStore);
 
 		say("Loading EPS data from '{}' ...", epsInputFile);
 		epsLoader.load(epsInputFile);
@@ -214,11 +234,11 @@ public class TransformEpsDataForTrainingTask extends AbstractTask {
 		};
 	}
 
-	private static BulkCsvLoader<Pair<String, String>> sectorLoader(Map<String, String> sectorStore) {
+	private static BulkCsvLoader<Pair<String, Pair<String, String>>> sectorLoader(Map<String, Pair<String, String>> sectorStore) {
 		return new BulkCsvLoader<>(3) {
 
 			@Override
-			protected List<String> saveResults(List<Pair<String, String>> dataToAdd) throws Exception {
+			protected List<String> saveResults(List<Pair<String, Pair<String, String>>> dataToAdd) throws Exception {
 				dataToAdd.forEach(entry -> {
 					sectorStore.put(entry.getKey(), entry.getValue());
 				});
@@ -226,8 +246,9 @@ public class TransformEpsDataForTrainingTask extends AbstractTask {
 			}
 
 			@Override
-			protected Pair<String, String> toEntity(String assetName, String[] line) {
-				return new Pair<>(assetName, line[1]);
+			protected Pair<String, Pair<String, String>> toEntity(String assetName, String[] line) {
+				return new Pair<>(assetName,
+						new Pair<>(line[1].trim(), line[2].trim()));
 			}
 		};
 	}

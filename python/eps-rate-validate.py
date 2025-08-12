@@ -44,7 +44,7 @@ def compute_matches(y_actual, y_predicted):
 if len(sys.argv) > 1:
     file = sys.argv[1]
     dataset = pd.read_csv(file)
-    X = dataset[['sector','month','prev_pred_eps','prev_eps','pred_eps','eps','prev_rate','rate']].values
+    X = dataset[['sector','industry','month','prev_pred_eps','prev_eps','pred_eps','eps','prev_rate','rate']].values
     y_actual = dataset['next_rate'].values
 
     y_predicted = predict_l(X)

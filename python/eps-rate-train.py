@@ -34,7 +34,7 @@ def train_and_save_polynomial(X, y, degree):
 if len(sys.argv) > 1:
     file = sys.argv[1]
     dataset = pd.read_csv(file)
-    X = dataset[['sector','month','prev_pred_eps','prev_eps','pred_eps','eps','prev_rate','rate']].values
+    X = dataset[['sector','industry','month','prev_pred_eps','prev_eps','pred_eps','eps','prev_rate','rate']].values
     y = dataset['next_rate'].values
 
     linear_model = train_linear_model(X, y)
