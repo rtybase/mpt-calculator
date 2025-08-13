@@ -1,5 +1,7 @@
 package org.rty.portfolio.math;
 
+import java.math.BigDecimal;
+
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -93,6 +95,12 @@ public class Calculator {
 			return 0D;
 		}
 		return covariance / tmp;
+	}
+
+	public static double calculateDiffWithPrecision(double d1, double d2) {
+		BigDecimal b1 = BigDecimal.valueOf(d1);
+		BigDecimal b2 = BigDecimal.valueOf(d2);
+		return b1.subtract(b2).doubleValue();
 	}
 
 	private static RealMatrix generateUnitVector(int rows) {

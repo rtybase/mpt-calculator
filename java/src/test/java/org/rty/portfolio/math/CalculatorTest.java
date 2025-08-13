@@ -88,4 +88,9 @@ class CalculatorTest {
 				-1);
 		assertEquals(1D, covariance, ERROR_TOLERANCE);
 	}
+
+	@Test
+	void testCalculateDiffWithPrecision() {
+		assertEquals("0.18", "" + Calculator.calculateDiffWithPrecision(1.23, 1.05));
+	}
 }

@@ -1,5 +1,7 @@
 package org.rty.portfolio.core;
 
+import org.rty.portfolio.math.Calculator;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -63,10 +65,10 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 				"" + previousEps.eps,
 				"" + currentEps.epsPredicted,
 				"" + currentEps.eps,
-				"" + (previousEps.eps - previousEps.epsPredicted),
-				"" + (currentEps.eps - currentEps.epsPredicted),
-				"" + (currentEps.epsPredicted - previousEps.epsPredicted),
-				"" + (currentEps.eps - previousEps.eps),
+				"" + Calculator.calculateDiffWithPrecision(previousEps.eps, previousEps.epsPredicted),
+				"" + Calculator.calculateDiffWithPrecision(currentEps.eps, currentEps.epsPredicted),
+				"" + Calculator.calculateDiffWithPrecision(currentEps.epsPredicted, previousEps.epsPredicted),
+				"" + Calculator.calculateDiffWithPrecision(currentEps.eps, previousEps.eps),
 				"" + priceBeforeCurrentEps.rate,
 				"" + priceAtCurrentEps.rate,
 				"" + priceAfterCurrentEps.rate
