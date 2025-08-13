@@ -18,16 +18,20 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 	
 	public final AssetEpsInfo currentEps;
 	public final AssetEpsInfo previousEps;
+	public final AssetPriceInfo price2DaysBeforeCurrentEps;
 	public final AssetPriceInfo priceBeforeCurrentEps;
 	public final AssetPriceInfo priceAtCurrentEps;
 	public final AssetPriceInfo priceAfterCurrentEps;
+	public final AssetPriceInfo price2DaysAfterCurrentEps;
 
 	public AssetEpsHistoricalInfo(String assetName, int sectorIndex, String sector,
 			int industryIndex, String industry,
 			AssetEpsInfo currentEps, AssetEpsInfo previousEps,
+			AssetPriceInfo price2DaysBeforeCurrentEps,
 			AssetPriceInfo priceBeforeCurrentEps,
 			AssetPriceInfo priceAtCurrentEps,
-			AssetPriceInfo priceAfterCurrentEps) {
+			AssetPriceInfo priceAfterCurrentEps,
+			AssetPriceInfo price2DaysAfterCurrentEps) {
 		this.assetName = assetName;
 
 		this.sectorIndex = sectorIndex;
@@ -39,9 +43,11 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 		this.currentEps = currentEps;
 		this.previousEps = previousEps;
 
+		this.price2DaysBeforeCurrentEps = price2DaysBeforeCurrentEps;
 		this.priceBeforeCurrentEps = priceBeforeCurrentEps;
 		this.priceAtCurrentEps = priceAtCurrentEps;
 		this.priceAfterCurrentEps = priceAfterCurrentEps;
+		this.price2DaysAfterCurrentEps = price2DaysAfterCurrentEps;
 	}
 
 	@Override
@@ -69,9 +75,11 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 				"" + Calculator.calculateDiffWithPrecision(currentEps.eps, currentEps.epsPredicted),
 				"" + Calculator.calculateDiffWithPrecision(currentEps.epsPredicted, previousEps.epsPredicted),
 				"" + Calculator.calculateDiffWithPrecision(currentEps.eps, previousEps.eps),
+				"" + price2DaysBeforeCurrentEps.rate,
 				"" + priceBeforeCurrentEps.rate,
 				"" + priceAtCurrentEps.rate,
-				"" + priceAfterCurrentEps.rate
+				"" + priceAfterCurrentEps.rate,
+				"" + price2DaysAfterCurrentEps.rate
 		};
 	}
 }

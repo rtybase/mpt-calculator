@@ -61,14 +61,18 @@ public class TransformEpsDataForTrainingTask extends AbstractTask {
 				final AssetEpsInfo currentEps = epsEntry.getValue();
 				final AssetEpsInfo previousEps = getPreviousEntry(epsData, currentDate);
 
+				final AssetPriceInfo price2DaysBeforeCurrentEps = get2DaysPreviousEntry(priceStore, assetName, currentDate);
 				final AssetPriceInfo priceBeforeCurrentEps = getPreviousEntry(priceStore, assetName, currentDate);
 				final AssetPriceInfo priceAtCurrentEps = getCurrentEntry(priceStore, assetName, currentDate);
 				final AssetPriceInfo priceAfterCurrentEps = getNextEntry(priceStore, assetName, currentDate);
+				final AssetPriceInfo price2DaysAfterCurrentEps = ge2DaysNextEntry(priceStore, assetName, currentDate);
 
 				if (currentEps != null && previousEps != null
+						&& price2DaysBeforeCurrentEps != null
 						&& priceBeforeCurrentEps != null
 						&& priceAtCurrentEps != null
 						&& priceAfterCurrentEps != null
+						&& price2DaysAfterCurrentEps != null
 						&& currentEps.epsPredicted != null
 						&& previousEps.epsPredicted != null) {
 
@@ -84,9 +88,11 @@ public class TransformEpsDataForTrainingTask extends AbstractTask {
 								sectorIndustryPair.getValue(),
 								currentEps,
 								previousEps,
+								price2DaysBeforeCurrentEps,
 								priceBeforeCurrentEps,
 								priceAtCurrentEps,
-								priceAfterCurrentEps));
+								priceAfterCurrentEps,
+								price2DaysAfterCurrentEps));
 					} catch (Exception ex) {
 						say("Asset '{}' sector problem ...", assetName);
 					}
@@ -119,6 +125,20 @@ public class TransformEpsDataForTrainingTask extends AbstractTask {
 		return nextEntry.getValue();
 	}
 
+	private static <T> T get2DaysPreviousEntry(Map<String, NavigableMap<Date, T>> map, String assetName, Date key) {
+		NavigableMap<Date, T> assetEntry = map.get(assetName);
+		if (assetEntry == null) {
+			return null;
+		}
+
+		final Map.Entry<Date, T> previousEntry = assetEntry.lowerEntry(key);
+		if (previousEntry == null) {
+			return null;
+		}
+
+		return getPreviousEntry(assetEntry, previousEntry.getKey());
+	}
+
 	private static <T> T getPreviousEntry(Map<String, NavigableMap<Date, T>> map, String assetName, Date key) {
 		NavigableMap<Date, T> assetEntry = map.get(assetName);
 		if (assetEntry == null) {
@@ -126,6 +146,20 @@ public class TransformEpsDataForTrainingTask extends AbstractTask {
 		}
 
 		return getPreviousEntry(assetEntry, key);
+	}
+
+	private static <T> T ge2DaysNextEntry(Map<String, NavigableMap<Date, T>> map, String assetName, Date key) {
+		NavigableMap<Date, T> assetEntry = map.get(assetName);
+		if (assetEntry == null) {
+			return null;
+		}
+
+		final Map.Entry<Date, T> nextEntry = assetEntry.higherEntry(key);
+		if (nextEntry == null) {
+			return null;
+		}
+
+		return getNextEntry(assetEntry, nextEntry.getKey());
 	}
 
 	private static <T> T getNextEntry(Map<String, NavigableMap<Date, T>> map, String assetName, Date key) {
