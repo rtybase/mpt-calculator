@@ -9,6 +9,29 @@ create table tbl_assets (
 	unique (vchr_name)
 ) ENGINE = InnoDB;
 
+create table tbl_sectors (
+	int_sectorID int(10) unsigned NOT NULL auto_increment,
+	vchr_name varchar(100) not null,
+	primary key (int_sectorID),
+	unique (vchr_name)
+) ENGINE = InnoDB;
+
+create table tbl_industries (
+	int_industryID int(10) unsigned NOT NULL auto_increment,
+	vchr_name varchar(100) not null,
+	primary key (int_industryID),
+	unique (vchr_name)
+) ENGINE = InnoDB;
+
+create table tbl_stocks (
+	vchr_symbol varchar(50) not null,
+	fk_sectorID int(10) unsigned NOT NULL,
+	fk_industryID int(10) unsigned NOT NULL,
+	primary key (vchr_symbol),
+	foreign key(fk_sectorID) references tbl_sectors (int_sectorID),
+	foreign key(fk_industryID) references tbl_industries (int_industryID)
+) ENGINE = InnoDB;
+
 create table tbl_prices (
 	fk_assetID int(10) unsigned NOT NULL,
 	dbl_price DOUBLE not null,
