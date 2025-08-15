@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.apache.commons.math3.util.Pair;
 import org.rty.portfolio.core.AssetDividendInfo;
 import org.rty.portfolio.core.AssetEpsInfo;
 import org.rty.portfolio.core.AssetPriceInfo;
@@ -319,12 +320,11 @@ public class DbManager {
 	public Map<Integer, Map<String, Double>> getAllDailyRates(int yearsBack) throws Exception {
 		Preconditions.checkArgument(yearsBack > 0, "yearsBack must be > 0!");
 
-		final Map<Integer, HashMap<String, Double>> storage = new HashMap<>();
+		final Map<Integer, Map<String, Double>> storage = new HashMap<>();
 
 		try (PreparedStatement pStmt = connection.prepareStatement("select fk_assetID, dtm_date, dbl_return"
 				+ " from tbl_prices"
-				+ " where dtm_date between (NOW() - INTERVAL ? YEAR) and NOW()"
-				+ " order by fk_assetID, dtm_date desc, dtm_time desc")) {
+				+ " where dtm_date between (NOW() - INTERVAL ? YEAR) and NOW()")) {
 			pStmt.setInt(1, yearsBack);
 
 			try (ResultSet rs = pStmt.executeQuery()) {
@@ -346,9 +346,8 @@ public class DbManager {
 		final Map<Integer, String> portfolios = new HashMap<>();
 
 		try (Statement stmt = connection.createStatement();
-				ResultSet rs = stmt.executeQuery(
-						"select int_portfolioID, txt_json_composition from tbl_custom_portfolios"
-						+ " order by int_portfolioID")) {
+				ResultSet rs = stmt
+						.executeQuery("select int_portfolioID, txt_json_composition from tbl_custom_portfolios")) {
 			while (rs.next()) {
 				portfolios.put(rs.getInt(1), rs.getString(2));
 			}
@@ -380,7 +379,92 @@ public class DbManager {
 		}
 	}
 
-	private final void addResultToStorage(final Map<Integer, HashMap<String, Double>> storage, ResultSet rs)
+	/**
+	 * Returns all the prices for the stocks (only!) for a given period.
+	 */
+	public List<AssetPriceInfo> getAllStocksPriceInfo(int yearsBack) throws Exception {
+		Preconditions.checkArgument(yearsBack > 0, "yearsBack must be > 0!");
+
+		final List<AssetPriceInfo> result = new ArrayList<>(2048);
+
+		try (PreparedStatement pStmt = connection.prepareStatement("select a.vchr_symbol, p.dbl_price, p.dbl_change, p.dbl_return, p.dtm_date"
+				+ " from tbl_prices p, tbl_assets a"
+				+ " where p.fk_assetID = a.int_assetID"
+				+ " and a.vchr_symbol is not null"
+				+ " and a.vchr_symbol in (select vchr_symbol from tbl_stocks)"
+				+ " and p.dtm_date between (NOW() - INTERVAL ? YEAR) and NOW()")) {
+			pStmt.setInt(1, yearsBack);
+
+			try (ResultSet rs = pStmt.executeQuery()) {
+
+				while (rs.next()) {
+					result.add(new AssetPriceInfo(rs.getString(1),
+							rs.getDouble(2),
+							rs.getDouble(3),
+							rs.getDouble(4),
+							rs.getDate(5)
+						));
+				}
+			}
+		}
+
+		return Collections.unmodifiableList(result);
+	}
+
+	/**
+	 * Returns all the EPS data for the stocks (only!) for a given period.
+	 */
+	public List<AssetEpsInfo> getAllStocksEpsInfo(int yearsBack) throws Exception {
+		Preconditions.checkArgument(yearsBack > 0, "yearsBack must be > 0!");
+
+		final List<AssetEpsInfo> result = new ArrayList<>(2048);
+
+		try (PreparedStatement pStmt = connection.prepareStatement("select a.vchr_symbol, e.dbl_eps, e.dbl_prd_eps, e.dtm_date"
+				+ " from tbl_eps e, tbl_assets a"
+				+ " where e.fk_assetID = a.int_assetID"
+				+ " and a.vchr_symbol is not null"
+				+ " and a.vchr_symbol in (select vchr_symbol from tbl_stocks)"
+				+ " and e.dbl_prd_eps is not null"
+				+ " and e.dtm_date between (NOW() - INTERVAL ? YEAR) and NOW()")) {
+			pStmt.setInt(1, yearsBack);
+
+			try (ResultSet rs = pStmt.executeQuery()) {
+
+				while (rs.next()) {
+					result.add(new AssetEpsInfo(
+							rs.getString(1),
+							rs.getDouble(2),
+							rs.getDouble(3),
+							rs.getDate(4)
+						));
+				}
+			}
+		}
+
+		return Collections.unmodifiableList(result);
+	}
+
+	/**
+	 * Returns all the stocks (only!). Not every asset is a stock! First integer is
+	 * the index of the sector. Second integer is the index of the industry.
+	 */
+	public List<Pair<String, Pair<Integer, Integer>>> getAllStocks() throws Exception {
+		final List<Pair<String, Pair<Integer, Integer>>> result = new ArrayList<>(2048);
+
+		try (Statement stmt = connection.createStatement();
+				ResultSet rs = stmt.executeQuery("select vchr_symbol,fk_sectorID,fk_industryID from tbl_stocks")) {
+			while (rs.next()) {
+				result.add(new Pair<>(rs.getString(1),
+						new Pair<>(rs.getInt(2),
+								rs.getInt(3))));
+			}
+
+		}
+
+		return Collections.unmodifiableList(result);
+	}
+
+	private final void addResultToStorage(final Map<Integer, Map<String, Double>> storage, ResultSet rs)
 			throws SQLException {
 		final Integer id = rs.getInt(1);
 		final String date = rs.getString(2);

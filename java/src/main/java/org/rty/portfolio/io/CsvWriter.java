@@ -30,6 +30,10 @@ public class CsvWriter<T extends CsvWritable> implements Closeable {
 		writer.writeNext(line.toCsvLine());
 	}
 
+	public void write(String[] line) {
+		writer.writeNext(line);
+	}
+
 	@Override
 	public void close() throws IOException {
 		writer.flush();

@@ -11,10 +11,7 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 	public final String assetName;
 
 	public final int sectorIndex;
-	public final String sector;
-
 	public final int industryIndex;
-	public final String industry;
 	
 	public final AssetEpsInfo currentEps;
 	public final AssetEpsInfo previousEps;
@@ -24,8 +21,7 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 	public final AssetPriceInfo priceAfterCurrentEps;
 	public final AssetPriceInfo price2DaysAfterCurrentEps;
 
-	public AssetEpsHistoricalInfo(String assetName, int sectorIndex, String sector,
-			int industryIndex, String industry,
+	public AssetEpsHistoricalInfo(String assetName, int sectorIndex, int industryIndex,
 			AssetEpsInfo currentEps, AssetEpsInfo previousEps,
 			AssetPriceInfo price2DaysBeforeCurrentEps,
 			AssetPriceInfo priceBeforeCurrentEps,
@@ -33,12 +29,8 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 			AssetPriceInfo priceAfterCurrentEps,
 			AssetPriceInfo price2DaysAfterCurrentEps) {
 		this.assetName = assetName;
-
 		this.sectorIndex = sectorIndex;
-		this.sector = sector;
-
 		this.industryIndex = industryIndex;
-		this.industry = industry;
 
 		this.currentEps = currentEps;
 		this.previousEps = previousEps;
@@ -78,8 +70,16 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 				"" + price2DaysBeforeCurrentEps.rate,
 				"" + priceBeforeCurrentEps.rate,
 				"" + priceAtCurrentEps.rate,
-				"" + priceAfterCurrentEps.rate,
-				"" + price2DaysAfterCurrentEps.rate
+				emptyRateIfPriceInfoIsNull(priceAfterCurrentEps),
+				emptyRateIfPriceInfoIsNull(price2DaysAfterCurrentEps)
 		};
+	}
+
+	private static String emptyRateIfPriceInfoIsNull(AssetPriceInfo priceInfo) {
+		if (priceInfo == null) {
+			return "";
+		}
+
+		return "" + priceInfo.rate;
 	}
 }

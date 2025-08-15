@@ -7,16 +7,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
-import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import org.apache.commons.math3.util.Pair;
 import org.rty.portfolio.core.AssetEpsHistoricalInfo;
 import org.rty.portfolio.core.AssetEpsInfo;
 import org.rty.portfolio.core.AssetPriceInfo;
 import org.rty.portfolio.core.utils.ToEntityConvertorsUtil;
-import org.rty.portfolio.engine.AbstractTask;
+import org.rty.portfolio.db.DbManager;
+import org.rty.portfolio.engine.AbstractDbTask;
 import org.rty.portfolio.engine.impl.dbtask.load.LoadEpsToDbTask;
 import org.rty.portfolio.engine.impl.dbtask.load.LoadPricesToDbTask;
 import org.rty.portfolio.io.BulkCsvLoader;
@@ -25,31 +24,43 @@ import org.rty.portfolio.io.CsvWriter;
 /**
  * EPS and Prices loader, to prepare data from ML training.
  */
-public class TransformEpsDataForTrainingTask extends AbstractTask {
+public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 	public static final String INPUT_FILE_WITH_PRICES_PARAM = "-prices";
 	public static final String INPUT_FILE_WITH_EPS_PARAM = "-eps";
-	public static final String INPUT_FILE_WITH_SECTORS_PARAM = "-sector";
+
+	private static final int YEARS_BACK = 5;
+	private static final String[] HEADER = new String[] { "asset_id", "sector", "industry", "month", "prev_pred_eps",
+			"prev_eps", "pred_eps", "eps", "df_prev_eps_prev_pred_eps", "df_eps_pred_eps", "df_pred_eps_prev_pred_eps",
+			"df_eps_prev_eps", "prev_2d_rate", "prev_rate", "rate", "next_rate", "next_2d_rate" };
+
+	public TransformEpsDataForTrainingTask(DbManager dbManager) {
+		super(dbManager);
+	}
 
 	@Override
 	public void execute(Map<String, String> parameters) throws Throwable {
 		final String pricesInputFile = getValidParameterValue(parameters, INPUT_FILE_WITH_PRICES_PARAM);
 		final String epsInputFile = getValidParameterValue(parameters, INPUT_FILE_WITH_EPS_PARAM);
-		final String sectorsInputFile = getValidParameterValue(parameters, INPUT_FILE_WITH_SECTORS_PARAM);
 		final String outputFile = getValidParameterValue(parameters, OUTPUT_FILE_PARAM);
 
 		final Map<String, NavigableMap<Date, AssetEpsInfo>> epsStore = new HashMap<>();
 		final Map<String, NavigableMap<Date, AssetPriceInfo>> priceStore = new HashMap<>();
 
-		final Map<String, Pair<String, String>> sectorsStore = new HashMap<>();
+		final Map<String, Pair<Integer, Integer>> stocksAndsectorsStore = new HashMap<>();
 
-		loadEpsAndPrices(epsInputFile, epsStore,
-				pricesInputFile, priceStore,
-				sectorsInputFile, sectorsStore);
+		loadEpsAndPricesFromFiles(epsInputFile, epsStore,
+				pricesInputFile, priceStore);
 
-		final Map<String, Integer> sectorIndexes = indexSectors(sectorsStore);
-		final Map<String, Integer> industryIndexes = indexIndustry(sectorsStore);
+		say("Loading Stocks and Sectors data from DB ...");
+		addStocksSectors(stocksAndsectorsStore, dbManager.getAllStocks());
+		say("Loading EPS data from DB ...");
+		addEpsData(epsStore, dbManager.getAllStocksEpsInfo(YEARS_BACK));
+		say("Loading prices data from DB ...");
+		addPricingData(priceStore, dbManager.getAllStocksPriceInfo(YEARS_BACK));
 
 		final List<AssetEpsHistoricalInfo> dataForTraining = new ArrayList<>(1024);
+		final List<AssetEpsHistoricalInfo> dataFor2DPrediction = new ArrayList<>(1024);
+		final List<AssetEpsHistoricalInfo> dataFor1DPrediction = new ArrayList<>(1024);
 
 		epsStore.entrySet().forEach(entry -> {
 			final String assetName = entry.getKey();
@@ -61,30 +72,22 @@ public class TransformEpsDataForTrainingTask extends AbstractTask {
 				final AssetEpsInfo currentEps = epsEntry.getValue();
 				final AssetEpsInfo previousEps = getPreviousEntry(epsData, currentDate);
 
-				final AssetPriceInfo price2DaysBeforeCurrentEps = get2DaysPreviousEntry(priceStore, assetName, currentDate);
+				final AssetPriceInfo price2DaysBeforeCurrentEps = get2DaysPreviousEntry(priceStore, assetName,
+						currentDate);
 				final AssetPriceInfo priceBeforeCurrentEps = getPreviousEntry(priceStore, assetName, currentDate);
 				final AssetPriceInfo priceAtCurrentEps = getCurrentEntry(priceStore, assetName, currentDate);
 				final AssetPriceInfo priceAfterCurrentEps = getNextEntry(priceStore, assetName, currentDate);
 				final AssetPriceInfo price2DaysAfterCurrentEps = ge2DaysNextEntry(priceStore, assetName, currentDate);
+				final Pair<Integer, Integer> sectorIndustryPair = getSectorIndustryPairFrom(assetName,
+						stocksAndsectorsStore);
 
-				if (currentEps != null && previousEps != null
-						&& price2DaysBeforeCurrentEps != null
-						&& priceBeforeCurrentEps != null
-						&& priceAtCurrentEps != null
-						&& priceAfterCurrentEps != null
-						&& price2DaysAfterCurrentEps != null
-						&& currentEps.epsPredicted != null
-						&& previousEps.epsPredicted != null) {
+				if (sectorIndustryPair!= null
+						&& goodForTraining(currentEps)
+						&& goodForTraining(previousEps)) {
 
-					try {
-						final Pair<String, String> sectorIndustryPair = sectorsStore.get(assetName);
-						final int sectorIndex = sectorIndexes.get(sectorIndustryPair.getKey());
-						final int industryIndex = industryIndexes.get(sectorIndustryPair.getValue());
-
+					if (allNotNull(price2DaysBeforeCurrentEps, priceBeforeCurrentEps, priceAtCurrentEps, priceAfterCurrentEps, price2DaysAfterCurrentEps)) {
 						dataForTraining.add(new AssetEpsHistoricalInfo(assetName,
-								sectorIndex,
 								sectorIndustryPair.getKey(),
-								industryIndex,
 								sectorIndustryPair.getValue(),
 								currentEps,
 								previousEps,
@@ -93,18 +96,69 @@ public class TransformEpsDataForTrainingTask extends AbstractTask {
 								priceAtCurrentEps,
 								priceAfterCurrentEps,
 								price2DaysAfterCurrentEps));
-					} catch (Exception ex) {
-						say("Asset '{}' sector problem ...", assetName);
+					} else if (allNotNull(price2DaysBeforeCurrentEps, priceBeforeCurrentEps, priceAtCurrentEps, priceAfterCurrentEps)) {
+						dataFor2DPrediction.add(new AssetEpsHistoricalInfo(assetName,
+								sectorIndustryPair.getKey(),
+								sectorIndustryPair.getValue(),
+								currentEps,
+								previousEps,
+								price2DaysBeforeCurrentEps,
+								priceBeforeCurrentEps,
+								priceAtCurrentEps,
+								priceAfterCurrentEps,
+								null));
+					} else if (allNotNull(price2DaysBeforeCurrentEps, priceBeforeCurrentEps, priceAtCurrentEps)) {
+						dataFor1DPrediction.add(new AssetEpsHistoricalInfo(assetName,
+								sectorIndustryPair.getKey(),
+								sectorIndustryPair.getValue(),
+								currentEps,
+								previousEps,
+								price2DaysBeforeCurrentEps,
+								priceBeforeCurrentEps,
+								priceAtCurrentEps,
+								null,
+								null));
 					}
 				}
 			});
 		});
 
-		if (!dataForTraining.isEmpty()) {
-			CsvWriter<AssetEpsHistoricalInfo> writer = new CsvWriter<>(outputFile);
-			writer.write(dataForTraining);
-			writer.close();
+		CsvWriter<AssetEpsHistoricalInfo> writer = new CsvWriter<>(outputFile);
+		writeData(writer, dataForTraining);
+		writeData(writer, dataFor2DPrediction);
+		writeData(writer, dataFor1DPrediction);
+		writer.close();
+	}
+
+	private static void writeData(CsvWriter<AssetEpsHistoricalInfo> writer, final List<AssetEpsHistoricalInfo> data) {
+		if (!data.isEmpty()) {
+			writer.write(HEADER);
+			writer.write(data);
 		}
+	}
+
+	private static boolean allNotNull(AssetPriceInfo... prices) {
+		for (AssetPriceInfo price : prices) {
+			if (price == null) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	private static boolean goodForTraining(AssetEpsInfo epsInfor) {
+		return epsInfor != null && epsInfor.epsPredicted != null;
+	}
+
+	private Pair<Integer, Integer> getSectorIndustryPairFrom(final String assetName,
+			final Map<String, Pair<Integer, Integer>> stocksAndsectorsStore) {
+		final Pair<Integer, Integer> sectorIndustryPair = stocksAndsectorsStore.get(assetName);
+
+		if (sectorIndustryPair == null) {
+			say("No stock details found for the asset '{}' (sector/industry missing) ...", assetName);
+		}
+		return sectorIndustryPair;
 	}
 
 	private static <T> T getPreviousEntry(NavigableMap<Date, T> map, Date key) {
@@ -180,51 +234,16 @@ public class TransformEpsDataForTrainingTask extends AbstractTask {
 		return firstEntry.get(key);
 	}
 
-	private Map<String, Integer> indexSectors(Map<String, Pair<String, String>> sectorsStore) {
-		final Map<String, Integer> result = new HashMap<>();
-		final Set<String> sectorsOrdered = new TreeSet<>(sectorsStore.values().stream().map(Pair::getKey).toList());
-
-		int i = 0;
-		for (String sector : sectorsOrdered) {
-			result.put(sector, i);
-			i++;
-		}
-
-		say("Sectors: '{}'", sectorsOrdered);
-		say("Sectors map: '{}'", result);
-		return result;
-	}
-
-	private Map<String, Integer> indexIndustry(Map<String, Pair<String, String>> sectorsStore) {
-		final Map<String, Integer> result = new HashMap<>();
-		final Set<String> industriesOrdered = new TreeSet<>(sectorsStore.values().stream().map(Pair::getValue).toList());
-
-		int i = 0;
-		for (String industry : industriesOrdered) {
-			result.put(industry, i);
-			i++;
-		}
-
-		say("Industries: '{}'", industriesOrdered);
-		say("Industries map: '{}'", result);
-		return result;
-	}
-
-	private void loadEpsAndPrices(String epsInputFile, Map<String, NavigableMap<Date, AssetEpsInfo>> epsStore,
-			String pricesInputFile, Map<String, NavigableMap<Date, AssetPriceInfo>> priceStore,
-			String sectorsInputFile, Map<String, Pair<String, String>> sectortorsStore) throws Exception {
+	private void loadEpsAndPricesFromFiles(String epsInputFile, Map<String, NavigableMap<Date, AssetEpsInfo>> epsStore,
+			String pricesInputFile, Map<String, NavigableMap<Date, AssetPriceInfo>> priceStore) throws Exception {
 		final BulkCsvLoader<AssetEpsInfo> epsLoader = epsLoader(epsStore);
 		final BulkCsvLoader<AssetPriceInfo> priceLoader = priceLoader(priceStore);
-		final BulkCsvLoader<Pair<String, Pair<String, String>>> sectorsLoader = sectorLoader(sectortorsStore);
 
 		say("Loading EPS data from '{}' ...", epsInputFile);
 		epsLoader.load(epsInputFile);
 
 		say("Loading prices data from '{}' ...", pricesInputFile);
 		priceLoader.load(pricesInputFile);
-
-		say("Loading sector data '{}' ...", sectorsInputFile);
-		sectorsLoader.load(sectorsInputFile);
 	}
 
 	private static BulkCsvLoader<AssetPriceInfo> priceLoader(
@@ -233,11 +252,7 @@ public class TransformEpsDataForTrainingTask extends AbstractTask {
 
 			@Override
 			protected List<String> saveResults(List<AssetPriceInfo> dataToAdd) throws Exception {
-				dataToAdd.forEach(entry -> {
-					NavigableMap<Date, AssetPriceInfo> assteDetails = priceStore.computeIfAbsent(entry.assetName,
-							k -> new TreeMap<>());
-					assteDetails.put(entry.date, entry);
-				});
+				addPricingData(priceStore, dataToAdd);
 				return Collections.emptyList();
 			}
 
@@ -253,11 +268,7 @@ public class TransformEpsDataForTrainingTask extends AbstractTask {
 
 			@Override
 			protected List<String> saveResults(List<AssetEpsInfo> dataToAdd) throws Exception {
-				dataToAdd.forEach(entry -> {
-					NavigableMap<Date, AssetEpsInfo> assteDetails = epsStore.computeIfAbsent(entry.assetName,
-							k -> new TreeMap<>());
-					assteDetails.put(entry.date, entry);
-				});
+				addEpsData(epsStore, dataToAdd);
 				return Collections.emptyList();
 			}
 
@@ -268,22 +279,28 @@ public class TransformEpsDataForTrainingTask extends AbstractTask {
 		};
 	}
 
-	private static BulkCsvLoader<Pair<String, Pair<String, String>>> sectorLoader(Map<String, Pair<String, String>> sectorStore) {
-		return new BulkCsvLoader<>(3) {
+	private static void addPricingData(Map<String, NavigableMap<Date, AssetPriceInfo>> priceStore,
+			List<AssetPriceInfo> dataToAdd) {
+		dataToAdd.forEach(entry -> {
+			NavigableMap<Date, AssetPriceInfo> assteDetails = priceStore.computeIfAbsent(entry.assetName,
+					k -> new TreeMap<>());
+			assteDetails.put(entry.date, entry);
+		});
+	}
 
-			@Override
-			protected List<String> saveResults(List<Pair<String, Pair<String, String>>> dataToAdd) throws Exception {
-				dataToAdd.forEach(entry -> {
-					sectorStore.put(entry.getKey(), entry.getValue());
-				});
-				return Collections.emptyList();
-			}
+	private static void addEpsData(Map<String, NavigableMap<Date, AssetEpsInfo>> epsStore,
+			List<AssetEpsInfo> dataToAdd) {
+		dataToAdd.forEach(entry -> {
+			NavigableMap<Date, AssetEpsInfo> assteDetails = epsStore.computeIfAbsent(entry.assetName,
+					k -> new TreeMap<>());
+			assteDetails.put(entry.date, entry);
+		});
+	}
 
-			@Override
-			protected Pair<String, Pair<String, String>> toEntity(String assetName, String[] line) {
-				return new Pair<>(assetName,
-						new Pair<>(line[1].trim(), line[2].trim()));
-			}
-		};
+	private static void addStocksSectors(Map<String, Pair<Integer, Integer>> stocksAndsectorsStore,
+			List<Pair<String, Pair<Integer, Integer>>> dataToAdd) {
+		dataToAdd.forEach(entry -> {
+			stocksAndsectorsStore.put(entry.getKey(), entry.getValue());
+		});
 	}
 }

@@ -73,7 +73,7 @@ public class TaskExecutor {
 		registerTask(new OptimalPortfolioFinderTask(dbManager));
 		registerTask(new LoadEpsToDbTask(dbManager));
 		registerTask(new LoadEarningsToDbTask(dbManager));
-		registerTask(new TransformEpsDataForTrainingTask());
+		registerTask(new TransformEpsDataForTrainingTask(dbManager));
 	}
 
 	private static void registerTask(Task task) {
