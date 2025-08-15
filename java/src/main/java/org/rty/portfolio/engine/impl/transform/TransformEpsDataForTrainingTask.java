@@ -51,12 +51,7 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 		loadEpsAndPricesFromFiles(epsInputFile, epsStore,
 				pricesInputFile, priceStore);
 
-		say("Loading Stocks and Sectors data from DB ...");
-		addStocksSectors(stocksAndsectorsStore, dbManager.getAllStocks());
-		say("Loading EPS data from DB ...");
-		addEpsData(epsStore, dbManager.getAllStocksEpsInfo(YEARS_BACK));
-		say("Loading prices data from DB ...");
-		addPricingData(priceStore, dbManager.getAllStocksPriceInfo(YEARS_BACK));
+		loadEpsAndPricesFromDb(epsStore, priceStore, stocksAndsectorsStore);
 
 		final List<AssetEpsHistoricalInfo> dataForTraining = new ArrayList<>(1024);
 		final List<AssetEpsHistoricalInfo> dataFor2DPrediction = new ArrayList<>(1024);
@@ -85,7 +80,8 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 						&& goodForTraining(currentEps)
 						&& goodForTraining(previousEps)) {
 
-					if (allNotNull(price2DaysBeforeCurrentEps, priceBeforeCurrentEps, priceAtCurrentEps, priceAfterCurrentEps, price2DaysAfterCurrentEps)) {
+					if (allNotNull(price2DaysBeforeCurrentEps, priceBeforeCurrentEps, priceAtCurrentEps,
+							priceAfterCurrentEps, price2DaysAfterCurrentEps)) {
 						dataForTraining.add(new AssetEpsHistoricalInfo(assetName,
 								sectorIndustryPair.getKey(),
 								sectorIndustryPair.getValue(),
@@ -96,7 +92,8 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 								priceAtCurrentEps,
 								priceAfterCurrentEps,
 								price2DaysAfterCurrentEps));
-					} else if (allNotNull(price2DaysBeforeCurrentEps, priceBeforeCurrentEps, priceAtCurrentEps, priceAfterCurrentEps)) {
+					} else if (allNotNull(price2DaysBeforeCurrentEps, priceBeforeCurrentEps, priceAtCurrentEps,
+							priceAfterCurrentEps)) {
 						dataFor2DPrediction.add(new AssetEpsHistoricalInfo(assetName,
 								sectorIndustryPair.getKey(),
 								sectorIndustryPair.getValue(),
@@ -128,6 +125,17 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 		writeData(writer, dataFor2DPrediction);
 		writeData(writer, dataFor1DPrediction);
 		writer.close();
+	}
+
+	private void loadEpsAndPricesFromDb(final Map<String, NavigableMap<Date, AssetEpsInfo>> epsStore,
+			final Map<String, NavigableMap<Date, AssetPriceInfo>> priceStore,
+			final Map<String, Pair<Integer, Integer>> stocksAndsectorsStore) throws Exception {
+		say("Loading Stocks and Sectors data from DB ...");
+		addStocksSectors(stocksAndsectorsStore, dbManager.getAllStocks());
+		say("Loading EPS data from DB ...");
+		addEpsData(epsStore, dbManager.getAllStocksEpsInfo(YEARS_BACK));
+		say("Loading prices data from DB ...");
+		addPricingData(priceStore, dbManager.getAllStocksPriceInfo(YEARS_BACK));
 	}
 
 	private static void writeData(CsvWriter<AssetEpsHistoricalInfo> writer, final List<AssetEpsHistoricalInfo> data) {

@@ -15,7 +15,8 @@ import org.junit.jupiter.api.Test;
 import org.rty.portfolio.core.AssetPriceInfo;
 
 class CsvWriterTest {
-	private static final String CSV_CONTENT = "\"asset\",\"10.01\",\"0.1\",\"0.01\",\"2001-02-01\"";
+	private static final String CSV_PRICE_CONTENT = "\"asset\",\"10.01\",\"0.1\",\"0.01\",\"2001-02-01\"";
+	private static final String CSV_RAW_CONTENT = "\"asset\",\"10.01\"";
 	private static final String DIR = "src/test/resources/csv-test/";
 	private static final String FILE = DIR + "out.csv";
 
@@ -45,7 +46,7 @@ class CsvWriterTest {
 		writer.write(priceInfo);
 		writer.close();
 
-		verifyFileContent();
+		verifyFileContent(CSV_PRICE_CONTENT);
 	}
 
 	@Test
@@ -54,12 +55,21 @@ class CsvWriterTest {
 		writer.write(Arrays.asList(priceInfo));
 		writer.close();
 
-		verifyFileContent();
+		verifyFileContent(CSV_PRICE_CONTENT);
 	}
 
-	private static void verifyFileContent() throws IOException {
+	@Test
+	void testWriteRaw() throws IOException {
+		CsvWriter<AssetPriceInfo> writer = new CsvWriter<>(FILE);
+		writer.write(new String[] { ASSET_NAME, "" + PRICE });
+		writer.close();
+
+		verifyFileContent(CSV_RAW_CONTENT);
+	}
+
+	private static void verifyFileContent(String expectedContent) throws IOException {
 		List<String> content = Files.readAllLines(Paths.get(FILE));
 		assertEquals(1, content.size());
-		assertEquals(CSV_CONTENT, content.get(0));
+		assertEquals(expectedContent, content.get(0));
 	}
 }
