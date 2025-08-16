@@ -103,6 +103,11 @@ public class Calculator {
 		return b1.subtract(b2).doubleValue();
 	}
 
+	public static double calculateEpsSurprise(double reportedEps, double predictedEps) {
+		double rate = (100.0D * calculateChange(reportedEps, predictedEps)) / Math.abs(predictedEps);
+		return Math.round(rate * CORRECTION) / CORRECTION;
+	}
+
 	private static RealMatrix generateUnitVector(int rows) {
 		RealMatrix unitVector = new Array2DRowRealMatrix(rows, 1);
 		return unitVector.scalarAdd(1.0d);

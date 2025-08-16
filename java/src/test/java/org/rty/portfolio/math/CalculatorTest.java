@@ -93,4 +93,14 @@ class CalculatorTest {
 	void testCalculateDiffWithPrecision() {
 		assertEquals("0.18", "" + Calculator.calculateDiffWithPrecision(1.23, 1.05));
 	}
+
+	@Test
+	void testCalculateEpsSurprise() {
+		double epsSurprise = Calculator.calculateEpsSurprise(1D, 0.92D);
+		assertEquals(8.695652D, epsSurprise, ERROR_TOLERANCE);
+
+		epsSurprise = Calculator.calculateEpsSurprise(-0.92D, -1D);
+		assertEquals(8D, epsSurprise, ERROR_TOLERANCE);
+
+	}
 }

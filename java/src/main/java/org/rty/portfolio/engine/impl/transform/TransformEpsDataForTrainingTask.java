@@ -29,9 +29,12 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 	public static final String INPUT_FILE_WITH_EPS_PARAM = "-eps";
 
 	private static final int YEARS_BACK = 5;
-	private static final String[] HEADER = new String[] { "asset_id", "sector", "industry", "month", "prev_pred_eps",
-			"prev_eps", "pred_eps", "eps", "df_prev_eps_prev_pred_eps", "df_eps_pred_eps", "df_pred_eps_prev_pred_eps",
-			"df_eps_prev_eps", "prev_2d_rate", "prev_rate", "rate", "next_rate", "next_2d_rate" };
+	private static final String[] HEADER = new String[] { "asset_id", "sector", "industry", "month",
+			"prev_pred_eps", "prev_eps", "prev_eps_surprize",
+			"pred_eps", "eps", "eps_surprize",
+			"df_prev_eps_prev_pred_eps", "df_eps_pred_eps", 
+			"df_pred_eps_prev_pred_eps", "df_eps_prev_eps",
+			"prev_2d_rate", "prev_rate", "rate", "next_rate", "next_2d_rate" };
 
 	public TransformEpsDataForTrainingTask(DbManager dbManager) {
 		super(dbManager);
