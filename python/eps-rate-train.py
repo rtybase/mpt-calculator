@@ -1,17 +1,22 @@
 import sys
-import pandas as pd
 import joblib
+import util.ml
 
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
-
-MAX_DEGREE = 11
+from sklearn.tree import DecisionTreeRegressor
 
 def train_linear_model(X, y):
     linear_model = LinearRegression()
     linear_model.fit(X,y)
 
     return linear_model
+
+def train_decision_tree_model(X, y, depth):
+    dtr_model = DecisionTreeRegressor(max_depth=depth)
+    dtr_model.fit(X,y)
+
+    return dtr_model
 
 def train_polynomial_model(X, y, degree):
     polynomial_regression = PolynomialFeatures(degree=degree)
@@ -31,17 +36,22 @@ def train_and_save_polynomial(X, y, degree):
     joblib.dump(l, l_file)
     joblib.dump(p, p_file)
 
+def train_and_save_dtr(X, y, depth):
+    m = train_decision_tree_model(X, y, depth)
+    m_file = "models/m-dtr-{0}.model".format(depth)
+    joblib.dump(m, m_file)
+
 if len(sys.argv) > 1:
-    file = sys.argv[1]
-    dataset = pd.read_csv(file)
-    X = dataset[['sector','industry','month','prev_pred_eps','prev_eps','pred_eps','eps','prev_rate','rate']].values
-    y = dataset['next_rate'].values
+    X,y = util.ml.load_training_data(sys.argv[1])
 
     linear_model = train_linear_model(X, y)
     joblib.dump(linear_model, 'models/m-linear.model')
 
-    for degree in range(2, MAX_DEGREE + 1):
+    for degree in range(2, util.ml.MAX_DEGREE + 1):
         train_and_save_polynomial(X, y, degree)
+
+    for depth in range(2, util.ml.MAX_DEPTH + 1):
+        train_and_save_dtr(X, y, depth)
 
 else:
     print("Specify the file with training data!")
