@@ -21,12 +21,12 @@ def predict_with_all_models(X, dataset_index):
 if len(sys.argv) > 1:
     file = sys.argv[1]
     dataset = pd.read_csv(file)
-    X = dataset[['sector','industry','month','prev_pred_eps','prev_eps','pred_eps','eps','prev_2d_rate','prev_rate','rate','next_rate']].values
+    X = dataset[[*util.ml.CORE_COLUMNS_FOR_TRAINING, 'next_rate']].values
     predict_with_all_models(X, 2)
 
     print("==============================================")
 
-    X = dataset[['sector','industry','month','prev_pred_eps','prev_eps','pred_eps','eps','prev_2d_rate','prev_rate','rate']].values
+    X = dataset[util.ml.CORE_COLUMNS_FOR_TRAINING].values
     predict_with_all_models(X, 1)
 
 
