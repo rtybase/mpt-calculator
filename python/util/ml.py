@@ -4,9 +4,10 @@ import joblib
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import RandomForestRegressor
 
 MAX_DEGREE = 7
-MIN_DEPTH = 15
+MIN_DEPTH = 20
 MAX_DEPTH = 40
 MODELS = {}
 
@@ -14,6 +15,7 @@ CORE_COLUMNS_FOR_TRAINING = ['sector','industry','month','prev_pred_eps','prev_e
 
 LINEAR_MODEL_TEMPLATE = "ds{0}-m-linear"
 D_TREE_MODEL_TEMPLATE = "ds{0}-m-dtr-{1}"
+R_FREG_MODEL_TEMPLATE = "ds{0}-m-rfr-{1}"
 POLY_P_MODEL_TEMPLATE = "ds{0}-m-polynomial-{1}-p"
 POLY_L_MODEL_TEMPLATE = "ds{0}-m-polynomial-{1}-l"
 
@@ -37,7 +39,7 @@ def train_linear_model(X, y):
     return linear_model
 
 def train_decision_tree_model(X, y, depth):
-    dtr_model = DecisionTreeRegressor(max_depth=depth)
+    dtr_model = DecisionTreeRegressor(max_depth=depth, random_state=0)
     dtr_model.fit(X,y)
 
     return dtr_model
@@ -50,6 +52,12 @@ def train_polynomial_model(X, y, degree):
     polynomial_model.fit(X_poly, y)
 
     return polynomial_model, polynomial_regression
+
+def train_random_f_regression_model(X, y, depth):
+    rfr_model = RandomForestRegressor(n_estimators=50, max_depth=depth, random_state=0, oob_score=True)
+    rfr_model.fit(X,y)
+
+    return rfr_model
 
 def train_and_save_linear(X, y, dataset_index):
     model_name = LINEAR_MODEL_TEMPLATE.format(dataset_index)
@@ -71,6 +79,11 @@ def train_and_save_dtr(X, y, depth, dataset_index):
     model_name = D_TREE_MODEL_TEMPLATE.format(dataset_index, depth)
     save_model(model_name, model)
 
+def train_and_save_rfr(X, y, depth, dataset_index):
+    model = train_random_f_regression_model(X, y, depth)
+    model_name = R_FREG_MODEL_TEMPLATE.format(dataset_index, depth)
+    save_model(model_name, model)
+
 def load_linear_model(dataset_index):
     model_name = LINEAR_MODEL_TEMPLATE.format(dataset_index)
     return load_model(model_name)
@@ -87,6 +100,10 @@ def load_dtr_model(depth, dataset_index):
     model_name = D_TREE_MODEL_TEMPLATE.format(dataset_index, depth)
     return load_model(model_name)
 
+def load_rfr_model(depth, dataset_index):
+    model_name = R_FREG_MODEL_TEMPLATE.format(dataset_index, depth)
+    return load_model(model_name)
+
 def predict_l(X, dataset_index):
     model = load_linear_model(dataset_index)
     return model.predict(X)
@@ -98,6 +115,10 @@ def predict_p(degree, X, dataset_index):
 
 def predict_dtr(depth, X, dataset_index):
     model = load_dtr_model(depth, dataset_index)
+    return model.predict(X)
+
+def predict_rfr(depth, X, dataset_index):
+    model = load_rfr_model(depth, dataset_index)
     return model.predict(X)
 
 def load_training_data_1_day_after_eps(file):

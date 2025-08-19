@@ -33,6 +33,16 @@ def validate_all_models(X,y_actual, dataset_index):
             compute_matches(y_actual, y_predicted)))
         print("ds=%s after EPS, d-tree-r d=%s r2=%s" % (dataset_index, depth, r2))
 
+    for depth in range(util.ml.MIN_DEPTH, util.ml.MAX_DEPTH + 1):
+        print("---------------------------")
+
+        y_predicted = util.ml.predict_rfr(depth, X, dataset_index)
+        r2 = r2_score(y_actual, y_predicted)
+
+        print("ds=%s after EPS, r-freg d=%s distance=%s" % (dataset_index, depth,\
+            compute_matches(y_actual, y_predicted)))
+        print("ds=%s after EPS, r-freg d=%s r2=%s" % (dataset_index, depth, r2))
+
     print("==============================================")
 
 if len(sys.argv) > 1:

@@ -17,6 +17,10 @@ def predict_with_all_models(X, dataset_index):
         print("ds=%s after EPS, d-tree d=%s prediction=%s" % (dataset_index, depth,\
             util.ml.predict_dtr(depth, X, dataset_index)))
 
+    for depth in range(util.ml.MIN_DEPTH, util.ml.MAX_DEPTH + 1):
+        print("ds=%s after EPS, r-freg d=%s prediction=%s" % (dataset_index, depth,\
+            util.ml.predict_rfr(depth, X, dataset_index)))
+
 
 if len(sys.argv) > 1:
     file = sys.argv[1]
