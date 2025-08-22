@@ -12,9 +12,9 @@ def best_model_params(X, y, regression_model, params):
 
 def dtr_model_and_paramrs():
     params = {
-        'max_depth': [d for d in range(util.ml.MIN_DEPTH, util.ml.MAX_DEPTH + 1)],
-        'min_samples_split': [2, 4, 5, 10, 12, 15],
-        'min_samples_leaf': [1, 2, 4, 6, 8],
+        'max_depth': [5, 6, 7],
+        'min_samples_split': [2, 4, 5, 10],
+        'min_samples_leaf': [1, 2, 4, 6],
         'criterion': ['squared_error', 'absolute_error']
     }
 
@@ -23,10 +23,10 @@ def dtr_model_and_paramrs():
 
 def rfr_model_and_paramrs():
     params = {
-        'n_estimators': [100, 150, 200, 250, 300],
-        'max_depth': [d for d in range(util.ml.MIN_DEPTH, util.ml.MAX_DEPTH + 1)],
-        'min_samples_split': [2, 4, 5, 10, 12, 15],
-        'min_samples_leaf': [1, 2, 4, 6, 8],
+        'n_estimators': [200, 300],
+        'max_depth': [5, 6],
+        'min_samples_split': [2, 4, 5, 10],
+        'min_samples_leaf': [1, 2, 4, 6],
         'criterion': ['squared_error', 'absolute_error']
     }
 

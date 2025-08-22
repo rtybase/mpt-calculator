@@ -3,15 +3,12 @@ import util.ml
 
 def train_all_models(X, y, dataset_index):
     util.ml.train_and_save_linear(X, y, dataset_index)
+    util.ml.train_and_save_dtr(X, y, dataset_index)
+    util.ml.train_and_save_rfr(X, y, dataset_index)
 
     for degree in range(2, util.ml.MAX_DEGREE + 1):
         util.ml.train_and_save_polynomial(X, y, degree, dataset_index)
 
-    for depth in range(util.ml.MIN_DEPTH, util.ml.MAX_DEPTH + 1):
-        util.ml.train_and_save_dtr(X, y, depth, dataset_index)
-
-    for depth in range(util.ml.MIN_DEPTH, util.ml.MAX_DEPTH + 1):
-        util.ml.train_and_save_rfr(X, y, depth, dataset_index)
 
 if len(sys.argv) > 1:
     print("Training with DS=2", flush=True)
