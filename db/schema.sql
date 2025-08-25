@@ -73,9 +73,11 @@ create table tbl_earnings (
 
 create table tbl_predictions (
 	fk_assetID int(10) unsigned NOT NULL,
+	vchr_model varchar(50) not null,
+	dtm_eps_date DATE not null, -- dd-mm-yy
+	int_days_after_eps int(10) unsigned NOT NULL,
 	dbl_prd_return DOUBLE not null,
-	dtm_date DATE not null, -- dd-mm-yy
-	primary key(fk_assetID, dtm_date),
+	primary key(fk_assetID, vchr_model, dtm_eps_date, int_days_after_eps),
 	foreign key(fk_assetID) references tbl_assets (int_assetID)
 ) ENGINE = InnoDB;
 
