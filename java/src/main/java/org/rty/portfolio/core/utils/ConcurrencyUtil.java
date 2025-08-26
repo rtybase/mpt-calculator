@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Preconditions;
 
-public class ConcurrencyUtil {
+public final class ConcurrencyUtil {
 	private ConcurrencyUtil() {
 	}
 

@@ -7,7 +7,7 @@ import java.util.Date;
 import org.rty.portfolio.core.AssetEpsInfo;
 import org.rty.portfolio.core.AssetPriceInfo;
 
-public class ToEntityConvertorsUtil {
+public final class ToEntityConvertorsUtil {
 	static final String NA_VALUE = "N/A";
 	static final SimpleDateFormat EPS_DATE_FORMAT = new SimpleDateFormat("MM/dd/yyyy");
 

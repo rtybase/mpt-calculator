@@ -13,6 +13,7 @@ import org.apache.commons.math3.util.Pair;
 import org.rty.portfolio.core.AssetEpsHistoricalInfo;
 import org.rty.portfolio.core.AssetEpsInfo;
 import org.rty.portfolio.core.AssetPriceInfo;
+import org.rty.portfolio.core.utils.FileNameUtil;
 import org.rty.portfolio.core.utils.ToEntityConvertorsUtil;
 import org.rty.portfolio.db.DbManager;
 import org.rty.portfolio.engine.AbstractDbTask;
@@ -123,11 +124,9 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 			});
 		});
 
-		CsvWriter<AssetEpsHistoricalInfo> writer = new CsvWriter<>(outputFile);
-		writeData(writer, dataForTraining);
-		writeData(writer, dataFor2DPrediction);
-		writeData(writer, dataFor1DPrediction);
-		writer.close();
+		writeData(FileNameUtil.adjustOutputFileName(outputFile, "training"), dataForTraining);
+		writeData(FileNameUtil.adjustOutputFileName(outputFile, "pred-2d-after-eps"), dataFor2DPrediction);
+		writeData(FileNameUtil.adjustOutputFileName(outputFile, "pred-1d-after-eps"), dataFor1DPrediction);
 	}
 
 	private void loadEpsAndPricesFromDb(final Map<String, NavigableMap<Date, AssetEpsInfo>> epsStore,
@@ -141,10 +140,12 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 		addPricingData(priceStore, dbManager.getAllStocksPriceInfo(YEARS_BACK));
 	}
 
-	private static void writeData(CsvWriter<AssetEpsHistoricalInfo> writer, final List<AssetEpsHistoricalInfo> data) {
+	private static void writeData(String outputFile, List<AssetEpsHistoricalInfo> data) throws Exception {
 		if (!data.isEmpty()) {
+			final CsvWriter<AssetEpsHistoricalInfo> writer = new CsvWriter<>(outputFile);
 			writer.write(HEADER);
 			writer.write(data);
+			writer.close();
 		}
 	}
 
