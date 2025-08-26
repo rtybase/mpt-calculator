@@ -1,5 +1,6 @@
 package org.rty.portfolio.core;
 
+import org.rty.portfolio.core.utils.DatesAndSetUtil;
 import org.rty.portfolio.math.Calculator;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -58,6 +59,7 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 				assetName,
 				"" + sectorIndex,
 				"" + industryIndex,
+				"" + DatesAndSetUtil.dateToStr(currentEps.date),
 				"" + currentEps.date.getMonth(),
 				"" + previousEps.epsPredicted,
 				"" + previousEps.eps,

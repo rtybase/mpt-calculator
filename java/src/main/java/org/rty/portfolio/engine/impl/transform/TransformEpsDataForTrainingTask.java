@@ -30,7 +30,7 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 	public static final String INPUT_FILE_WITH_EPS_PARAM = "-eps";
 
 	private static final int YEARS_BACK = 5;
-	private static final String[] HEADER = new String[] { "asset_id", "sector", "industry", "month",
+	private static final String[] HEADER = new String[] { "asset_id", "sector", "industry", "eps_date", "month",
 			"prev_pred_eps", "prev_eps", "prev_eps_surprize",
 			"pred_eps", "eps", "eps_surprize",
 			"df_prev_eps_prev_pred_eps", "df_eps_pred_eps", 
