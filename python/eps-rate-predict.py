@@ -1,7 +1,11 @@
 import sys
+import os.path
 import pandas as pd
 import numpy
 import util.ml
+
+DS1_FILE = "inputs-ml/out-pred-1d-after-eps.csv"
+DS2_FILE = "inputs-ml/out-pred-2d-after-eps.csv"
 
 def predict_with_all_models(X, dataset_index):
     print("ds=%s after EPS, linear prediction=%s" % (dataset_index,\
@@ -19,22 +23,27 @@ def predict_with_all_models(X, dataset_index):
 
 numpy.set_printoptions(suppress=True, threshold=sys.maxsize, linewidth=500)
 
-if len(sys.argv) > 1:
-    file = sys.argv[1]
-    dataset = pd.read_csv(file)
+if (os.path.isfile(DS2_FILE)):
+    dataset = pd.read_csv(DS2_FILE)
 
+    print("======================================================================")
     assets = dataset['asset_id'].tolist()
     print("assets=%s" % (assets))
-    print("==============================================")
 
     X = dataset[[*util.ml.CORE_COLUMNS_FOR_TRAINING, 'next_rate']].values
     predict_with_all_models(X, 2)
+else:
+    print(f"{DS2_FILE} is missing! No predictions today.")
 
-    print("==============================================")
+
+if (os.path.isfile(DS1_FILE)):
+    dataset = pd.read_csv(DS1_FILE)
+
+    print("======================================================================")
+    assets = dataset['asset_id'].tolist()
+    print("assets=%s" % (assets))
 
     X = dataset[util.ml.CORE_COLUMNS_FOR_TRAINING].values
     predict_with_all_models(X, 1)
-
-
 else:
-    print("Specify the file with data for prediction!")
+    print(f"{DS1_FILE} is missing! No predictions today.")
