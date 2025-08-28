@@ -79,7 +79,26 @@
 	}
 
 	function toChartNumber($number) {
+		if (!is_numeric($number)) {
+			return "null";
+		}
 		return "{v: ".$number.", f: '".$number."'}";
+	}
+
+	function valueOrNullFrom($value) {
+		if (is_numeric($value)) {
+			return "".$value;
+		} else if (empty($value)) {
+			return "null";
+		}
+		return "".$value;
+	}
+
+	function roundOrNull($number, $precision) {
+		if (!is_numeric($number)) {
+			return NULL;
+		}
+		return round($number, $precision);
 	}
 
 	function showData($data) {
@@ -156,8 +175,8 @@
 	<a href="./top_p.php">Top pairs</a><br/>
 	<a href="./top_d.php">Dividends</a><br/>
 	<a href="./top_eps.php">EPS</a><br/>
-	<a href="./top_sc.php">Top shift correlations</a><br/>
 	<a href="./port_f.php">Custom portfolios</a><br/>
+	<a href="./top_sc.php">Shift correlations</a><br/>
 	<a href="./stale_d.php">Stale data</a>
 <?php	}
 
@@ -175,15 +194,6 @@
 
 	function percentWeightFrom($value) {
 		return round($value * 100, 3);
-	}
-
-	function valueOrNullFrom($value) {
-		if (is_numeric($value)) {
-			return "".$value;
-		} else if (empty($value)) {
-			return "null";
-		}
-		return "".$value;
 	}
 
 	function loadDividendsFor($assetId, $link) {

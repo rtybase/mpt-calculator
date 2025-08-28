@@ -71,7 +71,7 @@ function addLatestPrices($link, $epsData) {
 		$tableResult.= "'".linkToAsset($key, $value["asset"])."',";
 		$tableResult.= "'".$value["d_date"]."',";
 		$tableResult.= toChartNumber(round($value["eps"], 5)).",";
-		$tableResult.= toChartNumber(round($value["prd_eps"], 5)).",";
+		$tableResult.= toChartNumber(roundOrNull($value["prd_eps"], 5)).",";
 		$tableResult.= toChartNumber(round($value["price"], 5)).",";
 		$tableResult.= toChartNumber(round($value["p_by_e"], 5)).",";
 		$tableResult.= "'<a href=\"./show_eps.php?id=".$key."\">details ...</a>']";
