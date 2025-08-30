@@ -60,8 +60,8 @@ def save_to_db(asset, date, days_after_eps, model, prediction):
     util.db.db_conection.commit()
 
 def save_results(model_details, dataset_index):
-    lengh = len(model_details['assets'])
-    if (lengh > 0 and len(model_details['models']) > 0):
+    if (len(model_details['models']) > 0):
+        lengh = len(model_details['assets'])
         models = [k for k in model_details['models']]
         for i in range(lengh):
             symbol = model_details['assets'][i]
