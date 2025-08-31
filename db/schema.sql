@@ -162,6 +162,9 @@ create table tbl_shift_correlations (
 	foreign key(fk_asset2ID) references tbl_assets (int_assetID)
 ) ENGINE = InnoDB DEFAULT CHARSET=utf8;
 
+CREATE INDEX idx_shift_correlations_shift
+ON tbl_shift_correlations (int_shift);
+
 create table tbl_custom_portfolios (
 	int_portfolioID int(10) unsigned NOT NULL auto_increment,
 	vchr_name varchar(100) not null,

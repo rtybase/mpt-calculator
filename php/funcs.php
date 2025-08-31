@@ -26,12 +26,17 @@
 	function getName($assetId, $link) {
 		global $ASSET_NAMES_CACHE;
 		if (array_key_exists($assetId, $ASSET_NAMES_CACHE)) {
-			return $ASSET_NAMES_CACHE[$assetId]["vchr_name"];
+			return $ASSET_NAMES_CACHE[$assetId];
 		} else { 
 			$assetRecord = getSingleValyeByPK("tbl_assets", "int_assetID", $assetId, $link);
-			$ASSET_NAMES_CACHE[$assetId] = $assetRecord;
+			addToNameCache($assetId, $assetRecord["vchr_name"]);
 			return $assetRecord["vchr_name"];
 		}
+	}
+
+	function addToNameCache($assetId, $assetName) {
+		global $ASSET_NAMES_CACHE;
+		$ASSET_NAMES_CACHE[$assetId] = $assetName;
 	}
 
 	function printAssets($assetId, $link) {

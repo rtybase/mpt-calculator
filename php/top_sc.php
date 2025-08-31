@@ -6,11 +6,11 @@
 	header("Content-Type:text/html; charset=UTF-8");
 
 function getTopShiftCorrelations($link) {
-	$query = "SELECT fk_asset1ID, fk_asset2ID, int_shift, dbl_correlation ";
-	$query.= "FROM tbl_shift_correlations ";
-	$query.= "WHERE ABS( dbl_correlation ) > 0.5 ";
-	$query.= "AND ABS(int_shift) < 20 ";
-	$query.= "AND ABS(int_shift) > 0 ";
+	$query = "SELECT a.fk_asset1ID, b.vchr_name, a.fk_asset2ID, a.int_shift, a.dbl_correlation ";
+	$query.= "FROM tbl_shift_correlations a, tbl_assets b ";
+	$query.= "WHERE a.fk_asset1ID = b.int_assetID ";
+	$query.= "AND ((a.int_shift BETWEEN 1 AND 19) OR (a.int_shift BETWEEN -19 AND -1)) ";
+	$query.= "AND ABS( a.dbl_correlation ) > 0.5 ";
 
 	$res = mysql_query($query, $link);
 	if (!$res) die("Invalid query: ". mysql_error());
@@ -21,11 +21,13 @@ function getTopShiftCorrelations($link) {
 		$ret[$i] = array();
 
 		$ret[$i]["asset1Id"] = $row[0];
-		$ret[$i]["asset1Name"] = getName($row[0], $link);
-		$ret[$i]["asset2Id"] = $row[1];
-		$ret[$i]["asset2Name"] = getName($row[1], $link);
-		$ret[$i]["shift"] = $row[2];
-		$ret[$i]["correlation"] = $row[3];
+		$ret[$i]["asset1Name"] = $row[1];
+		addToNameCache($row[0], $row[1]);
+
+		$ret[$i]["asset2Id"] = $row[2];
+		$ret[$i]["asset2Name"] = getName($row[2], $link);
+		$ret[$i]["shift"] = $row[3];
+		$ret[$i]["correlation"] = $row[4];
 
 		$i++;
 	}
