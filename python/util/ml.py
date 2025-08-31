@@ -6,23 +6,23 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
 
-MAX_DEGREE = 7
+MAX_DEGREE = 6
 MODELS = {}
 
 DTR_DS2_ARGS = {'max_depth': 5, 'min_samples_leaf': 2,\
+        'min_samples_split': 5, 'criterion': 'absolute_error',\
+        'random_state': 42}
+
+RFR_DS2_ARGS = {'max_depth': 5, 'min_samples_leaf': 6,\
+        'min_samples_split': 2, 'n_estimators': 300,\
+        'criterion': 'absolute_error', 'random_state': 42, 'oob_score': True}
+
+DTR_DS1_ARGS = {'max_depth': 5, 'min_samples_leaf': 4,\
         'min_samples_split': 10, 'criterion': 'absolute_error',\
         'random_state': 42}
 
-RFR_DS2_ARGS = {'max_depth': 6, 'min_samples_leaf': 6,\
-        'min_samples_split': 2, 'n_estimators': 200,\
-        'criterion': 'absolute_error', 'random_state': 42, 'oob_score': True}
-
-DTR_DS1_ARGS = {'max_depth': 5, 'min_samples_leaf': 6,\
-        'min_samples_split': 2, 'criterion': 'absolute_error',\
-        'random_state': 42}
-
 RFR_DS1_ARGS = {'max_depth': 6, 'min_samples_leaf': 4,\
-        'min_samples_split': 2, 'n_estimators': 200,\
+        'min_samples_split': 2, 'n_estimators': 300,\
         'criterion': 'absolute_error', 'random_state': 42, 'oob_score': True}
 
 
