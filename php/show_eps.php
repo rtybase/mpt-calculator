@@ -54,6 +54,23 @@
 		return $result;
 	}
 
+function getStockDetails($stock, $link) {
+	$ret = array();
+	if (!empty($stock)) {
+		$query = "SELECT a.vchr_symbol, b.vchr_name, c.vchr_name ";
+		$query.= "FROM tbl_stocks a, tbl_sectors b, tbl_industries c ";
+		$query.= "WHERE a.fk_sectorID=b.int_sectorID AND ";
+		$query.= "a.fk_industryID=c.int_industryID AND ";
+		$query.= "a.vchr_symbol='".$stock."'";
+
+		$res = mysql_query($query, $link);
+		if (!$res) die("Invalid query: ". mysql_error());
+
+		while ($row = mysql_fetch_array($res)) $ret = $row;
+		mysql_free_result($res);
+	}
+	return $ret;
+}
 
 	$id = (int) $_GET["id"];
 	if ($id < 1) $id = 1;
@@ -63,6 +80,7 @@
 	$assetRecord = getSingleValyeByPK("tbl_assets", "int_assetID", $id, $link);
 	$assetName = $assetRecord["vchr_name"];
 	$assetSymbol = $assetRecord["vchr_symbol"];
+        $stockDetails = getStockDetails($assetSymbol, $link);
 
 	$dividendsEpsAndPrices = mergeDividendsEpsAndPricesFor($id, $link);
 
@@ -142,6 +160,12 @@
 			echo " or <a href=\"https://finance.yahoo.com/quote/".$assetSymbol."/\">YF=".$assetSymbol."</a>"; 
 		?></font>
 	</td></tr>
+<?php
+	if (!empty($stockDetails)) {
+			echo "<tr><td align=\"left\"><font face=\"verdana\">Sector: <i>".$stockDetails[1]."</i></font></td></tr>";
+			echo "<tr><td align=\"left\"><font face=\"verdana\">Industry: <i>".$stockDetails[2]."</i></font></td></tr>";
+	}
+?>
 	<tr><td><hr/></td></tr>
 	<tr><td><div id="chart1_div" style="width: 1044px; height: 350px;"></div></td></tr>
 	<tr><td><div id="chart2_div" style="width: 1044px; height: 350px;"></div></td></tr>
