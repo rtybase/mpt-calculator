@@ -4,45 +4,45 @@
 	include_once("./funcs.php");
 	header("Content-Type:text/html; charset=UTF-8");
 
-	function getRatesDataFor($assetId, $period, $link) {
-		global $RETURN_ROUND_PRECISION;
-		$result = array();
-		$data = getSingleValyeByPK("tbl_avgreturns".periodTableFrom($period), "fk_assetID", $assetId, $link);
+function getRatesDataFor($assetId, $period, $link) {
+	global $RETURN_ROUND_PRECISION;
+	$result = array();
+	$data = getSingleValyeByPK("tbl_avgreturns".periodTableFrom($period), "fk_assetID", $assetId, $link);
 
-		if (empty($data)) {
-			$result["expectedReturn"] = "N/A";
-			$result["volatility"] = "N/A";
-			$result["kelly"] = "N/A";
+	if (empty($data)) {
+		$result["expectedReturn"] = "N/A";
+		$result["volatility"] = "N/A";
+		$result["kelly"] = "N/A";
+	} else {
+		$variance = $data["dbl_varience"];
+		$expectedReturn = $data["dbl_avgreturn"];
+
+		$result["expectedReturn"] = indicatorText(round($expectedReturn, $RETURN_ROUND_PRECISION), $expectedReturn);
+		$result["volatility"] = volatilityFrom($variance);
+
+		if ($variance > 0.0) {
+			$result["kelly"] = calculateKellyFraction($expectedReturn, $variance);
 		} else {
-			$variance = $data["dbl_varience"];
-			$expectedReturn = $data["dbl_avgreturn"];
-
-			$result["expectedReturn"] = indicatorText(round($expectedReturn, $RETURN_ROUND_PRECISION), $expectedReturn);
-			$result["volatility"] = volatilityFrom($variance);
-
-			if ($variance > 0.0) {
-				$result["kelly"] = calculateKellyFraction($expectedReturn, $variance);
-			} else {
-				$result["kelly"] = "N/A";
-			}
+			$result["kelly"] = "N/A";
 		}
-		return $result;
+	}
+	return $result;
+}
+
+function loadDividendsAndEpsFor($assetId, $link) {
+	$divsAndEps = mergeDivsAndEps($assetId, $link);
+
+	$result = "";
+	foreach ($divsAndEps as $key => $value) {
+		$result .= ",['".$key."',";
+		$result .= valueOrNullFrom($value["dividend"]).",";
+		$result .= valueOrNullFrom($value["eps"]).",";
+		$result .= valueOrNullFrom($value["eps_predicted"]).",";
+		$result .= valueOrNullFrom($value["eps_eofp"])."]";
 	}
 
-	function loadDividendsAndEpsFor($assetId, $link) {
-		$divsAndEps = mergeDivsAndEps($assetId, $link);
-
-		$result = "";
-		foreach ($divsAndEps as $key => $value) {
-			$result .= ",['".$key."',";
-			$result .= valueOrNullFrom($value["dividend"]).",";
-			$result .= valueOrNullFrom($value["eps"]).",";
-			$result .= valueOrNullFrom($value["eps_predicted"]).",";
-			$result .= valueOrNullFrom($value["eps_eofp"])."]";
-		}
-
-		return $result;
-	}
+	return $result;
+}
 
 	$id = (int) $_GET["id"];
 	if ($id < 1) $id = 1;

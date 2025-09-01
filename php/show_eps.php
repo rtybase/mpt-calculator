@@ -5,54 +5,54 @@
 	include_once("./funcs.php");
 	header("Content-Type:text/html; charset=UTF-8");
 
-	function mergeDividendsEpsAndPricesFor($assetId, $link) {
-		$divsAndEps = mergeDivsAndEps($assetId, $link);
+function mergeDividendsEpsAndPricesFor($assetId, $link) {
+	$divsAndEps = mergeDivsAndEps($assetId, $link);
 
-		reset($divsAndEps);
-		$minDate = key($divsAndEps);
-		reset($divsAndEps);
+	reset($divsAndEps);
+	$minDate = key($divsAndEps);
+	reset($divsAndEps);
 
-		$query = "select dtm_date, dbl_price from tbl_prices where fk_assetID=$assetId ";
-		$query.= " and dtm_date>=\"".$minDate."\" order by dtm_date asc";
+	$query = "select dtm_date, dbl_price from tbl_prices where fk_assetID=$assetId ";
+	$query.= " and dtm_date>=\"".$minDate."\" order by dtm_date asc";
 
-		$res = mysql_query($query, $link);
-		if (!$res) die("Invalid query: ". mysql_error());
+	$res = mysql_query($query, $link);
+	if (!$res) die("Invalid query: ". mysql_error());
 
-		while ($row = mysql_fetch_array($res)) {
-			if (!array_key_exists($row[0], $divsAndEps)) {
-				$divsAndEps[$row[0]] = array();
-			}
-
-			$divsAndEps[$row[0]]["price"] = $row[1];
+	while ($row = mysql_fetch_array($res)) {
+		if (!array_key_exists($row[0], $divsAndEps)) {
+			$divsAndEps[$row[0]] = array();
 		}
-		mysql_free_result($res);
-
-		ksort($divsAndEps);
-		return $divsAndEps;
+		$divsAndEps[$row[0]]["price"] = $row[1];
 	}
 
-	function loadDividendsAndEpsFrom($dividendsEpsAndPrices) {
-		$result = "";
-		foreach ($dividendsEpsAndPrices as $key => $value) {
-			$result .= ",['".$key."',";
-			$result .= valueOrNullFrom($value["dividend"]).",";
-			$result .= valueOrNullFrom($value["eps"]).",";
-			$result .= valueOrNullFrom($value["eps_predicted"]).",";
-			$result .= valueOrNullFrom($value["eps_eofp"]).",null]";
-		}
+	mysql_free_result($res);
 
-		return $result;
+	ksort($divsAndEps);
+	return $divsAndEps;
+}
+
+function loadDividendsAndEpsFrom($dividendsEpsAndPrices) {
+	$result = "";
+	foreach ($dividendsEpsAndPrices as $key => $value) {
+		$result .= ",['".$key."',";
+		$result .= valueOrNullFrom($value["dividend"]).",";
+		$result .= valueOrNullFrom($value["eps"]).",";
+		$result .= valueOrNullFrom($value["eps_predicted"]).",";
+		$result .= valueOrNullFrom($value["eps_eofp"]).",null]";
 	}
 
-	function loadPricesFrom($dividendsEpsAndPrices) {
-		$result = "";
-		foreach ($dividendsEpsAndPrices as $key => $value) {
-			$result .= ",['".$key."',null,null,null,null";
-			$result .= ",".valueOrNullFrom($value["price"])."]";
-		}
+	return $result;
+}
 
-		return $result;
+function loadPricesFrom($dividendsEpsAndPrices) {
+	$result = "";
+	foreach ($dividendsEpsAndPrices as $key => $value) {
+		$result .= ",['".$key."',null,null,null,null";
+		$result .= ",".valueOrNullFrom($value["price"])."]";
 	}
+
+	return $result;
+}
 
 function getStockDetails($stock, $link) {
 	$ret = array();
