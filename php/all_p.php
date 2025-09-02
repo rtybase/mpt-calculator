@@ -16,13 +16,72 @@ function getAllCorrelations($assetId, $assetName, $link) {
 	return getCollection($query, $assetId, $assetName, $link);
 }
 
+function buildRow($id, $parentId, $description) {
+	return "[{'v':'$id', 'f':'$description'}, '$parentId', '']";
+}
+
+function buildDescription($id, $shift, $correlation, $predictionText, $link) {
+	global $RETURN_ROUND_PRECISION;
+
+	$r_corr = round($correlation, $RETURN_ROUND_PRECISION - 1);
+	$description = linkToAsset($id, getName($id, $link));
+	$description.= "<div style=\"color:red; font-style:italic\"><nobr>$predictionText: ".abs($shift)."d</nobr>,";
+	$description.= " <nobr>cr.: $r_corr</nobr></div>";
+	return $description;
+}
+
+function getAllShiftCorrelationsFor($query, $assetId, $assetName, $predictionText, $link) {
+	$res = mysql_query($query, $link);
+	if (!$res) die("Invalid query: ". mysql_error());
+
+	$tableResult = buildRow($assetId, "", addslashes($assetName));
+	while ($row = mysql_fetch_row($res)) {
+		$id = $row[0];
+
+		if ($id == $assetId) {
+			$id = $row[1];
+		}
+
+		$description = buildDescription($id, $row[2], $row[3], $predictionText, $link);
+		$tableResult.= ",".buildRow($id, $assetId, $description);
+	}
+	mysql_free_result($res);
+	return $tableResult;
+}
+
+function getAllPredictingShiftCorrelations($assetId, $assetName, $link) {
+	$query = "SELECT fk_asset1ID, fk_asset2ID, int_shift, dbl_correlation ";
+	$query.= "FROM tbl_shift_correlations USE INDEX (PRIMARY,fk_asset2ID) ";
+	$query.= "WHERE ((fk_asset1ID=$assetId AND (int_shift BETWEEN 1 AND 19)) OR ";
+	$query.= "(fk_asset2ID=$assetId AND (int_shift BETWEEN -19 AND -1))) ";
+	$query.= "AND ABS(dbl_correlation) > 0.15 ";
+	$query.= "ORDER BY ABS(dbl_correlation) DESC ";
+	$query.= "LIMIT 0, 15";
+
+	return getAllShiftCorrelationsFor($query, $assetId, $assetName, "In", $link);
+}
+
+function getAllPredictedByShiftCorrelations($assetId, $assetName, $link) {
+	$query = "SELECT fk_asset1ID, fk_asset2ID, int_shift, dbl_correlation ";
+	$query.= "FROM tbl_shift_correlations USE INDEX (PRIMARY,fk_asset2ID) ";
+	$query.= "WHERE ((fk_asset1ID=$assetId AND (int_shift BETWEEN -19 AND -1)) OR ";
+	$query.= "(fk_asset2ID=$assetId AND (int_shift BETWEEN 1 AND 19))) ";
+	$query.= "AND ABS(dbl_correlation) > 0.15 ";
+	$query.= "ORDER BY ABS(dbl_correlation) DESC ";
+	$query.= "LIMIT 0, 15 ";
+
+	return getAllShiftCorrelationsFor($query, $assetId, $assetName, "After", $link);
+}
+
 	$id = (int) $_GET["id"];
 	if ($id < 1) $id = 1;
 
 	$link = connect("portfolio");
 	$mainAsset = getName($id, $link);
 
-	$allCorrelation = getAllCorrelations($id, $mainAsset, $link);
+	$allCorrelations = getAllCorrelations($id, $mainAsset, $link);
+	$allPredictingShiftCorrelations = getAllPredictingShiftCorrelations($id, $mainAsset, $link);
+	$allPredictedByShiftCorrelations = getAllPredictedByShiftCorrelations($id, $mainAsset, $link);
 ?>
 <!doctype html>
 <html>
@@ -40,8 +99,10 @@ function getAllCorrelations($assetId, $assetName, $link) {
 
 	function generateTable() {
 		var data = generateData();
-		data.addRows([<?php showData($allCorrelation); ?>]);
+		data.addRows([<?php showData($allCorrelations); ?>]);
 		drawTable('table_div', data);
+		drawChart1();
+		drawChart2();
 	}
 
 	function drawTable(element, data) {
@@ -60,6 +121,28 @@ function getAllCorrelations($assetId, $assetName, $link) {
 		return dataTable;
 	}
 
+	function drawChart1() {
+		var data = new google.visualization.DataTable();
+		data.addColumn('string', 'Asset');
+		data.addColumn('string', 'Parent Asset');
+		data.addColumn('string', 'ToolTip');
+
+		data.addRows([<?php echo $allPredictingShiftCorrelations; ?>]);
+
+		var chart = new google.visualization.OrgChart(document.getElementById('chart1_div'));
+		chart.draw(data, {allowHtml: true, compactRows: true, size: 'small'});
+	}
+	function drawChart2() {
+		var data = new google.visualization.DataTable();
+		data.addColumn('string', 'Asset');
+		data.addColumn('string', 'Parent Asset');
+		data.addColumn('string', 'ToolTip');
+
+		data.addRows([<?php echo $allPredictedByShiftCorrelations; ?>]);
+
+		var chart = new google.visualization.OrgChart(document.getElementById('chart2_div'));
+		chart.draw(data, {allowHtml: true, compactRows: true, size: 'small'});
+	}
     </script>
   </head>
   <body>
@@ -68,8 +151,10 @@ function getAllCorrelations($assetId, $assetName, $link) {
 		<?php showMenu(); ?>
       </td>
       <td><table align="center" border="0">
-	<tr><td><font face="verdana">All <?php echo count($allCorrelation); ?> correlations for : <?php echo $mainAsset; ?></font></td></tr>
+	<tr><td><font face="verdana">All <?php echo count($allCorrelations); ?> correlations for : <?php echo $mainAsset; ?></font></td></tr>
 	<tr><td><hr/></td></tr>
+	<tr><td><font face="verdana">Predicting:</font> <div id="chart1_div" style="width: 1044px;"></div></td></tr>
+	<tr><td><font face="verdana">Predicted by:</font> <div id="chart2_div" style="width: 1044px;"></div></td></tr>
 	<tr><td><div id='table_div' style="width: 1044px;"></div></td></tr>
       </table></td>
     </tr></table>
