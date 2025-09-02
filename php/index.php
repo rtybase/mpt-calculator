@@ -81,22 +81,19 @@ function loadDividendsAndEpsFor($assetId, $link) {
 
 	$dividendsAndEpsDetails = loadDividendsAndEpsFor($id, $link);
 ?>
+<!doctype html>
 <html>
   <head>
     <meta charset="UTF-8">
-    <link href="https://developers.google.com/fusiontables/docs/samples/style/default.css" rel="stylesheet" type="text/css">
     <style>
 	a:link, a:visited, a:active { color:#000000; text-decoration: none; }
 	a:hover { color:#000000; text-decoration: underline; }
     </style>
 
-    <script type='text/javascript' src='https://www.google.com/jsapi'></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type='text/javascript'>
-	google.load('visualization', '1.1', {packages:['table']});
-	google.setOnLoadCallback(drawTables);
-
-	google.load("visualization", "1.1", {packages:["corechart"]});
-	google.setOnLoadCallback(drawChart);
+	google.charts.load('current', {'packages':['table','corechart']});
+	google.charts.setOnLoadCallback(drawTables);
 
 	function drawTables() {
 		drawBaseDataTable();
@@ -106,6 +103,7 @@ function loadDividendsAndEpsFor($assetId, $link) {
 		drawTable3();
 		drawTable4();
 		drawTable5();
+		drawChart();
 	}
 
 	function drawTable(element, data) {
@@ -242,7 +240,11 @@ function loadDividendsAndEpsFor($assetId, $link) {
 		]);
 
 		var options = {
-			title: "<?php echo $mainAsset;?>"
+			title: "<?php echo $mainAsset;?>",
+			explorer: {
+				actions: ['dragToZoom', 'rightClickToReset'],
+				keepInBounds: true
+			}
 		};
 		var chart = new google.visualization.LineChart(document.getElementById('prices_chart_div'));
 		chart.draw(data, options);
@@ -262,6 +264,10 @@ function loadDividendsAndEpsFor($assetId, $link) {
 		var options = {
 			title: "<?php echo $mainAsset;?> - Dividends and EPS",
 			interpolateNulls: true,
+			explorer: {
+				actions: ['dragToZoom', 'rightClickToReset'],
+				keepInBounds: true
+			}
 		};
 		var chart = new google.visualization.LineChart(document.getElementById('div_eps_chart_div'));
 		chart.draw(data, options);

@@ -87,19 +87,19 @@ function getStockDetails($stock, $link) {
 	$dividendsAndEpsDetails = loadDividendsAndEpsFrom($dividendsEpsAndPrices);
 	$prices = loadPricesFrom($dividendsEpsAndPrices);
 ?>
+<!doctype html>
 <html>
   <head>
     <meta charset="UTF-8">
-    <link href="https://developers.google.com/fusiontables/docs/samples/style/default.css" rel="stylesheet" type="text/css">
     <style>
 	a:link, a:visited, a:active { color:#000000; text-decoration: none; }
 	a:hover { color:#000000; text-decoration: underline; }
     </style>
 
-    <script type='text/javascript' src='https://www.google.com/jsapi'></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type='text/javascript'>
-	google.load("visualization", "1.1", {packages:["corechart"]});
-	google.setOnLoadCallback(drawChart);
+	google.charts.load('current', {'packages':['corechart']});
+	google.charts.setOnLoadCallback(drawChart);
 
 	function drawChart() {
 		drawChart1();
@@ -121,6 +121,10 @@ function getStockDetails($stock, $link) {
 		var options = {
 			title: "<?php echo $assetName;?> - dividends and EPS",
 			interpolateNulls: true,
+			explorer: {
+				actions: ['dragToZoom', 'rightClickToReset'],
+				keepInBounds: true
+			}
 		};
 		var chart = new google.visualization.LineChart(document.getElementById('chart1_div'));
 		chart.draw(data, options);
@@ -142,6 +146,10 @@ function getStockDetails($stock, $link) {
 		var options = {
 			title: "<?php echo $assetName;?> - prices",
 			interpolateNulls: true,
+			explorer: {
+				actions: ['dragToZoom', 'rightClickToReset'],
+				keepInBounds: true
+			}
 		};
 		var chart = new google.visualization.LineChart(document.getElementById('chart2_div'));
 		chart.draw(data, options);

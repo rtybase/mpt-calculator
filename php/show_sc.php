@@ -69,27 +69,25 @@ function ratesForDatesWithShift($dates, $rates, $shift, $predictor) {
 	$tableResult.= toChartNumber($shift).",";
 	$tableResult.= toChartNumber(round($details["bestCorrelation"], 5))."]";
 ?>
+<!doctype html>
 <html>
   <head>
     <meta charset="UTF-8">
-    <link href="https://developers.google.com/fusiontables/docs/samples/style/default.css" rel="stylesheet" type="text/css">
     <style>
 	a:link, a:visited, a:active { color:#000000; text-decoration: none; }
 	a:hover { color:#000000; text-decoration: underline; }
     </style>
 
-    <script type='text/javascript' src='https://www.google.com/jsapi'></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type='text/javascript'>
-	google.load('visualization', '1.1', {packages:['table']});
-	google.setOnLoadCallback(generateTable);
-
-	google.load("visualization", "1.1", {packages:["corechart"]});
-	google.setOnLoadCallback(drawChart);
+	google.charts.load('current', {'packages':['table','corechart']});
+	google.charts.setOnLoadCallback(generateTable);
 
 	function generateTable() {
 		var data = generateData();
 		data.addRows([<?php echo $tableResult; ?>]);
 		drawTable('table_div', data);
+		drawChart();
 	}
 
 	function drawTable(element, data) {
@@ -121,7 +119,11 @@ function ratesForDatesWithShift($dates, $rates, $shift, $predictor) {
 		]);
 
 		var options = {
-			title: "<?php echo $asset1Name;?>"
+			title: "<?php echo $asset1Name;?>",
+			explorer: {
+				actions: ['dragToZoom', 'rightClickToReset'],
+				keepInBounds: true
+			}
 		};
 
 		var chart = new google.visualization.LineChart(document.getElementById('chart1_div'));
@@ -137,7 +139,11 @@ function ratesForDatesWithShift($dates, $rates, $shift, $predictor) {
 		]);
 
 		var options = {
-			title: "<?php echo $asset2Name;?>"
+			title: "<?php echo $asset2Name;?>",
+			explorer: {
+				actions: ['dragToZoom', 'rightClickToReset'],
+				keepInBounds: true
+			}
 		};
 
 		var chart = new google.visualization.LineChart(document.getElementById('chart2_div'));

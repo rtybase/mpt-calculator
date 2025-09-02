@@ -71,19 +71,19 @@ function addLatestPrices($link, $dividendsData) {
 		$i++;
 	}
 ?>
+<!doctype html>
 <html>
   <head>
     <meta charset="UTF-8">
-    <link href="https://developers.google.com/fusiontables/docs/samples/style/default.css" rel="stylesheet" type="text/css">
     <style>
 	a:link, a:visited, a:active { color:#000000; text-decoration: none; }
 	a:hover { color:#000000; text-decoration: underline; }
     </style>
 
-    <script type='text/javascript' src='https://www.google.com/jsapi'></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type='text/javascript'>
-	google.load('visualization', '1.1', {packages:['table']});
-	google.setOnLoadCallback(generateTable);
+	google.charts.load('current', {'packages':['table']});
+	google.charts.setOnLoadCallback(generateTable);
 
 	function generateTable() {
 		var data = generateData();
