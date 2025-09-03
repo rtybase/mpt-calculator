@@ -4,6 +4,7 @@ import pandas as pd
 import numpy
 import util.ml
 import util.db
+import util.dates
 
 DS1_FILE = "inputs-ml/out-pred-1d-after-eps.csv"
 DS2_FILE = "inputs-ml/out-pred-2d-after-eps.csv"
@@ -49,14 +50,23 @@ def asset_id_from_symbol(symbol):
 
     return asset_id
 
-def save_to_db(asset, date, days_after_eps, model, prediction):
+def next_w_date(eps_date, days_after_eps):
+    next_date = util.dates.string_to_date(eps_date)
+    for i in range(days_after_eps):
+        next_date = util.dates.next_working_date(next_date)
+
+    return next_date
+
+def save_to_db(asset, eps_date, days_after_eps, model, prediction):
     with util.db.db_conection.cursor() as cursor:
         cursor.execute("""INSERT into tbl_predictions 
-                           (fk_assetID, vchr_model, dtm_eps_date, int_days_after_eps, dbl_prd_return) 
-                           values (%s,%s,%s,%s,%s)
+                           (fk_assetID, vchr_model, dtm_eps_date, int_days_after_eps, dtm_prd_date, dbl_prd_return) 
+                           values (%s,%s,%s,%s,%s,%s)
                            ON DUPLICATE KEY UPDATE
                            dbl_prd_return=VALUES(dbl_prd_return)""",\
-            (asset, model, date, days_after_eps, prediction))
+            (asset, model, eps_date, days_after_eps,\
+                next_w_date(eps_date, days_after_eps),\
+                prediction))
     util.db.db_conection.commit()
 
 def save_results(model_details, dataset_index):

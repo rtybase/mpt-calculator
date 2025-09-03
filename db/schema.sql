@@ -76,9 +76,11 @@ create table tbl_predictions (
 	vchr_model varchar(50) not null,
 	dtm_eps_date DATE not null, -- dd-mm-yy
 	int_days_after_eps int(10) unsigned NOT NULL,
+	dtm_prd_date DATE not null, -- dd-mm-yy
 	dbl_prd_return DOUBLE not null,
 	primary key(fk_assetID, vchr_model, dtm_eps_date, int_days_after_eps),
-	foreign key(fk_assetID) references tbl_assets (int_assetID)
+	foreign key(fk_assetID) references tbl_assets (int_assetID),
+	unique (fk_assetID, vchr_model, dtm_prd_date)
 ) ENGINE = InnoDB;
 
 create table tbl_avgreturns (

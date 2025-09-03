@@ -6,6 +6,9 @@ nyse_holidays = holidays.NYSE()
 def date_to_string(date):
     return date.strftime('%Y-%m-%d')
 
+def string_to_date(date_str):
+    return datetime.datetime.strptime(date_str, '%Y-%m-%d')
+
 def subtract_days(start_date, no_of_days):
     return start_date - datetime.timedelta(days = no_of_days)
 

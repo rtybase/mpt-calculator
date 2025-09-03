@@ -7,14 +7,13 @@
 
 function getPredictions($link) {
 	$query = "SELECT a.fk_assetID, c.vchr_name, a.dtm_eps_date, a.int_days_after_eps, ";
-	$query.= "    a.vchr_model, a.dbl_prd_return, b.dbl_return ";
+	$query.= "    a.dtm_prd_date, a.vchr_model, a.dbl_prd_return, b.dbl_return ";
 	$query.= "FROM tbl_predictions a ";
 	$query.= "LEFT JOIN tbl_assets c ON a.fk_assetID=c.int_assetID ";
 	$query.= "LEFT JOIN tbl_prices b ON a.fk_assetID=b.fk_assetID ";
-	$query.= "    AND DATE_ADD(a.dtm_eps_date, INTERVAL a.int_days_after_eps DAY)=b.dtm_date ";
+	$query.= "    AND a.dtm_prd_date=b.dtm_date ";
 	$query.= "WHERE  a.dtm_eps_date BETWEEN (NOW() - INTERVAL 60 DAY) AND NOW() ";
-	$query.= "ORDER BY a.fk_assetID ASC, a.dtm_eps_date DESC, ";
-	$query.= "    a.int_days_after_eps ASC, a.vchr_model ASC ";
+	$query.= "ORDER BY a.fk_assetID ASC, a.dtm_prd_date DESC, a.vchr_model ASC";
 
 	$res = mysql_query($query, $link);
 	if (!$res) die("Invalid query: ". mysql_error());
@@ -29,8 +28,9 @@ function getPredictions($link) {
 		$tableResult.= "'".$row[2]."',";
 		$tableResult.= toChartNumber($row[3]).",";
 		$tableResult.= "'".$row[4]."',";
-		$tableResult.= toChartNumber(roundOrNull($row[5], 5)).",";
+		$tableResult.= "'".$row[5]."',";
 		$tableResult.= toChartNumber(roundOrNull($row[6], 5)).",";
+		$tableResult.= toChartNumber(roundOrNull($row[7], 5)).",";
 		$tableResult.= "'<a href=\"./show_eps.php?id=".$row[0]."\">details ...</a>']";
 		$i++;
 	}
@@ -104,6 +104,7 @@ function getPredictions($link) {
 		dataTable.addColumn('string', 'Asset');
 		dataTable.addColumn('string', 'EPS Report Day');
 		dataTable.addColumn('number', 'Day(s) After EPS');
+		dataTable.addColumn('string', 'Prediction Day (incl. hols)');
 		dataTable.addColumn('string', 'Model');
 		dataTable.addColumn('number', 'Predicted Return');
 		dataTable.addColumn('number', 'Actual Return');
