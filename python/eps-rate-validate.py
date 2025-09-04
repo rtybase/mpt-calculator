@@ -1,8 +1,10 @@
-import sys
 import numpy
 import util.ml
 from sklearn.metrics import r2_score
 from statistics import correlation
+
+DS1_FILE = "inputs-ml/out-training-for-1d.csv"
+DS2_FILE = "inputs-ml/out-training-for-2d.csv"
 
 def compute_matches(y_actual, y_predicted):
     return numpy.linalg.norm(y_actual - y_predicted)
@@ -41,12 +43,9 @@ def validate_all_models(X,y_actual, dataset_index):
 
     print("==============================================")
 
-if len(sys.argv) > 1:
-    X,y_actual = util.ml.load_training_data_2_days_after_eps(sys.argv[1])
-    validate_all_models(X,y_actual, 2)
 
-    X,y_actual = util.ml.load_training_data_1_day_after_eps(sys.argv[1])
-    validate_all_models(X,y_actual, 1)
+X,y_actual = util.ml.load_training_data_2_days_after_eps(DS2_FILE)
+validate_all_models(X,y_actual, 2)
 
-else:
-    print("Specify the file with data for prediction!")
+X,y_actual = util.ml.load_training_data_1_day_after_eps(DS1_FILE)
+validate_all_models(X,y_actual, 1)

@@ -124,7 +124,9 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 			});
 		});
 
-		writeData(FileNameUtil.adjustOutputFileName(outputFile, "training"), dataForTraining);
+		writeData(FileNameUtil.adjustOutputFileName(outputFile, "training-for-2d"), dataForTraining);
+		writeData(FileNameUtil.adjustOutputFileName(outputFile, "training-for-1d"), addLists(dataForTraining, dataFor2DPrediction));
+
 		writeData(FileNameUtil.adjustOutputFileName(outputFile, "pred-2d-after-eps"), dataFor2DPrediction);
 		writeData(FileNameUtil.adjustOutputFileName(outputFile, "pred-1d-after-eps"), dataFor1DPrediction);
 	}
@@ -138,6 +140,13 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 		addEpsData(epsStore, dbManager.getAllStocksEpsInfo(YEARS_BACK));
 		say("Loading prices data from DB ...");
 		addPricingData(priceStore, dbManager.getAllStocksPriceInfo(YEARS_BACK));
+	}
+
+	private static <T> List<T> addLists(List<T> l1, List<T> l2) {
+		final List<T> result = new ArrayList<>();
+		result.addAll(l1);
+		result.addAll(l2);
+		return result;
 	}
 
 	private static void writeData(String outputFile, List<AssetEpsHistoricalInfo> data) throws Exception {

@@ -1,9 +1,11 @@
-import sys
 import util.ml
 
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import GridSearchCV
+
+DS1_FILE = "inputs-ml/out-training-for-1d.csv"
+DS2_FILE = "inputs-ml/out-training-for-2d.csv"
 
 def best_model_params(X, y, regression_model, params):
     grid = GridSearchCV(regression_model, param_grid=params, cv=5, scoring='r2')
@@ -42,14 +44,11 @@ def best_params_for_data(X, y):
     model, params = rfr_model_and_paramrs()
     best_model_params(X, y, model, params)
 
-if len(sys.argv) > 1:
-    print("Looking for the best params from DS=2", flush=True)
-    X,y = util.ml.load_training_data_2_days_after_eps(sys.argv[1])
-    best_params_for_data(X, y)
 
-    print("Looking for the best params from DS=1", flush=True)
-    X,y = util.ml.load_training_data_1_day_after_eps(sys.argv[1])
-    best_params_for_data(X, y)
+print(f"Looking for the best params from DS=2 with {DS2_FILE}", flush=True)
+X,y = util.ml.load_training_data_2_days_after_eps(DS2_FILE)
+best_params_for_data(X, y)
 
-else:
-    print("Specify the file with training data!")
+print(f"Looking for the best params from DS=1 with {DS1_FILE}", flush=True)
+X,y = util.ml.load_training_data_1_day_after_eps(DS1_FILE)
+best_params_for_data(X, y)
