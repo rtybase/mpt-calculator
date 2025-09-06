@@ -45,7 +45,7 @@ public final class ToEntityConvertorsUtil {
 				toDate(line[EPS_DATE_COLUMN].trim(), EPS_DATE_FORMAT));
 	}
 
-	private static Double doubleFromString(String value) {
+	public static Double doubleFromString(String value) {
 		if (value.isEmpty() || NA_VALUE.equalsIgnoreCase(value)) {
 			return null;
 		}

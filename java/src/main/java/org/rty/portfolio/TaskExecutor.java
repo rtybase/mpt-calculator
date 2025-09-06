@@ -19,6 +19,7 @@ import org.rty.portfolio.engine.impl.dbtask.OptimalPortfolioFinderTask;
 import org.rty.portfolio.engine.impl.dbtask.load.LoadDividendsToDbTask;
 import org.rty.portfolio.engine.impl.dbtask.load.LoadEarningsToDbTask;
 import org.rty.portfolio.engine.impl.dbtask.load.LoadEpsToDbTask;
+import org.rty.portfolio.engine.impl.dbtask.load.LoadNonGaapEpsToDbTask;
 import org.rty.portfolio.engine.impl.dbtask.load.LoadPricesToDbTask;
 import org.rty.portfolio.engine.impl.nettask.DownloadTask;
 import org.rty.portfolio.engine.impl.transform.TransformDividendsDataTask;
@@ -74,6 +75,7 @@ public class TaskExecutor {
 		registerTask(new LoadEpsToDbTask(dbManager));
 		registerTask(new LoadEarningsToDbTask(dbManager));
 		registerTask(new TransformEpsDataForTrainingTask(dbManager));
+		registerTask(new LoadNonGaapEpsToDbTask(dbManager));
 	}
 
 	private static void registerTask(Task task) {

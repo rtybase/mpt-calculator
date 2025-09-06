@@ -18,7 +18,7 @@ public class LoadEpsToDbTask extends GenericLoadToDbTask<AssetEpsInfo> {
 	public static final int NO_OF_COLUMNS = 4;
 
 	public LoadEpsToDbTask(DbManager dbManager) {
-		super(dbManager, NO_OF_COLUMNS);
+		super(dbManager, NO_OF_COLUMNS, false);
 	}
 
 	@Override

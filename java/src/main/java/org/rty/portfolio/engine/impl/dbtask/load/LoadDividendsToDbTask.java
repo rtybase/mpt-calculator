@@ -19,7 +19,7 @@ public class LoadDividendsToDbTask extends GenericLoadToDbTask<AssetDividendInfo
 	private static final int DATE_COLUMN = 2;
 
 	public LoadDividendsToDbTask(DbManager dbManager) {
-		super(dbManager, NO_OF_COLUMNS);
+		super(dbManager, NO_OF_COLUMNS, false);
 	}
 
 	@Override

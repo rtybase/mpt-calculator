@@ -17,6 +17,7 @@ import org.rty.portfolio.core.utils.FileNameUtil;
 import org.rty.portfolio.core.utils.ToEntityConvertorsUtil;
 import org.rty.portfolio.db.DbManager;
 import org.rty.portfolio.engine.AbstractDbTask;
+import org.rty.portfolio.engine.impl.dbtask.load.GenericLoadToDbTask;
 import org.rty.portfolio.engine.impl.dbtask.load.LoadEpsToDbTask;
 import org.rty.portfolio.engine.impl.dbtask.load.LoadPricesToDbTask;
 import org.rty.portfolio.io.BulkCsvLoader;
@@ -269,7 +270,7 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 
 	private static BulkCsvLoader<AssetPriceInfo> priceLoader(
 			Map<String, NavigableMap<Date, AssetPriceInfo>> priceStore) {
-		return new BulkCsvLoader<>(LoadPricesToDbTask.NO_OF_COLUMNS) {
+		return new BulkCsvLoader<>(LoadPricesToDbTask.NO_OF_COLUMNS, false) {
 
 			@Override
 			protected List<String> saveResults(List<AssetPriceInfo> dataToAdd) throws Exception {
@@ -281,11 +282,21 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 			protected AssetPriceInfo toEntity(String assetName, String[] line) {
 				return ToEntityConvertorsUtil.toAssetPriceInfoEntity(assetName, line);
 			}
+
+			@Override
+			protected void announceHeaders(String inputFile, String[] headerLine) {
+				// nothing to do
+			}
+
+			@Override
+			protected String assetNameFrom(String[] line) {
+				return line[GenericLoadToDbTask.NAME_COLUMN].trim();
+			}
 		};
 	}
 
 	private static BulkCsvLoader<AssetEpsInfo> epsLoader(Map<String, NavigableMap<Date, AssetEpsInfo>> epsStore) {
-		return new BulkCsvLoader<>(LoadEpsToDbTask.NO_OF_COLUMNS) {
+		return new BulkCsvLoader<>(LoadEpsToDbTask.NO_OF_COLUMNS, false) {
 
 			@Override
 			protected List<String> saveResults(List<AssetEpsInfo> dataToAdd) throws Exception {
@@ -296,6 +307,16 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 			@Override
 			protected AssetEpsInfo toEntity(String assetName, String[] line) {
 				return ToEntityConvertorsUtil.toAssetEpsInfoEntity(assetName, line);
+			}
+
+			@Override
+			protected void announceHeaders(String inputFile, String[] headerLine) {
+				// nothing to do
+			}
+
+			@Override
+			protected String assetNameFrom(String[] line) {
+				return line[GenericLoadToDbTask.NAME_COLUMN].trim();
 			}
 		};
 	}

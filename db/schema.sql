@@ -63,6 +63,18 @@ create table tbl_eps (
 	foreign key(fk_assetID) references tbl_assets (int_assetID)
 ) ENGINE = InnoDB;
 
+create table tbl_n_gaap_eps (
+	fk_assetID int(10) unsigned NOT NULL,
+	dbl_eps DOUBLE not null,
+	dbl_prd_eps DOUBLE,
+	dtm_date DATE not null, -- dd-mm-yy
+	bln_after_market_close BOOLEAN not null,
+	dbl_revenue DOUBLE not null,
+	dbl_prd_revenue DOUBLE,
+	primary key(fk_assetID, dtm_date),
+	foreign key(fk_assetID) references tbl_assets (int_assetID)
+) ENGINE = InnoDB;
+
 create table tbl_earnings (
 	fk_assetID int(10) unsigned NOT NULL,
 	dbl_eps DOUBLE not null,

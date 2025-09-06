@@ -17,7 +17,7 @@ public class LoadPricesToDbTask extends GenericLoadToDbTask<AssetPriceInfo> {
 	public static final int NO_OF_COLUMNS = 5;
 
 	public LoadPricesToDbTask(DbManager dbManager) {
-		super(dbManager, NO_OF_COLUMNS);
+		super(dbManager, NO_OF_COLUMNS, false);
 	}
 
 	@Override

@@ -18,6 +18,7 @@ import java.util.Objects;
 import org.apache.commons.math3.util.Pair;
 import org.rty.portfolio.core.AssetDividendInfo;
 import org.rty.portfolio.core.AssetEpsInfo;
+import org.rty.portfolio.core.AssetNonGaapEpsInfo;
 import org.rty.portfolio.core.AssetPriceInfo;
 import org.rty.portfolio.core.AssetsCorrelationInfo;
 import org.rty.portfolio.core.PortflioOptimalResults;
@@ -96,13 +97,10 @@ public class DbManager {
 						+ "	 dbl_return=VALUES(dbl_return)")) {
 
 			for (AssetPriceInfo price : prices) {
-				Integer assetId = resolveAssetNameToId(price.assetName);
+				final Integer assetId = resolveAssetNameToIdOrAddToFailList(price.assetName, failedResults,
+						possiblyGoodResults);
 
-				if (assetId < 0) {
-					failedResults.add(price.assetName);
-				} else {
-					possiblyGoodResults.add(price.assetName);
-
+				if (assetId >= 0) {
 					pStmt.setInt(1, assetId);
 					pStmt.setDouble(2, price.price);
 					pStmt.setDouble(3, price.change);
@@ -135,13 +133,10 @@ public class DbManager {
 						+ "	 dbl_pay=VALUES(dbl_pay)")) {
 
 			for (AssetDividendInfo dividend : dividends) {
-				Integer assetId = resolveAssetNameToId(dividend.assetName);
+				final Integer assetId = resolveAssetNameToIdOrAddToFailList(dividend.assetName, failedResults,
+						possiblyGoodResults);
 
-				if (assetId < 0) {
-					failedResults.add(dividend.assetName);
-				} else {
-					possiblyGoodResults.add(dividend.assetName);
-
+				if (assetId >= 0) {
 					pStmt.setInt(1, assetId);
 					pStmt.setDouble(2, dividend.pay);
 					pStmt.setDate(3, new java.sql.Date(dividend.date.getTime()));
@@ -171,13 +166,10 @@ public class DbManager {
 						+ "	 dbl_eps=VALUES(dbl_eps)")) {
 
 			for (AssetEpsInfo eps : assetsEps) {
-				final Integer assetId = resolveAssetNameToId(eps.assetName);
+				final Integer assetId = resolveAssetNameToIdOrAddToFailList(eps.assetName, failedResults,
+						possiblyGoodResults);
 
-				if (assetId < 0) {
-					failedResults.add(eps.assetName);
-				} else {
-					possiblyGoodResults.add(eps.assetName);
-
+				if (assetId >= 0) {
 					pStmt.setInt(1, assetId);
 					pStmt.setDouble(2, eps.eps);
 					pStmt.setDate(3, new java.sql.Date(eps.date.getTime()));
@@ -208,24 +200,54 @@ public class DbManager {
 						+ "	 dbl_prd_eps=VALUES(dbl_prd_eps)")) {
 
 			for (AssetEpsInfo eps : assetsEps) {
-				final Integer assetId = resolveAssetNameToId(eps.assetName);
+				final Integer assetId = resolveAssetNameToIdOrAddToFailList(eps.assetName, failedResults,
+						possiblyGoodResults);
 
-				if (assetId < 0) {
-					failedResults.add(eps.assetName);
-				} else {
-					possiblyGoodResults.add(eps.assetName);
-
+				if (assetId >= 0) {
 					pStmt.setInt(1, assetId);
 					pStmt.setDouble(2, eps.eps);
-
-					if (eps.epsPredicted == null) {
-						pStmt.setNull(3, java.sql.Types.NULL);
-					} else {
-						pStmt.setDouble(3, eps.epsPredicted);
-					}
-
+					setDoubleValueOrNull(pStmt, 3, eps.epsPredicted);
 					pStmt.setDate(4, new java.sql.Date(eps.date.getTime()));
+					pStmt.addBatch();
+				}
+			}
 
+			executeAndProcessResult(pStmt, possiblyGoodResults, failedResults);
+		}
+
+		return failedResults;
+	}
+
+	/**
+	 * Adds non-GAAP EPS records to DB.
+	 * 
+	 */
+	public 	List<String> addBulkNonGaapEps(List<AssetNonGaapEpsInfo> assetsNonGaapEps) throws Exception {
+		final List<String> failedResults = new ArrayList<>(assetsNonGaapEps.size());
+		final List<String> possiblyGoodResults = new ArrayList<>(assetsNonGaapEps.size());
+
+		try (PreparedStatement pStmt = connection.prepareStatement(
+				"INSERT INTO tbl_n_gaap_eps (fk_assetID, dbl_eps, dbl_prd_eps, dtm_date, bln_after_market_close, dbl_revenue, dbl_prd_revenue)"
+						+ " VALUES (?,?,?,?,?,?,?)"
+						+ " ON DUPLICATE KEY UPDATE"
+						+ "	 dbl_eps=VALUES(dbl_eps),"
+						+ "	 dbl_prd_eps=VALUES(dbl_prd_eps),"
+						+ "	 bln_after_market_close=VALUES(bln_after_market_close),"
+						+ "	 dbl_revenue=VALUES(dbl_revenue),"
+						+ "	 dbl_prd_revenue=VALUES(dbl_prd_revenue)")) {
+
+			for (AssetNonGaapEpsInfo nonGappEps : assetsNonGaapEps) {
+				final Integer assetId = resolveAssetNameToIdOrAddToFailList(nonGappEps.assetName, failedResults,
+						possiblyGoodResults);
+
+				if (assetId >= 0) {
+					pStmt.setInt(1, assetId);
+					pStmt.setDouble(2, nonGappEps.eps);
+					setDoubleValueOrNull(pStmt, 3, nonGappEps.epsPredicted);
+					pStmt.setDate(4, new java.sql.Date(nonGappEps.date.getTime()));
+					pStmt.setBoolean(5, nonGappEps.afterMarketClose);
+					pStmt.setDouble(6, nonGappEps.revenue);
+					setDoubleValueOrNull(pStmt, 7, nonGappEps.revenuePredicted);
 					pStmt.addBatch();
 				}
 			}
@@ -251,7 +273,6 @@ public class DbManager {
 				pStmt.setInt(3, assetsShiftCorrelation.bestShift);
 				pStmt.setDouble(4, assetsShiftCorrelation.bestCorrelation);
 				pStmt.setString(5, assetsShiftCorrelation.toString());
-
 				pStmt.addBatch();
 			}
 
@@ -499,6 +520,27 @@ public class DbManager {
 					failedResults.add(possiblyGoodResults.get(result));
 				}
 			}
+		}
+	}
+
+	private Integer resolveAssetNameToIdOrAddToFailList(String assetName, List<String> failedResults,
+			List<String> possiblyGoodResults) throws Exception {
+		final Integer assetId = resolveAssetNameToId(assetName);
+
+		if (assetId < 0) {
+			failedResults.add(assetName);
+		} else {
+			possiblyGoodResults.add(assetName);
+		}
+
+		return assetId;
+	}
+
+	private static void setDoubleValueOrNull(PreparedStatement pStmt, int parameterIdex, Double value) throws Exception {
+		if (value == null) {
+			pStmt.setNull(parameterIdex, java.sql.Types.NULL);
+		} else {
+			pStmt.setDouble(parameterIdex, value);
 		}
 	}
 }

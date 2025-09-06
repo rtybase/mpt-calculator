@@ -20,16 +20,16 @@ import au.com.bytecode.opencsv.CSVReader;
 public abstract class BulkCsvLoader<T> {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BulkCsvLoader.class.getSimpleName());
 
-	private static final int NAME_COLUMN = 0;
-
 	private static final String ERROR_REPORT_FILE = "assets.err";
 	private static final SimpleDateFormat REPORT_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	protected final Set<String> errorAssets = new HashSet<String>();
 	private final int expectedNumberOfColumns;
+	private final boolean hasHeader;
 
-	public BulkCsvLoader(int expectedNumberOfColumns) {
+	public BulkCsvLoader(int expectedNumberOfColumns, boolean hasHeader) {
 		this.expectedNumberOfColumns = expectedNumberOfColumns;
+		this.hasHeader = hasHeader;
 	}
 
 	public final void load(String inputFile) throws Exception {
@@ -71,12 +71,14 @@ public abstract class BulkCsvLoader<T> {
 		final List<T> dataToAdd = new ArrayList<>(1024);
 		final CSVReader reader = new CSVReader(new FileReader(inputFile));
 
+		announceHeadersIfAny(inputFile, reader);
+
 		String[] nextLine;
 		while ((nextLine = reader.readNext()) != null) {
 			if (nextLine.length == expectedNumberOfColumns) {
 				total.incrementAndGet();
 
-				final String assetName = nextLine[NAME_COLUMN].trim();
+				final String assetName = assetNameFrom(nextLine);
 
 				try {
 					dataToAdd.add(toEntity(assetName, nextLine));
@@ -90,6 +92,15 @@ public abstract class BulkCsvLoader<T> {
 		}
 		reader.close();
 		return dataToAdd;
+	}
+
+	private void announceHeadersIfAny(String inputFile, CSVReader reader) throws IOException {
+		if (hasHeader) {
+			final String[] headers = reader.readNext();
+			if (headers != null) {
+				announceHeaders(inputFile, headers);
+			}
+		}
 	}
 
 	private void reportErrors() throws IOException {
@@ -126,4 +137,8 @@ public abstract class BulkCsvLoader<T> {
 	protected abstract List<String> saveResults(List<T> dataToAdd) throws Exception;
 
 	protected abstract T toEntity(String assetName, String[] line);
+
+	protected abstract void announceHeaders(String inputFile, String[] headerLine);
+
+	protected abstract String assetNameFrom(String[] line);
 }

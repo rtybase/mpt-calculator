@@ -23,7 +23,7 @@ public class LoadEarningsToDbTask extends GenericLoadToDbTask<AssetEpsInfo> {
 	private static final int DATE_COLUMN = 2;
 
 	public LoadEarningsToDbTask(DbManager dbManager) {
-		super(dbManager, NO_OF_COLUMNS);
+		super(dbManager, NO_OF_COLUMNS, false);
 	}
 
 	@Override
