@@ -6,6 +6,7 @@ export FOLDER_FOR_PRICE_FILES="./data_to_load_prices"
 export FOLDER_FOR_DIVIDEND_FILES="./data_to_load_dividends"
 export FOLDER_FOR_EPS_FILES="./data_to_load_eps"
 export FOLDER_FOR_EARNINGS_FILES="./data_to_load_earnings"
+export FOLDER_FOR_N_GAAP_EPS_FILES="./data_to_load_n_gaap_eps"
 
 load_uk_in() {
 	echo "---------------------------------------------------"
@@ -22,6 +23,7 @@ mkdir -p ${FOLDER_FOR_PRICE_FILES}
 mkdir -p ${FOLDER_FOR_DIVIDEND_FILES}
 mkdir -p ${FOLDER_FOR_EPS_FILES}
 mkdir -p ${FOLDER_FOR_EARNINGS_FILES}
+mkdir -p ${FOLDER_FOR_N_GAAP_EPS_FILES}
 
 echo "---------------------------------------------------"
 echo "Standard Life data"
@@ -40,16 +42,19 @@ load_uk_in "indices/uk-100" "FTSE100" "ftse100-1.csv"
 ./download_all_yf.sh inputs/yf-inputs.txt
 ./download-eps.sh inputs/eps-inputs.txt
 ./download-earnings.sh inputs/eps-inputs.txt
+./download-n-gaap-eps.sh inputs/eps-inputs.txt
 
 java -jar portfolio-0.0.1-SNAPSHOT.jar LoadPricesToDbTask "-file=${FOLDER_FOR_PRICE_FILES}"
 java -jar portfolio-0.0.1-SNAPSHOT.jar LoadDividendsToDbTask "-file=${FOLDER_FOR_DIVIDEND_FILES}"
 java -jar portfolio-0.0.1-SNAPSHOT.jar LoadEpsToDbTask "-file=${FOLDER_FOR_EPS_FILES}"
 java -jar portfolio-0.0.1-SNAPSHOT.jar LoadEarningsToDbTask "-file=${FOLDER_FOR_EARNINGS_FILES}"
+java -jar portfolio-0.0.1-SNAPSHOT.jar LoadNGaapEpsToDbTask "-file=${FOLDER_FOR_N_GAAP_EPS_FILES}"
 
 rm -rf ${FOLDER_FOR_PRICE_FILES}
 rm -rf ${FOLDER_FOR_DIVIDEND_FILES}
 rm -rf ${FOLDER_FOR_EPS_FILES}
 rm -rf ${FOLDER_FOR_EARNINGS_FILES}
+rm -rf ${FOLDER_FOR_N_GAAP_EPS_FILES}
 
 java -Xmx512m -jar portfolio-0.0.1-SNAPSHOT.jar CalculateAssetStatsTask
 java -Xmx768m -jar portfolio-0.0.1-SNAPSHOT.jar Calculate2AssetsPortfolioStatsTask

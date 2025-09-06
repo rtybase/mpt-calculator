@@ -4,10 +4,10 @@ set -ue
 
 FOLDER_FOR_EARNINGS_FILES=${FOLDER_FOR_EARNINGS_FILES:-"./data_to_load_earnings"}
 
-load_eps () {
+load_earnings () {
 	ticker=$2
 	echo "---------------------------------------------------"
-	echo "EPS data for: ${ticker}"
+	echo "Earnings data for: ${ticker}"
 
 	out_file_name=`echo "$1" | sed -e 's/[\.\%]/-/g' | tr '[:upper:]' '[:lower:]'`;
 	eps_out_file="${FOLDER_FOR_EARNINGS_FILES}/${out_file_name}.csv"
@@ -40,5 +40,5 @@ do
 #    echo "Key: [$key]"
 #    echo "Value: [$value]"
 	
-	load_eps "$key" "$value" || true
+	load_earnings "$key" "$value" || true
 done < "${input_file}"
