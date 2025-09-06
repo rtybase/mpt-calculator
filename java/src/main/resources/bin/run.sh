@@ -39,7 +39,7 @@ load_uk_in "indices/uk-100" "FTSE100" "ftse100-1.csv"
 
 ./download_all_yf.sh inputs/yf-inputs.txt
 ./download-eps.sh inputs/eps-inputs.txt
-./download-earnings.sh inputs/earnings-inputs.txt
+./download-earnings.sh inputs/eps-inputs.txt
 
 java -jar portfolio-0.0.1-SNAPSHOT.jar LoadPricesToDbTask "-file=${FOLDER_FOR_PRICE_FILES}"
 java -jar portfolio-0.0.1-SNAPSHOT.jar LoadDividendsToDbTask "-file=${FOLDER_FOR_DIVIDEND_FILES}"

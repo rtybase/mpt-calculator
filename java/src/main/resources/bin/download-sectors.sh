@@ -17,14 +17,18 @@ load_sector () {
 	else 
 		java -Duse-http2=true -jar portfolio-0.0.1-SNAPSHOT.jar DownloadTask "-url=https://api.nasdaq.com/api/quote/$1/summary?assetclass=stocks" -outfile=sector.json
 
-		cat sector.json | python -m json.tool | \
-			grep -iE -A 1 "label\":.*(Sector|Industry)" | \
-			grep -iE "value" | \
-			sed -e 's/\"value\"://g' | \
-			tr -s '[:blank:]' | \
-			sed -e 's/ \"/\"/g' | \
-			paste -d "," - - | \
-			awk -F ',' -v 'OFS=,' -v TICKER="${ticker}" '{ print "\"" TICKER "\"", $1, $2}' > ${sector_out_file}
+		if [ -s sector.json ]; then
+			cat sector.json | python -m json.tool | \
+				grep -iE -A 1 "label\":.*(Sector|Industry)" | \
+				grep -iE "value" | \
+				sed -e 's/\"value\"://g' | \
+				tr -s '[:blank:]' | \
+				sed -e 's/ \"/\"/g' | \
+				paste -d "," - - | \
+				awk -F ',' -v 'OFS=,' -v TICKER="${ticker}" '{ print "\"" TICKER "\"", $1, $2}' 1>${sector_out_file} 2>/dev/null
+		else
+			echo "No data for ${ticker}"
+		fi
 
 		rm -rf sector.json
 	fi
@@ -42,5 +46,5 @@ do
 #    echo "Key: [$key]"
 #    echo "Value: [$value]"
 	
-	load_sector "$key" "$value"
+	load_sector "$key" "$value" || true
 done < "${input_file}"

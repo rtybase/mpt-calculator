@@ -16,9 +16,13 @@ load_eps () {
 		echo "${eps_out_file} already exists."
 	else 
 		java -Duse-http2=true -jar portfolio-0.0.1-SNAPSHOT.jar DownloadTask "-url=https://api.nasdaq.com/api/company/$1/revenue?limit=1" -outfile=earnings.json
-		cat earnings.json | python -m json.tool | grep -iE "value.*EPS" -A 3 | \
-			grep -iE "value[2-4].*\([0-9]{2}" | sed -e 's/[(]\$/\-/g' | sed -e 's/[\",\$\(\)\:]//g' | \
-			awk -F ' ' -v 'OFS=,' -v TICKER="${ticker}" '{ print "\"" TICKER "\"", $2, $3}' > ${eps_out_file}
+		if [ -s earnings.json ]; then
+			cat earnings.json | python -m json.tool | grep -iE "value.*EPS" -A 3 | \
+				grep -iE "value[2-4].*\([0-9]{2}" | sed -e 's/[(]\$/\-/g' | sed -e 's/[\",\$\(\)\:]//g' | \
+				awk -F ' ' -v 'OFS=,' -v TICKER="${ticker}" '{ print "\"" TICKER "\"", $2, $3}' 1>${eps_out_file} 2>/dev/null
+		else
+			echo "No data for ${ticker}"
+		fi
 
 		rm -rf earnings.json
 	fi
@@ -36,5 +40,5 @@ do
 #    echo "Key: [$key]"
 #    echo "Value: [$value]"
 	
-	load_eps "$key" "$value"
+	load_eps "$key" "$value" || true
 done < "${input_file}"

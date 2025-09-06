@@ -17,11 +17,15 @@ load_eps () {
 	else 
 		java -Duse-http2=true -jar portfolio-0.0.1-SNAPSHOT.jar DownloadTask "-url=https://api.nasdaq.com/api/company/$1/earnings-surprise" -outfile=eps.json
 
-		cat eps.json | python -m json.tool | \
-			grep -iE "(dateReported|eps|consensusForecast)" | \
-			sed -e 's/[\",\$\(\)\:]//g' | awk -F ' ' '{ print $2}' | paste -d " " - - - | \
-			tail -n +2 | \
-			awk -F ' ' -v 'OFS=,' -v TICKER="${ticker}" '{ print "\"" TICKER "\"", $2, $3, $1}'  > ${eps_out_file}
+		if [ -s eps.json ]; then
+			cat eps.json | python -m json.tool | \
+				grep -iE "(dateReported|eps|consensusForecast)" | \
+				sed -e 's/[\",\$\(\)\:]//g' | awk -F ' ' '{ print $2}' | paste -d " " - - - | \
+				tail -n +2 | \
+				awk -F ' ' -v 'OFS=,' -v TICKER="${ticker}" '{ print "\"" TICKER "\"", $2, $3, $1}' 1>${eps_out_file} 2>/dev/null
+		else
+			echo "No data for ${ticker}"
+		fi
 
 		rm -rf eps.json
 	fi
@@ -39,5 +43,5 @@ do
 #    echo "Key: [$key]"
 #    echo "Value: [$value]"
 	
-	load_eps "$key" "$value"
+	load_eps "$key" "$value" || true
 done < "${input_file}"
