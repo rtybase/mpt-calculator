@@ -71,11 +71,11 @@ public abstract class BulkCsvLoader<T> {
 		final List<T> dataToAdd = new ArrayList<>(1024);
 		final CSVReader reader = new CSVReader(new FileReader(inputFile));
 
-		announceHeadersIfAny(inputFile, reader);
+		final int numberOfColumns = announceHeadersIfAny(inputFile, reader);
 
 		String[] nextLine;
 		while ((nextLine = reader.readNext()) != null) {
-			if (nextLine.length == expectedNumberOfColumns) {
+			if (nextLine.length == numberOfColumns) {
 				total.incrementAndGet();
 
 				final String assetName = assetNameFrom(nextLine);
@@ -94,13 +94,15 @@ public abstract class BulkCsvLoader<T> {
 		return dataToAdd;
 	}
 
-	private void announceHeadersIfAny(String inputFile, CSVReader reader) throws IOException {
+	private int announceHeadersIfAny(String inputFile, CSVReader reader) throws IOException {
 		if (hasHeader) {
 			final String[] headers = reader.readNext();
-			if (headers != null) {
+			if (headers != null && headers.length > 0) {
 				announceHeaders(inputFile, headers);
+				return headers.length;
 			}
 		}
+		return expectedNumberOfColumns;
 	}
 
 	private void reportErrors() throws IOException {
