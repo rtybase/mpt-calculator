@@ -59,7 +59,7 @@ public class TaskExecutor {
 		dbManager = new DbManager(conn);
 	}
 
-	private static void registerAllTasks() {
+	private static void registerAllTasks() throws Exception {
 		registerTask(new CalculateAssetStatsTask(dbManager));
 		registerTask(new TransformStdLifeJsonDataTask());
 		registerTask(new Calculate2AssetsPortfolioStatsTask(dbManager));

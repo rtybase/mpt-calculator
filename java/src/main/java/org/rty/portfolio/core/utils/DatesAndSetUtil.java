@@ -1,14 +1,18 @@
 package org.rty.portfolio.core.utils;
 
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -77,5 +81,47 @@ public final class DatesAndSetUtil {
 
 	public static String dateToStr(Date value) {
 		return CSV_SCAN_DATE_FORMAT.format(value);
+	}
+
+	public static Optional<Date> findClosestDate(Date toDate, Collection<Date> datesToCheck, int maxDaysToTolerate) {
+		Objects.requireNonNull(toDate, "toDate must not be null!");
+		Objects.requireNonNull(datesToCheck, "datesToCheck must not be null!");
+
+		final TreeSet<Date> datesToCheckAsSet = new TreeSet<>(datesToCheck);
+
+		if (datesToCheckAsSet.contains(toDate)) {
+			return Optional.of(toDate);
+		}
+
+		final Date next = datesToCheckAsSet.higher(toDate);
+		final Date previous = datesToCheckAsSet.lower(toDate);
+
+		if (next == null && previous == null) {
+			return Optional.empty();
+		}
+
+		final long daysDiffToNext = daysDiff(toDate, next);
+		final long daysDiffFromOrevious = daysDiff(toDate, previous);
+
+		if (daysDiffToNext <= daysDiffFromOrevious) {
+			return valueIfTrue(daysDiffToNext <= maxDaysToTolerate, next);
+		}
+
+		return valueIfTrue(daysDiffFromOrevious <= maxDaysToTolerate, previous);
+	}
+
+	private static long daysDiff(Date date1, Date date2) {
+		if (date2 != null) {
+			return Duration.between(date1.toInstant(), date2.toInstant()).abs().toDays();
+		}
+
+		return Long.MAX_VALUE;
+	}
+
+	private static <T> Optional<T> valueIfTrue(boolean condition, T Value) {
+		if (condition) {
+			return Optional.ofNullable(Value);
+		}
+		return Optional.empty();
 	}
 }

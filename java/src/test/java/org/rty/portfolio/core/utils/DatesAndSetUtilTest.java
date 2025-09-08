@@ -11,13 +11,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
-class DatesAndSetUtilTest {
-	private static final Date D_2025_07_17 = new Date(125, 6, 17);
-
+class DatesAndSetUtilTest extends CommonTestRoutines {
 	@Test
 	void testHasSufficientContent() {
 		assertTrue(DatesAndSetUtil.hasSufficientContent(Set.of("1", "2", "3", "4", "5")));
@@ -114,5 +113,73 @@ class DatesAndSetUtilTest {
 		final String result = DatesAndSetUtil.dateToStr(D_2025_07_17);
 
 		assertEquals("2025-07-17", result);
+	}
+
+	@Test
+	void testFindClosestDateWithEmptyCollection() {
+		Optional<Date> result = DatesAndSetUtil.findClosestDate(D_2025_07_17, List.of(), 3);
+
+		assertFalse(result.isPresent());
+	}
+
+	@Test
+	void testFindClosestDatePointingAtSelf() {
+		Optional<Date> result = DatesAndSetUtil.findClosestDate(D_2025_07_17, List.of(D_2025_07_17), 3);
+
+		assertTrue(result.isPresent());
+		assertEquals(D_2025_07_17, result.get());
+	}
+
+	@Test
+	void testFindClosestDatePointingAtLowerDate() {
+		Optional<Date> result = DatesAndSetUtil.findClosestDate(D_2025_07_17, List.of(dateFrom(16)), 3);
+
+		assertTrue(result.isPresent());
+		assertEquals(dateFrom(16), result.get());
+	}
+
+	@Test
+	void testFindClosestDatePointingAtLowerDateButOutOfTolerance() {
+		Optional<Date> result = DatesAndSetUtil.findClosestDate(D_2025_07_17, List.of(dateFrom(13)), 3);
+
+		assertFalse(result.isPresent());
+	}
+
+	@Test
+	void testFindClosestDatePointingAtHigherDate() {
+		Optional<Date> result = DatesAndSetUtil.findClosestDate(D_2025_07_17, List.of(dateFrom(18)), 3);
+
+		assertTrue(result.isPresent());
+		assertEquals(dateFrom(18), result.get());
+	}
+
+	@Test
+	void testFindClosestDatePointingAtHigherDateButOutOfTolerance() {
+		Optional<Date> result = DatesAndSetUtil.findClosestDate(D_2025_07_17, List.of(dateFrom(21)), 3);
+
+		assertFalse(result.isPresent());
+	}
+
+	@Test
+	void testFindClosestDateOutOfTolerance() {
+		Optional<Date> result = DatesAndSetUtil.findClosestDate(D_2025_07_17, List.of(dateFrom(13), dateFrom(21)), 3);
+
+		assertFalse(result.isPresent());
+	}
+
+	@Test
+	void testFindClosestDateHighest() {
+		Optional<Date> result = DatesAndSetUtil.findClosestDate(D_2025_07_17, List.of(dateFrom(14), dateFrom(20)), 3);
+
+		assertTrue(result.isPresent());
+		assertEquals(dateFrom(20), result.get());
+	}
+
+	@Test
+	void testFindClosestDateLowest() {
+		Optional<Date> result = DatesAndSetUtil.findClosestDate(D_2025_07_17, List.of(dateFrom(15), dateFrom(20)), 3);
+
+		assertTrue(result.isPresent());
+		assertEquals(dateFrom(15), result.get());
 	}
 }

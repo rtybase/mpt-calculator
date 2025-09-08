@@ -7,7 +7,7 @@ import org.rty.portfolio.core.utils.DatesAndSetUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class AssetEpsInfo implements CsvWritable {
+public class AssetEpsInfo implements CsvWritable, EntryWithAssetNameAndDate {
 	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
 	public final String assetName;
@@ -49,5 +49,19 @@ public class AssetEpsInfo implements CsvWritable {
 				"" + epsPredicted,
 				DatesAndSetUtil.dateToStr(date)
 		};
+	}
+
+	@Override
+	public String getAssetName() {
+		return assetName;
+	}
+
+	@Override
+	public Date getDate() {
+		if (date instanceof java.sql.Date) {
+			return new Date(date.getTime());
+		}
+
+		return date;
 	}
 }

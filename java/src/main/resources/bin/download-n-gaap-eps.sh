@@ -28,7 +28,8 @@ load_n_gaap_eps () {
 				-outfile=n-gaap-eps.json
 
 			if [ -s n-gaap-eps.json ]; then
-				python to_csv.py n-gaap-eps.json | grep -iE "OFFICIAL|earning_date_type" | \
+				python to_csv.py n-gaap-eps.json | \
+#					grep -iE "OFFICIAL|earning_date_type" | \
 					sed -e "s/,${symbol_id},/,\"${asset_name//&/\\&}\",/g" 1>${eps_out_file} 2>/dev/null
 			else
 				echo "No data for ${asset_name}"

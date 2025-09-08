@@ -49,7 +49,7 @@ public class TransformStdLifeJsonDataTask extends AbstractTask {
 		if (node.has(MAIN_FIELD) && node.get(MAIN_FIELD).isArray()) {
 			Iterator<JsonNode> lines = node.get(MAIN_FIELD).elements();
 
-			CsvWriter writer = new CsvWriter(outputFile);
+			CsvWriter<AssetPriceInfo> writer = new CsvWriter<>(outputFile);
 			while (lines.hasNext()) {
 				JsonNode values = lines.next();
 

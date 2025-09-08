@@ -7,12 +7,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
-import java.util.TreeMap;
 
 import org.apache.commons.math3.util.Pair;
 import org.rty.portfolio.core.AssetEpsHistoricalInfo;
 import org.rty.portfolio.core.AssetEpsInfo;
 import org.rty.portfolio.core.AssetPriceInfo;
+import org.rty.portfolio.core.utils.DataHandlingUtil;
 import org.rty.portfolio.core.utils.FileNameUtil;
 import org.rty.portfolio.core.utils.ToEntityConvertorsUtil;
 import org.rty.portfolio.db.DbManager;
@@ -137,10 +137,12 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 			final Map<String, Pair<Integer, Integer>> stocksAndsectorsStore) throws Exception {
 		say("Loading Stocks and Sectors data from DB ...");
 		addStocksSectors(stocksAndsectorsStore, dbManager.getAllStocks());
+
 		say("Loading EPS data from DB ...");
-		addEpsData(epsStore, dbManager.getAllStocksEpsInfo(YEARS_BACK));
+		DataHandlingUtil.addDataToMapByNameAndDate(dbManager.getAllStocksEpsInfo(YEARS_BACK, true), epsStore);
+
 		say("Loading prices data from DB ...");
-		addPricingData(priceStore, dbManager.getAllStocksPriceInfo(YEARS_BACK));
+		DataHandlingUtil.addDataToMapByNameAndDate(dbManager.getAllStocksPriceInfo(YEARS_BACK), priceStore);
 	}
 
 	private static <T> List<T> addLists(List<T> l1, List<T> l2) {
@@ -274,7 +276,7 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 
 			@Override
 			protected List<String> saveResults(List<AssetPriceInfo> dataToAdd) throws Exception {
-				addPricingData(priceStore, dataToAdd);
+				DataHandlingUtil.addDataToMapByNameAndDate(dataToAdd, priceStore);
 				return Collections.emptyList();
 			}
 
@@ -300,7 +302,7 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 
 			@Override
 			protected List<String> saveResults(List<AssetEpsInfo> dataToAdd) throws Exception {
-				addEpsData(epsStore, dataToAdd);
+				DataHandlingUtil.addDataToMapByNameAndDate(dataToAdd, epsStore);
 				return Collections.emptyList();
 			}
 
@@ -319,24 +321,6 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 				return line[GenericLoadToDbTask.NAME_COLUMN].trim();
 			}
 		};
-	}
-
-	private static void addPricingData(Map<String, NavigableMap<Date, AssetPriceInfo>> priceStore,
-			List<AssetPriceInfo> dataToAdd) {
-		dataToAdd.forEach(entry -> {
-			NavigableMap<Date, AssetPriceInfo> assteDetails = priceStore.computeIfAbsent(entry.assetName,
-					k -> new TreeMap<>());
-			assteDetails.put(entry.date, entry);
-		});
-	}
-
-	private static void addEpsData(Map<String, NavigableMap<Date, AssetEpsInfo>> epsStore,
-			List<AssetEpsInfo> dataToAdd) {
-		dataToAdd.forEach(entry -> {
-			NavigableMap<Date, AssetEpsInfo> assteDetails = epsStore.computeIfAbsent(entry.assetName,
-					k -> new TreeMap<>());
-			assteDetails.put(entry.date, entry);
-		});
 	}
 
 	private static void addStocksSectors(Map<String, Pair<Integer, Integer>> stocksAndsectorsStore,

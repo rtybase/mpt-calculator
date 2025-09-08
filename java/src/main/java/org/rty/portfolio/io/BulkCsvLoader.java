@@ -71,10 +71,17 @@ public abstract class BulkCsvLoader<T> {
 		final List<T> dataToAdd = new ArrayList<>(1024);
 		final CSVReader reader = new CSVReader(new FileReader(inputFile));
 
+		int lineNo = 0;
+		if (hasHeader) {
+			lineNo++;
+		}
+
 		final int numberOfColumns = announceHeadersIfAny(inputFile, reader);
 
 		String[] nextLine;
 		while ((nextLine = reader.readNext()) != null) {
+			lineNo++;
+
 			if (nextLine.length == numberOfColumns) {
 				total.incrementAndGet();
 
@@ -83,7 +90,11 @@ public abstract class BulkCsvLoader<T> {
 				try {
 					dataToAdd.add(toEntity(assetName, nextLine));
 				} catch (Exception e) {
-					LOGGER.error("Error converting to entity", e);
+					if (e instanceof NumberFormatException) {
+						LOGGER.warn("Error converting to entity at line '{}': {}", lineNo, e.getMessage());
+					} else {
+						LOGGER.warn("Error converting to entity at line '{}'", lineNo, e);
+					}
 
 					errorAssets.add(assetName);
 					totalFail.incrementAndGet();

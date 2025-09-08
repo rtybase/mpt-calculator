@@ -7,7 +7,7 @@ import org.rty.portfolio.core.utils.DatesAndSetUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class AssetPriceInfo implements CsvWritable {
+public class AssetPriceInfo implements CsvWritable, EntryWithAssetNameAndDate {
 	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
 	public final String assetName;
@@ -44,5 +44,19 @@ public class AssetPriceInfo implements CsvWritable {
 				"" + rate,
 				DatesAndSetUtil.dateToStr(date)
 		};
+	}
+
+	@Override
+	public String getAssetName() {
+		return assetName;
+	}
+
+	@Override
+	public Date getDate() {
+		if (date instanceof java.sql.Date) {
+			return new Date(date.getTime());
+		}
+
+		return date;
 	}
 }

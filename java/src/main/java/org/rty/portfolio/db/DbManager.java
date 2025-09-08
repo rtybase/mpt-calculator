@@ -246,7 +246,7 @@ public class DbManager {
 					setDoubleValueOrNull(pStmt, 3, nonGappEps.epsPredicted);
 					pStmt.setDate(4, new java.sql.Date(nonGappEps.date.getTime()));
 					pStmt.setBoolean(5, nonGappEps.afterMarketClose);
-					pStmt.setDouble(6, nonGappEps.revenue);
+					setDoubleValueOrNull(pStmt, 6, nonGappEps.revenue);
 					setDoubleValueOrNull(pStmt, 7, nonGappEps.revenuePredicted);
 					pStmt.addBatch();
 				}
@@ -433,20 +433,26 @@ public class DbManager {
 	}
 
 	/**
-	 * Returns all the EPS data for the stocks (only!) for a given period.
+	 * Returns all the EPS data for the stocks (only!) for a given period. If
+	 * 'useSymbol' is true, AssetEpsInfo::assetName is set to the symbol (e.g.
+	 * 'MSFT'), otherwise to the assetName (aka human readable name of the asset,
+	 * e.g. 'Microsoft').
 	 */
-	public List<AssetEpsInfo> getAllStocksEpsInfo(int yearsBack) throws Exception {
+	public List<AssetEpsInfo> getAllStocksEpsInfo(int yearsBack, boolean useSymbol) throws Exception {
 		Preconditions.checkArgument(yearsBack > 0, "yearsBack must be > 0!");
 
 		final List<AssetEpsInfo> result = new ArrayList<>(2048);
 
-		try (PreparedStatement pStmt = connection.prepareStatement("select a.vchr_symbol, e.dbl_eps, e.dbl_prd_eps, e.dtm_date"
-				+ " from tbl_eps e, tbl_assets a"
-				+ " where e.fk_assetID = a.int_assetID"
-				+ " and a.vchr_symbol is not null"
-				+ " and a.vchr_symbol in (select vchr_symbol from tbl_stocks)"
-				+ " and e.dbl_prd_eps is not null"
-				+ " and e.dtm_date between (NOW() - INTERVAL ? YEAR) and NOW()")) {
+		final String sqlCommand = String.format(
+				"select %s, e.dbl_eps, e.dbl_prd_eps, e.dtm_date"
+					+ " from tbl_eps e, tbl_assets a"
+					+ " where e.fk_assetID = a.int_assetID"
+					+ " and a.vchr_symbol is not null"
+					+ " and a.vchr_symbol in (select vchr_symbol from tbl_stocks)"
+					+ " and e.dtm_date between (NOW() - INTERVAL ? YEAR) and NOW()",
+				useSymbol ? "a.vchr_symbol" : "a.vchr_name");
+
+		try (PreparedStatement pStmt = connection.prepareStatement(sqlCommand)) {
 			pStmt.setInt(1, yearsBack);
 
 			try (ResultSet rs = pStmt.executeQuery()) {
@@ -455,7 +461,7 @@ public class DbManager {
 					result.add(new AssetEpsInfo(
 							rs.getString(1),
 							rs.getDouble(2),
-							rs.getDouble(3),
+							getDoubleOrNull(rs, 3),
 							rs.getDate(4)
 						));
 				}
@@ -542,5 +548,15 @@ public class DbManager {
 		} else {
 			pStmt.setDouble(parameterIdex, value);
 		}
+	}
+
+	private static Double getDoubleOrNull(ResultSet rs, int parameterIdex) throws Exception {
+		final double value = rs.getDouble(parameterIdex);
+
+		if (rs.wasNull()) {
+			return null;
+		}
+
+		return value;
 	}
 }

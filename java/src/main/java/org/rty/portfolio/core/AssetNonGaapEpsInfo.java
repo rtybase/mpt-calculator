@@ -7,7 +7,7 @@ import org.rty.portfolio.core.utils.DatesAndSetUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class AssetNonGaapEpsInfo implements CsvWritable {
+public class AssetNonGaapEpsInfo implements CsvWritable, EntryWithAssetNameAndDate {
 	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
 	public final String assetName;
@@ -15,17 +15,17 @@ public class AssetNonGaapEpsInfo implements CsvWritable {
 	public final Double epsPredicted;
 	public final Date date;
 	public final boolean afterMarketClose;
-	public final double revenue;
+	public final Double revenue;
 	public final Double revenuePredicted;
 
 	public AssetNonGaapEpsInfo(String assetName, double eps, Double epsPredicted, boolean afterMarketClose,
-			double revenue, Double revenuePredicted, Date date) {
+			Double revenue, Double revenuePredicted, Date date) {
 		this.assetName = assetName;
 		this.eps = eps;
 		this.epsPredicted = epsPredicted;
 		this.afterMarketClose = afterMarketClose;
-		this.revenuePredicted = revenuePredicted;
 		this.revenue = revenue;
+		this.revenuePredicted = revenuePredicted;
 		this.date = date;
 
 	}
@@ -51,5 +51,20 @@ public class AssetNonGaapEpsInfo implements CsvWritable {
 				"" + revenuePredicted,
 				DatesAndSetUtil.dateToStr(date)
 		};
+	}
+
+
+	@Override
+	public String getAssetName() {
+		return assetName;
+	}
+
+	@Override
+	public Date getDate() {
+		if (date instanceof java.sql.Date) {
+			return new Date(date.getTime());
+		}
+
+		return date;
 	}
 }
