@@ -31,7 +31,7 @@ function mergeDividendsEpsAndPricesFor($assetId, $link) {
 	return $divsAndEps;
 }
 
-function loadDividendsAndEpsFrom($dividendsEpsAndPrices) {
+function extractDividendsAndEpsFrom($dividendsEpsAndPrices) {
 	$result = "";
 	foreach ($dividendsEpsAndPrices as $key => $value) {
 		$result .= ",['".$key."',";
@@ -44,7 +44,7 @@ function loadDividendsAndEpsFrom($dividendsEpsAndPrices) {
 	return $result;
 }
 
-function loadPricesFrom($dividendsEpsAndPrices) {
+function extractPricesFrom($dividendsEpsAndPrices) {
 	$result = "";
 	foreach ($dividendsEpsAndPrices as $key => $value) {
 		$result .= ",['".$key."',null,null,null,null";
@@ -72,6 +72,43 @@ function getStockDetails($stock, $link) {
 	return $ret;
 }
 
+function getAllEpsDetails($assetId, $link) {
+	$query = "select a.dtm_date, a.dbl_eps, a.dbl_prd_eps,";
+	$query.= "  b.dbl_eps non_gaap_eps, b.dbl_prd_eps non_gaap_prd_eps,";
+	$query.= "  b.bln_after_market_close,";
+	$query.= "  b.dbl_revenue / 1000000000, b.dbl_prd_revenue / 1000000000 ";
+	$query.= "from tbl_eps a ";
+	$query.= "LEFT JOIN tbl_n_gaap_eps b ON a.fk_assetID = b.fk_assetID AND a.dtm_date=b.dtm_date ";
+	$query.= "where a.fk_assetID=$assetId ";
+	$query.= "order by a.dtm_date DESC";
+
+	$res = mysql_query($query, $link);
+	if (!$res) die("Invalid query: ". mysql_error());
+
+	$tableResult = "";
+	$roundPrecision = 2;
+	$i = 0;
+
+	while ($row = mysql_fetch_array($res)) {
+		if ($i == 0) $tableResult.= "[";
+		else $tableResult.= ",[";
+
+		$tableResult.= "'$row[0]',";
+		$tableResult.= toChartNumber(round($row[1], $roundPrecision)).",";
+		$tableResult.= toChartNumber(roundOrNull($row[2], $roundPrecision)).",";
+		$tableResult.= toChartNumber(roundOrNull($row[3], $roundPrecision)).",";
+		$tableResult.= toChartNumber(roundOrNull($row[4], $roundPrecision)).",";
+		$tableResult.= toChartNumber(roundOrNull($row[6], $roundPrecision)).",";
+		$tableResult.= toChartNumber(roundOrNull($row[7], $roundPrecision)).",";
+		$tableResult.= booleanValueOrNull($row[5])."]";
+
+		$i++;
+	}
+
+	mysql_free_result($res);
+	return $tableResult;
+}
+
 	$id = (int) $_GET["id"];
 	if ($id < 1) $id = 1;
 
@@ -84,8 +121,10 @@ function getStockDetails($stock, $link) {
 
 	$dividendsEpsAndPrices = mergeDividendsEpsAndPricesFor($id, $link);
 
-	$dividendsAndEpsDetails = loadDividendsAndEpsFrom($dividendsEpsAndPrices);
-	$prices = loadPricesFrom($dividendsEpsAndPrices);
+	$dividendsAndEpsDetails = extractDividendsAndEpsFrom($dividendsEpsAndPrices);
+	$prices = extractPricesFrom($dividendsEpsAndPrices);
+
+	$allEpsDetails = getAllEpsDetails($id, $link);
 ?>
 <!doctype html>
 <html>
@@ -98,22 +137,46 @@ function getStockDetails($stock, $link) {
 
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type='text/javascript'>
-	google.charts.load('current', {'packages':['corechart']});
-	google.charts.setOnLoadCallback(drawChart);
+	google.charts.load('current', {'packages':['table','corechart']});
+	google.charts.setOnLoadCallback(drawTableAndCharts);
 
-	function drawChart() {
+	function drawTableAndCharts() {
+		var data = generateHeader();
+		data.addRows([<?php echo $allEpsDetails; ?>]);
+		drawTable('table_div', data);
+
 		drawChart1();
 		drawChart2();
 	}
+
+	function drawTable(element, data) {
+		data.setProperty(0, 0, 'style', 'width:1000px');
+		var table = new google.visualization.Table(document.getElementById(element));
+		table.draw(data, {showRowNumber: false, allowHtml: true});
+	}
+
+	function generateHeader() {
+		var dataTable = new google.visualization.DataTable();
+		dataTable.addColumn('string', 'Report Date');
+		dataTable.addColumn('number', 'Eps');
+		dataTable.addColumn('number', 'predicted Eps');
+		dataTable.addColumn('number', 'non-GAAP Eps');
+		dataTable.addColumn('number', 'non-GAAP predicted Eps');
+		dataTable.addColumn('number', 'Revenue (B)');
+		dataTable.addColumn('number', 'predicted Revenue (B)');
+		dataTable.addColumn('string', 'After Market Close?');
+		return dataTable;
+	}
+
 
 	function drawChart1() {
 		<?php if (!empty($dividendsAndEpsDetails)) { ?>
 		var data = google.visualization.arrayToDataTable([
 			[{label: 'Date', id: 'Date', type: 'string'},
-			 {label: 'Dividend Pay', id: 'Dividend Pay', type: 'number'},
+			 {label: 'Div. Pay', id: 'Div. Pay', type: 'number'},
 			 {label: 'EPS', id: 'EPS', type: 'number'},
-			 {label: 'Predicted EPS', id: 'Predicted EPS', type: 'number'},
-			 {label: 'End of Financial Period EPS', id: 'End of Financial Period EPS', type: 'number'},
+			 {label: 'Prd. EPS', id: 'Prd. EPS', type: 'number'},
+			 {label: 'End of Fin. Period EPS', id: 'End of Fin. Period EPS', type: 'number'},
 			 {label: 'Price', id: 'Price', type: 'number'}]
 			<?php echo $dividendsAndEpsDetails; ?>
 		]);
@@ -135,10 +198,10 @@ function getStockDetails($stock, $link) {
 		<?php if (!empty($prices)) { ?>
 		var data = google.visualization.arrayToDataTable([
 			[{label: 'Date', id: 'Date', type: 'string'},
-			 {label: 'Dividend Pay', id: 'Dividend Pay', type: 'number'},
+			 {label: 'Div. Pay', id: 'Div. Pay', type: 'number'},
 			 {label: 'EPS', id: 'EPS', type: 'number'},
-			 {label: 'Predicted EPS', id: 'Predicted EPS', type: 'number'},
-			 {label: 'End of Financial Period EPS', id: 'End of Financial Period EPS', type: 'number'},
+			 {label: 'Prd. EPS', id: 'Prd. EPS', type: 'number'},
+			 {label: 'End of Fin. Period EPS', id: 'End of Fin. Period EPS', type: 'number'},
 			 {label: 'Price', id: 'Price', type: 'number'}]
 			<?php echo $prices; ?>
 		]);
@@ -175,7 +238,8 @@ function getStockDetails($stock, $link) {
 	}
 ?>
 	<tr><td><hr/></td></tr>
-	<tr><td><div id="chart1_div" style="width: 1044px; height: 350px;"></div></td></tr>
+	<tr><td><font face="verdana">EPS:</font> <div id="table_div" style="width: 1044px;"></div></td></tr>
+	<tr><td><font face="verdana">GAAP EPS:</font> <div id="chart1_div" style="width: 1044px; height: 350px;"></div></td></tr>
 	<tr><td><div id="chart2_div" style="width: 1044px; height: 350px;"></div></td></tr>
       </table></td>
     </tr></table>

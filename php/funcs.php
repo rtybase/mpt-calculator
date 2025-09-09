@@ -106,6 +106,14 @@
 		return round($number, $precision);
 	}
 
+	function booleanValueOrNull($value) {
+		if ($value) {
+			return "'Y'";
+		}
+
+		return "'N'";
+	}
+
 	function showData($data) {
 		$size = count($data);
 		$link = basename($_SERVER['PHP_SELF']);

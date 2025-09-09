@@ -254,10 +254,10 @@ function loadDividendsAndEpsFor($assetId, $link) {
 		<?php if (!empty($dividendsAndEpsDetails)) { ?>
 		var data = google.visualization.arrayToDataTable([
 			[{label: 'Date', id: 'Date', type: 'string'},
-			 {label: 'Dividend Pay', id: 'Dividend Pay', type: 'number'},
+			 {label: 'Div. Pay', id: 'Div. Pay', type: 'number'},
 			 {label: 'EPS', id: 'EPS', type: 'number'},
-			 {label: 'Predicted EPS', id: 'Predicted EPS', type: 'number'},
-			 {label: 'End of Financial Period EPS', id: 'End of Financial Period EPS', type: 'number'}]
+			 {label: 'Prd. EPS', id: 'Prd. EPS', type: 'number'},
+			 {label: 'End of Fin. Period EPS', id: 'End of Fin. Period EPS', type: 'number'}]
 			<?php echo $dividendsAndEpsDetails; ?>
 		]);
 
