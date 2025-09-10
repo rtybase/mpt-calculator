@@ -12,8 +12,6 @@ import org.rty.portfolio.core.AssetPriceInfo;
 class ToEntityConvertorsUtilTest extends CommonTestRoutines {
 	private static final String[] TEST_LINE = new String[] { TEST_ASSET, "3.65", ToEntityConvertorsUtil.NA_VALUE, "07/17/2025" };
 
-	private static final double ERROR_TOLERANCE = 0.00001D;
-
 	@Test
 	void testDefaultToDate() {
 		final Date result = ToEntityConvertorsUtil.toDate("2025-07-17");
@@ -28,8 +26,7 @@ class ToEntityConvertorsUtilTest extends CommonTestRoutines {
 
 	@Test
 	void testToAssetPriceInfoEntity() {
-		final String[] line = new String[] { TEST_ASSET, "421.53", "3.06", "0.731235", "2025-07-17" };
-		final AssetPriceInfo result = ToEntityConvertorsUtil.toAssetPriceInfoEntity(TEST_ASSET, line);
+		final AssetPriceInfo result = assetPriceFrom(TEST_ASSET,  "2025-07-17");
 
 		assertEquals(TEST_ASSET, result.assetName);
 		assertEquals(D_2025_07_17, result.date);
@@ -40,8 +37,7 @@ class ToEntityConvertorsUtilTest extends CommonTestRoutines {
 
 	@Test
 	void testToAssetEpsInfoEntity() {
-		final String[] line = new String[] { TEST_ASSET, "3.65", "3.35", "07/17/2025" };
-		final AssetEpsInfo result = ToEntityConvertorsUtil.toAssetEpsInfoEntity(TEST_ASSET, line);
+		final AssetEpsInfo result = assetEpsFrom(TEST_ASSET, "07/17/2025");
 
 		assertEquals(TEST_ASSET, result.assetName);
 		assertEquals(D_2025_07_17, result.date);

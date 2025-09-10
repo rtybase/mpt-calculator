@@ -31,9 +31,4 @@ class DataHandlingUtilTest extends CommonTestRoutines {
 		assertEquals(1, store.get(TEST_ASSET + 1).size());
 		assertTrue(store.get(TEST_ASSET + 1).containsKey(dateFrom(17)));
 	}
-
-	private static AssetPriceInfo assetPriceFrom(String assetName, String date) {
-		final String[] line = new String[] { assetName, "421.53", "3.06", "0.731235", date };
-		return ToEntityConvertorsUtil.toAssetPriceInfoEntity(assetName, line);
-	}
 }
