@@ -5,9 +5,14 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.NavigableMap;
 
 import org.junit.jupiter.api.Test;
+import org.rty.portfolio.core.AssetEpsInfo;
 import org.rty.portfolio.core.AssetNonGaapEpsInfo;
 
 class ToAssetNonGaapEpsInfoEntityConvertorTest extends CommonTestRoutines {
@@ -23,7 +28,7 @@ class ToAssetNonGaapEpsInfoEntityConvertorTest extends CommonTestRoutines {
 
 	@Test
 	void testToEntity() {
-		final ToAssetNonGaapEpsInfoEntityConvertor convertor = new ToAssetNonGaapEpsInfoEntityConvertor(List.of());
+		final ToAssetNonGaapEpsInfoEntityConvertor convertor = newConvertorWith(List.of());
 
 		convertor.updateHeadersFrom("test_file.csv", HEADER_LINE);
 
@@ -37,7 +42,7 @@ class ToAssetNonGaapEpsInfoEntityConvertorTest extends CommonTestRoutines {
 
 	@Test
 	void testToEntityWithDateCorrection() {
-		final ToAssetNonGaapEpsInfoEntityConvertor convertor = new ToAssetNonGaapEpsInfoEntityConvertor(
+		final ToAssetNonGaapEpsInfoEntityConvertor convertor = newConvertorWith(
 				List.of(assetEpsFrom(TEST_ASSET, "07/16/2025")));
 
 		convertor.updateHeadersFrom("test_file.csv", HEADER_LINE);
@@ -52,7 +57,7 @@ class ToAssetNonGaapEpsInfoEntityConvertorTest extends CommonTestRoutines {
 
 	@Test
 	void testToEntityNoDateCorrection() {
-		final ToAssetNonGaapEpsInfoEntityConvertor convertor = new ToAssetNonGaapEpsInfoEntityConvertor(
+		final ToAssetNonGaapEpsInfoEntityConvertor convertor = newConvertorWith(
 				List.of(assetEpsFrom(TEST_ASSET, "07/17/2025")));
 
 		convertor.updateHeadersFrom("test_file.csv", HEADER_LINE);
@@ -77,7 +82,7 @@ class ToAssetNonGaapEpsInfoEntityConvertorTest extends CommonTestRoutines {
 				"1670000000", "", "", "1.38", "0.0", "3.0", "2025.0", "1740000000.0", "4.19", "5.63", "124.96",
 				"118.3" };
 
-		final ToAssetNonGaapEpsInfoEntityConvertor convertor = new ToAssetNonGaapEpsInfoEntityConvertor(List.of());
+		final ToAssetNonGaapEpsInfoEntityConvertor convertor = newConvertorWith(List.of());
 
 		convertor.updateHeadersFrom("test_file.csv", headerWithoutEpsForecast);
 
@@ -97,7 +102,7 @@ class ToAssetNonGaapEpsInfoEntityConvertorTest extends CommonTestRoutines {
 				"eps_surprise", "fiscal_quarter", "fiscal_year", "revenue_actual", "revenue_surprise",
 				"price_change.change_percent", "price_change.price_after", "price_change.price_before" };
 
-		final ToAssetNonGaapEpsInfoEntityConvertor convertor = new ToAssetNonGaapEpsInfoEntityConvertor(List.of());
+		final ToAssetNonGaapEpsInfoEntityConvertor convertor = newConvertorWith(List.of());
 		assertThrows(IllegalArgumentException.class,
 				() -> convertor.updateHeadersFrom("test_file.csv", headerWithoutDate));
 
@@ -111,4 +116,9 @@ class ToAssetNonGaapEpsInfoEntityConvertorTest extends CommonTestRoutines {
 		assertEquals(1670000000D, entity.revenuePredicted, ERROR_TOLERANCE);
 	}
 
+	private static ToAssetNonGaapEpsInfoEntityConvertor newConvertorWith(List<AssetEpsInfo> assetEpsInfoList) {
+		Map<String, NavigableMap<Date, AssetEpsInfo>> epsStore = new HashMap<>();
+		DataHandlingUtil.addDataToMapByNameAndDate(assetEpsInfoList, epsStore);
+		return new ToAssetNonGaapEpsInfoEntityConvertor(epsStore);
+	}
 }

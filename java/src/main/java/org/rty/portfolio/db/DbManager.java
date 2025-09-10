@@ -472,6 +472,40 @@ public class DbManager {
 	}
 
 	/**
+	 * Returns all the non-GAAP EPS data for the stocks (only!) for a given period.
+	 */
+	public List<AssetNonGaapEpsInfo> getAllStocksNonGaapEpsInfo(int yearsBack) throws Exception {
+		Preconditions.checkArgument(yearsBack > 0, "yearsBack must be > 0!");
+
+		final List<AssetNonGaapEpsInfo> result = new ArrayList<>(2048);
+
+		try (PreparedStatement pStmt = connection.prepareStatement("select a.vchr_symbol, e.dbl_eps, e.dbl_prd_eps, e.dtm_date,"
+				+ " bln_after_market_close, dbl_revenue, dbl_prd_revenue"
+				+ " from tbl_n_gaap_eps e, tbl_assets a"
+				+ " where e.fk_assetID = a.int_assetID"
+				+ " and a.vchr_symbol is not null"
+				+ " and a.vchr_symbol in (select vchr_symbol from tbl_stocks)"
+				+ " and e.dtm_date between (NOW() - INTERVAL ? YEAR) and NOW()")) {
+			pStmt.setInt(1, yearsBack);
+
+			try (ResultSet rs = pStmt.executeQuery()) {
+
+				while (rs.next()) {
+					result.add(new 	AssetNonGaapEpsInfo(rs.getString(1),
+							rs.getDouble(2),
+							getDoubleOrNull(rs, 3),
+							rs.getBoolean(5),
+							getDoubleOrNull(rs, 6),
+							getDoubleOrNull(rs, 7),
+							rs.getDate(4)));
+				}
+			}
+		}
+
+		return Collections.unmodifiableList(result);
+	}
+
+	/**
 	 * Returns all the stocks (only!). Not every asset is a stock! First integer is
 	 * the index of the sector. Second integer is the index of the industry.
 	 */

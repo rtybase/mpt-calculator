@@ -40,18 +40,18 @@ public class Calculator {
 	 */
 	public static double calculateRate(double currentPrice, double previousPrice) {
 		double rate = (100.0D * calculateChange(currentPrice, previousPrice)) / previousPrice;
-		return Math.round(rate * CORRECTION) / CORRECTION;
+		return round(rate, CORRECTION);
 	}
 
 	public static double calculateChange(double currentPrice, double previousPrice) {
 		double change = currentPrice - previousPrice;
-		return Math.round(change * CORRECTION) / CORRECTION;
+		return round(change, CORRECTION);
 	}
 
 	public static double calculateChangeFromRate(double currentPrice, double rate) {
 		double noPercentRate = rate / 100.0D;
 		double change = (currentPrice * noPercentRate) / (1 + noPercentRate);
-		return Math.round(change * CORRECTION) / CORRECTION;
+		return round(change, CORRECTION);
 	}
 
 	public static double calculateCovariance(double[] array1, double[] array2) {
@@ -104,8 +104,18 @@ public class Calculator {
 	}
 
 	public static double calculateEpsSurprise(double reportedEps, double predictedEps) {
-		double rate = (100.0D * calculateChange(reportedEps, predictedEps)) / Math.abs(predictedEps);
-		return Math.round(rate * CORRECTION) / CORRECTION;
+		final double absValue = Math.abs(predictedEps);
+
+		if (absValue < ERROR) {
+			return 0D;
+		}
+
+		double rate = (100.0D * calculateChange(reportedEps, predictedEps)) / absValue;
+		return round(rate, CORRECTION);
+	}
+
+	public static double round(double value, double correction) {
+		return Math.round(value * correction) / correction;
 	}
 
 	private static RealMatrix generateUnitVector(int rows) {

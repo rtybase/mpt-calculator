@@ -3,7 +3,6 @@ package org.rty.portfolio.core.utils;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -32,7 +31,7 @@ public class ToAssetNonGaapEpsInfoEntityConvertor {
 	private static final String REVENUE_COLUMN = "revenue_actual";
 	private static final String REVENUE_PREDICTED_COLUMN = "revenue_forecast";
 
-	private final Map<String, NavigableMap<Date, AssetEpsInfo>> epsStore = new HashMap<>();
+	private final Map<String, NavigableMap<Date, AssetEpsInfo>> epsStore;
 
 	private int assetNameColumnIndex;
 	private int epsDateColumnIndex;
@@ -42,9 +41,8 @@ public class ToAssetNonGaapEpsInfoEntityConvertor {
 	private int revenueColumnIndex;
 	private int revenuePredictedColumnIndex;
 
-	public ToAssetNonGaapEpsInfoEntityConvertor(List<AssetEpsInfo> assetEpsInfoList) {
-		Objects.requireNonNull(assetEpsInfoList, "assetEpsInfoList must not be null!");
-		DataHandlingUtil.addDataToMapByNameAndDate(assetEpsInfoList, epsStore);
+	public ToAssetNonGaapEpsInfoEntityConvertor(Map<String, NavigableMap<Date, AssetEpsInfo>> epsStore) {
+		this.epsStore = Objects.requireNonNull(epsStore, "epsStore must not be null!");
 		resetIndexes();
 	}
 

@@ -1,8 +1,14 @@
 package org.rty.portfolio.engine.impl.dbtask.load;
 
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.NavigableMap;
 
+import org.rty.portfolio.core.AssetEpsInfo;
 import org.rty.portfolio.core.AssetNonGaapEpsInfo;
+import org.rty.portfolio.core.utils.DataHandlingUtil;
 import org.rty.portfolio.core.utils.ToAssetNonGaapEpsInfoEntityConvertor;
 import org.rty.portfolio.db.DbManager;
 
@@ -11,8 +17,9 @@ import org.rty.portfolio.db.DbManager;
  *
  */
 public class LoadNonGaapEpsToDbTask extends GenericLoadToDbTask<AssetNonGaapEpsInfo> {
-	private static final int YEARS_BACK = 5;
 	public static final int NO_OF_COLUMNS = 20;
+
+	private static final int YEARS_BACK = 5;
 
 	private ToAssetNonGaapEpsInfoEntityConvertor convertor;
 
@@ -20,7 +27,9 @@ public class LoadNonGaapEpsToDbTask extends GenericLoadToDbTask<AssetNonGaapEpsI
 		super(dbManager, NO_OF_COLUMNS, true);
 
 		say("Loading EPS data from DB ...");
-		convertor = new ToAssetNonGaapEpsInfoEntityConvertor(dbManager.getAllStocksEpsInfo(YEARS_BACK, false));
+		Map<String, NavigableMap<Date, AssetEpsInfo>> epsStore = new HashMap<>();
+		DataHandlingUtil.addDataToMapByNameAndDate(dbManager.getAllStocksEpsInfo(YEARS_BACK, false), epsStore);
+		convertor = new ToAssetNonGaapEpsInfoEntityConvertor(epsStore);
 	}
 
 	@Override
