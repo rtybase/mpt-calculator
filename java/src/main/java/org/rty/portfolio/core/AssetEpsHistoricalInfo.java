@@ -18,8 +18,8 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 			"ngaap_pred_eps", "ngaap_eps", "ngaap_eps_surprize",
 			"revenue_surprize",
 
-			"df_pred_eps_prev_pred_eps", "df_eps_prev_eps",
-			"df_ngaap_pred_eps_prev_ngaap_pred_eps", "df_ngaap_eps_prev_ngaap_eps",
+			"spr_pred_eps_prev_pred_eps", "spr_eps_prev_eps",
+			"spr_ngaap_pred_eps_prev_ngaap_pred_eps", "spr_ngaap_eps_prev_ngaap_eps",
 
 			"prev_2d_rate", "prev_rate", "rate", "next_rate", "next_2d_rate" };
 
@@ -115,10 +115,10 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 				"" + surprise(currentNonGaapEpsValue, currentNonGaapPredictedEpsValue),
 				"" + revenueSurprise(currentNonGaapEps, currentEpsSurprise),
 
-				"" + diff(currentPredictedEpsValue, previousPredictedEpsValue),
-				"" + diff(currentEps.eps, previousEps.eps),
-				"" + diff(currentNonGaapPredictedEpsValue, previousNonGaapPredictedEpsValue),
-				"" + diff(currentNonGaapEpsValue, previousNonGaapEpsValue),
+				"" + surprise(currentPredictedEpsValue, previousPredictedEpsValue),
+				"" + surprise(currentEps.eps, previousEps.eps),
+				"" + surprise(currentNonGaapPredictedEpsValue, previousNonGaapPredictedEpsValue),
+				"" + surprise(currentNonGaapEpsValue, previousNonGaapEpsValue),
 
 				"" + round(price2DaysBeforeCurrentEps.rate),
 				"" + round(priceBeforeCurrentEps.rate),
@@ -192,9 +192,5 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 
 	private static double surprise(double v1, double v2) {
 		return Calculator.round(Calculator.calculateEpsSurprise(v1, v2), PRECISION);
-	}
-
-	private static double diff(double v1, double v2) {
-		return Calculator.round(Calculator.calculateDiffWithPrecision(v1, v2), PRECISION);
 	}
 }

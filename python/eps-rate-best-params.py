@@ -14,25 +14,25 @@ def best_model_params(X, y, regression_model, params):
 
 def dtr_model_and_paramrs():
     params = {
-        'max_depth': [5, 6, 7],
-        'min_samples_split': [2, 4, 5, 10],
-        'min_samples_leaf': [1, 2, 4, 6],
+        'max_depth': [5, 6, 7, 8, 9, 10],
+        'min_samples_split': [2, 4, 6, 8, 10, 12, 14, 16],
+        'min_samples_leaf': [1, 2, 4, 6, 8, 10, 12, 14],
         'criterion': ['squared_error', 'absolute_error']
     }
 
-    model = DecisionTreeRegressor(random_state=0)
+    model = DecisionTreeRegressor(random_state=42)
     return model, params
 
 def rfr_model_and_paramrs():
     params = {
-        'n_estimators': [200, 300],
+        'n_estimators': [200, 300, 400],
         'max_depth': [5, 6],
-        'min_samples_split': [2, 4, 5, 10],
-        'min_samples_leaf': [1, 2, 4, 6],
+        'min_samples_split': [2, 4, 5, 10, 12, 14, 16],
+        'min_samples_leaf': [1, 2, 4, 6, 8],
         'criterion': ['squared_error', 'absolute_error']
     }
 
-    model = RandomForestRegressor(random_state=0, oob_score=True)
+    model = RandomForestRegressor(random_state=42, oob_score=True)
     return model, params
 
 def best_params_for_data(X, y):

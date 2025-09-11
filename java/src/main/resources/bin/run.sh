@@ -66,6 +66,7 @@ rm -rf inputs-ml/*
 java -jar portfolio-0.0.1-SNAPSHOT.jar TransformEpsDataForTrainingTask \
 	"-prices=D:\data_to_load_prices" \
 	"-eps=D:\data_to_load_eps" \
+	"-n-gaap-eps=D:\data_to_load_n_gaap_eps" \
 	"-outfile=inputs-ml/out.csv"
 
 python eps-rate-predict.py
