@@ -8,16 +8,16 @@ DS1_FILE = "inputs-ml/out-training-for-1d.csv"
 DS2_FILE = "inputs-ml/out-training-for-2d.csv"
 
 def best_model_params(X, y, regression_model, params):
-    grid = GridSearchCV(regression_model, param_grid=params, cv=5, scoring='r2')
+    grid = GridSearchCV(regression_model, param_grid=params, cv=5, scoring='r2', n_jobs=-1, verbose=3)
     grid.fit(X, y)
-    print("Best parameters:", grid.best_params_)
+    print(">>>>>>>>Best parameters:", grid.best_params_)
 
 def dtr_model_and_paramrs():
     params = {
         'max_depth': [5, 6, 7, 8, 9, 10],
         'min_samples_split': [2, 4, 6, 8, 10, 12, 14, 16],
         'min_samples_leaf': [1, 2, 4, 6, 8, 10, 12, 14],
-        'criterion': ['squared_error', 'absolute_error']
+        'criterion': ['absolute_error']
     }
 
     model = DecisionTreeRegressor(random_state=42)
@@ -29,7 +29,7 @@ def rfr_model_and_paramrs():
         'max_depth': [5, 6],
         'min_samples_split': [2, 4, 5, 10, 12, 14, 16],
         'min_samples_leaf': [1, 2, 4, 6, 8],
-        'criterion': ['squared_error', 'absolute_error']
+        'criterion': ['absolute_error']
     }
 
     model = RandomForestRegressor(random_state=42, oob_score=True)
