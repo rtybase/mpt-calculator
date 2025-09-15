@@ -100,6 +100,28 @@ class DataHandlingUtilTest extends CommonTestRoutines {
 		assertNull(DataHandlingUtil.get2DaysNextEntry(store, TEST_ASSET, dateFrom(16)));
 	}
 
+	@Test
+	void tesGetCurrentEntryOrNextReturnsCurrent() {
+		final Map<String, NavigableMap<Date, AssetPriceInfo>> store = newStoreWithContent();
+		final AssetPriceInfo result = DataHandlingUtil.getCurrentEntryOrNext(store, TEST_ASSET, dateFrom(16));
+		assertNotNull(result);
+		assertEquals(dateFrom(16), result.date);
+	}
+
+	@Test
+	void tesGetCurrentEntryOrNextReturnsNext() {
+		final Map<String, NavigableMap<Date, AssetPriceInfo>> store = newStoreWithContent();
+		final AssetPriceInfo result = DataHandlingUtil.getCurrentEntryOrNext(store, TEST_ASSET, dateFrom(15));
+		assertNotNull(result);
+		assertEquals(dateFrom(16), result.date);
+	}
+
+	@Test
+	void tesGetCurrentEntryOrNextReturnsNull() {
+		final Map<String, NavigableMap<Date, AssetPriceInfo>> store = newStoreWithContent();
+		assertNull(DataHandlingUtil.getCurrentEntryOrNext(store, TEST_ASSET, dateFrom(18)));
+	}
+
 	private Map<String, NavigableMap<Date, AssetPriceInfo>> newStoreWithContent() {
 		final Map<String, NavigableMap<Date, AssetPriceInfo>> store = new HashMap<>();
 

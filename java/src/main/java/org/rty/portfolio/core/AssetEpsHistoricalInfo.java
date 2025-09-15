@@ -9,14 +9,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class AssetEpsHistoricalInfo implements CsvWritable {
 	public static final String[] HEADER = new String[] { "asset_id", "sector", "industry", "eps_date", "month",
 			"prev_after_market_close",
-			"prev_pred_eps", "prev_eps", "prev_eps_surprize",
-			"prev_ngaap_pred_eps", "prev_ngaap_eps", "prev_ngaap_eps_surprize",
-			"prev_revenue_surprize",
+			"prev_pred_eps", "prev_eps", "prev_eps_spr",
+			"prev_ngaap_pred_eps", "prev_ngaap_eps", "prev_ngaap_eps_spr",
+			"prev_revenue_spr", "prev_p_e",
 
 			"after_market_close",
-			"pred_eps", "eps", "eps_surprize",
-			"ngaap_pred_eps", "ngaap_eps", "ngaap_eps_surprize",
-			"revenue_surprize",
+			"pred_eps", "eps", "eps_spr",
+			"ngaap_pred_eps", "ngaap_eps", "ngaap_eps_spr",
+			"revenue_spr", "p_e",
 
 			"spr_pred_eps_prev_pred_eps", "spr_eps_prev_eps",
 			"spr_ngaap_pred_eps_prev_ngaap_pred_eps", "spr_ngaap_eps_prev_ngaap_eps",
@@ -37,15 +37,18 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 	public final AssetEpsInfo previousEps;
 	public final AssetNonGaapEpsInfo previousNonGaapEps;
 
+	public final AssetPriceInfo priceAtCurrentEps;
+	public final AssetPriceInfo priceAtPreviousEps;
+
 	public final AssetPriceInfo price2DaysBeforeCurrentEps;
 	public final AssetPriceInfo priceBeforeCurrentEps;
-	public final AssetPriceInfo priceAtCurrentEps;
 	public final AssetPriceInfo priceAfterCurrentEps;
 	public final AssetPriceInfo price2DaysAfterCurrentEps;
 
 	public AssetEpsHistoricalInfo(String assetName, int sectorIndex, int industryIndex,
 			AssetEpsInfo currentEps, AssetNonGaapEpsInfo currentNonGaapEps,
 			AssetEpsInfo previousEps, AssetNonGaapEpsInfo previousNonGaapEps,
+			AssetPriceInfo priceAtPreviousEps,
 			AssetPriceInfo price2DaysBeforeCurrentEps,
 			AssetPriceInfo priceBeforeCurrentEps,
 			AssetPriceInfo priceAtCurrentEps,
@@ -61,9 +64,11 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 		this.previousEps = previousEps;
 		this.previousNonGaapEps = previousNonGaapEps;
 
+		this.priceAtCurrentEps = priceAtCurrentEps;
+		this.priceAtPreviousEps = priceAtPreviousEps;
+
 		this.price2DaysBeforeCurrentEps = price2DaysBeforeCurrentEps;
 		this.priceBeforeCurrentEps = priceBeforeCurrentEps;
-		this.priceAtCurrentEps = priceAtCurrentEps;
 		this.priceAfterCurrentEps = priceAfterCurrentEps;
 		this.price2DaysAfterCurrentEps = price2DaysAfterCurrentEps;
 	}
@@ -105,6 +110,7 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 				"" + round(previousNonGaapEpsValue),
 				"" + surprise(previousNonGaapEpsValue, previousNonGaapPredictedEpsValue),
 				"" + revenueSurprise(previousNonGaapEps, previousEpsSurprise),
+				"" + pOverE(priceAtPreviousEps.price, previousEps.eps),
 
 				"" + afterMarketClose(currentNonGaapEps),
 				"" + round(currentPredictedEpsValue),
@@ -114,6 +120,7 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 				"" + round(currentNonGaapEpsValue),
 				"" + surprise(currentNonGaapEpsValue, currentNonGaapPredictedEpsValue),
 				"" + revenueSurprise(currentNonGaapEps, currentEpsSurprise),
+				"" + pOverE(priceAtCurrentEps.price, currentEps.eps),
 
 				"" + surprise(currentPredictedEpsValue, previousPredictedEpsValue),
 				"" + surprise(currentEps.eps, previousEps.eps),
@@ -192,5 +199,9 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 
 	private static double surprise(double v1, double v2) {
 		return Calculator.round(Calculator.calculateEpsSurprise(v1, v2), PRECISION);
+	}
+
+	private static double pOverE(double price, double eps) {
+		return Calculator.round(Calculator.calculatePriceOverEps(price, eps), PRECISION);
 	}
 }

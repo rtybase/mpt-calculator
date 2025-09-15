@@ -23,7 +23,7 @@ public abstract class GenericLoadToDbTask<T> extends AbstractDbTask {
 	}
 
 	@Override
-	public final void execute(Map<String, String> parameters) throws Exception {
+	public void execute(Map<String, String> parameters) throws Exception {
 		final String inputFile = getValidParameterValue(parameters, INPUT_FILE_PARAM);
 
 		final BulkCsvLoader<T> loader = new BulkCsvLoader<>(expectedNumberOfColumns, hasHeader) {

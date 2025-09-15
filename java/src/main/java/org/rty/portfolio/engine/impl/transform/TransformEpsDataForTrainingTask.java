@@ -14,6 +14,7 @@ import org.rty.portfolio.core.AssetEpsInfo;
 import org.rty.portfolio.core.AssetNonGaapEpsInfo;
 import org.rty.portfolio.core.AssetPriceInfo;
 import org.rty.portfolio.core.utils.DataHandlingUtil;
+import org.rty.portfolio.core.utils.DatesAndSetUtil;
 import org.rty.portfolio.core.utils.FileNameUtil;
 import org.rty.portfolio.core.utils.ToAssetNonGaapEpsInfoEntityConvertor;
 import org.rty.portfolio.core.utils.ToEntityConvertorsUtil;
@@ -25,11 +26,16 @@ import org.rty.portfolio.engine.impl.dbtask.load.LoadNonGaapEpsToDbTask;
 import org.rty.portfolio.engine.impl.dbtask.load.LoadPricesToDbTask;
 import org.rty.portfolio.io.BulkCsvLoader;
 import org.rty.portfolio.io.CsvWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * EPS and Prices loader, to prepare data from ML training.
  */
 public class TransformEpsDataForTrainingTask extends AbstractDbTask {
+	private static final Logger LOGGER = LoggerFactory
+			.getLogger(TransformEpsDataForTrainingTask.class.getSimpleName());
+
 	public static final String INPUT_FILE_WITH_PRICES_PARAM = "-prices";
 	public static final String INPUT_FILE_WITH_EPS_PARAM = "-eps";
 	public static final String INPUT_FILE_WITH_NON_GAAP_EPS_PARAM = "-n-gaap-eps";
@@ -75,23 +81,27 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 				final AssetNonGaapEpsInfo previousNonGaapEps = DataHandlingUtil.getPreviousEntry(nonGaapEpsStore,
 						assetName, currentDate);
 
-				final AssetPriceInfo price2DaysBeforeCurrentEps = DataHandlingUtil.get2DaysPreviousEntry(priceStore,
-						assetName, currentDate);
-				final AssetPriceInfo priceBeforeCurrentEps = DataHandlingUtil.getPreviousEntry(priceStore, assetName,
-						currentDate);
-				final AssetPriceInfo priceAtCurrentEps = DataHandlingUtil.getCurrentEntry(priceStore, assetName,
-						currentDate);
-				final AssetPriceInfo priceAfterCurrentEps = DataHandlingUtil.getNextEntry(priceStore, assetName,
-						currentDate);
-				final AssetPriceInfo price2DaysAfterCurrentEps = DataHandlingUtil.get2DaysNextEntry(priceStore,
-						assetName, currentDate);
 				final Pair<Integer, Integer> sectorIndustryPair = getSectorIndustryPairFrom(assetName,
 						stocksAndsectorsStore);
 
-				if (DataHandlingUtil.allNotNull(sectorIndustryPair, currentEps, previousEps)) {
+				final AssetPriceInfo priceAtCurrentEps = DataHandlingUtil.getCurrentEntryOrNext(priceStore, assetName,
+						currentDate);
 
-					if (DataHandlingUtil.allNotNull(price2DaysBeforeCurrentEps, priceBeforeCurrentEps, priceAtCurrentEps,
-							priceAfterCurrentEps, price2DaysAfterCurrentEps)) {
+				if (DataHandlingUtil.allNotNull(sectorIndustryPair, currentEps, previousEps, priceAtCurrentEps)) {
+					final AssetPriceInfo priceAtPreviousEps = DataHandlingUtil.getCurrentEntryOrNext(priceStore,
+							assetName, previousEps.date);
+
+					final AssetPriceInfo price2DaysBeforeCurrentEps = DataHandlingUtil.get2DaysPreviousEntry(priceStore,
+							assetName, priceAtCurrentEps.date);
+					final AssetPriceInfo priceBeforeCurrentEps = DataHandlingUtil.getPreviousEntry(priceStore,
+							assetName, priceAtCurrentEps.date);
+					final AssetPriceInfo priceAfterCurrentEps = DataHandlingUtil.getNextEntry(priceStore, assetName,
+							priceAtCurrentEps.date);
+					final AssetPriceInfo price2DaysAfterCurrentEps = DataHandlingUtil.get2DaysNextEntry(priceStore,
+							assetName, priceAtCurrentEps.date);
+
+					if (DataHandlingUtil.allNotNull(priceAtPreviousEps, price2DaysBeforeCurrentEps,
+							priceBeforeCurrentEps, priceAfterCurrentEps, price2DaysAfterCurrentEps)) {
 						dataForTraining.add(new AssetEpsHistoricalInfo(assetName,
 								sectorIndustryPair.getKey(),
 								sectorIndustryPair.getValue(),
@@ -99,13 +109,14 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 								currentNonGaapEps,
 								previousEps,
 								previousNonGaapEps,
+								priceAtPreviousEps,
 								price2DaysBeforeCurrentEps,
 								priceBeforeCurrentEps,
 								priceAtCurrentEps,
 								priceAfterCurrentEps,
 								price2DaysAfterCurrentEps));
-					} else if (DataHandlingUtil.allNotNull(price2DaysBeforeCurrentEps, priceBeforeCurrentEps, priceAtCurrentEps,
-							priceAfterCurrentEps)) {
+					} else if (DataHandlingUtil.allNotNull(priceAtPreviousEps, price2DaysBeforeCurrentEps,
+							priceBeforeCurrentEps, priceAfterCurrentEps)) {
 						dataFor2DPrediction.add(new AssetEpsHistoricalInfo(assetName,
 								sectorIndustryPair.getKey(),
 								sectorIndustryPair.getValue(),
@@ -113,12 +124,14 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 								currentNonGaapEps,
 								previousEps,
 								previousNonGaapEps,
+								priceAtPreviousEps,
 								price2DaysBeforeCurrentEps,
 								priceBeforeCurrentEps,
 								priceAtCurrentEps,
 								priceAfterCurrentEps,
 								null));
-					} else if (DataHandlingUtil.allNotNull(price2DaysBeforeCurrentEps, priceBeforeCurrentEps, priceAtCurrentEps)) {
+					} else if (DataHandlingUtil.allNotNull(priceAtPreviousEps, price2DaysBeforeCurrentEps,
+							priceBeforeCurrentEps)) {
 						dataFor1DPrediction.add(new AssetEpsHistoricalInfo(assetName,
 								sectorIndustryPair.getKey(),
 								sectorIndustryPair.getValue(),
@@ -126,11 +139,21 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 								currentNonGaapEps,
 								previousEps,
 								previousNonGaapEps,
+								priceAtPreviousEps,
 								price2DaysBeforeCurrentEps,
 								priceBeforeCurrentEps,
 								priceAtCurrentEps,
 								null,
 								null));
+					} else {
+						LOGGER.info("Not all the details are available for '{}' on the '{}' and '{}' dates ", assetName,
+								DatesAndSetUtil.dateToStr(currentDate),
+								DatesAndSetUtil.dateToStr(previousEps.date));
+					}
+				} else {
+					if (previousEps != null) {
+						LOGGER.info("Not all the details are available for '{}' on the '{}' date.", assetName,
+								DatesAndSetUtil.dateToStr(currentDate));
 					}
 				}
 			});

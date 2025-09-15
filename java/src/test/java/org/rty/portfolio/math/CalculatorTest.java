@@ -102,5 +102,22 @@ class CalculatorTest {
 		epsSurprise = Calculator.calculateEpsSurprise(-0.92D, -1D);
 		assertEquals(8D, epsSurprise, ERROR_TOLERANCE);
 
+		epsSurprise = Calculator.calculateEpsSurprise(1D, 0D);
+		assertEquals(Calculator.MAX_VALUE, epsSurprise, ERROR_TOLERANCE);
+
+		epsSurprise = Calculator.calculateEpsSurprise(-1D, 0D);
+		assertEquals(-Calculator.MAX_VALUE, epsSurprise, ERROR_TOLERANCE);
+	}
+
+	@Test
+	void testCalculatePriceOverEps() {
+		double pe = Calculator.calculatePriceOverEps(1D, 0.5D);
+		assertEquals(2D, pe, ERROR_TOLERANCE);
+
+		pe = Calculator.calculatePriceOverEps(1D, -0.5D);
+		assertEquals(0D, pe, ERROR_TOLERANCE);
+
+		pe = Calculator.calculatePriceOverEps(1D, 0D);
+		assertEquals(0D, pe, ERROR_TOLERANCE);
 	}
 }

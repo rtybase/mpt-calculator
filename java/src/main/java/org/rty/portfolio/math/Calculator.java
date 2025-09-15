@@ -13,6 +13,7 @@ import org.rty.portfolio.core.PortflioOptimalResults;
 import com.google.common.base.Preconditions;
 
 public class Calculator {
+	static final double MAX_VALUE = Double.MAX_VALUE - 1D;
 	private static final double CORRECTION = 1000000.0D;
 	private static final double ERROR = 0.0000001D;
 
@@ -105,13 +106,28 @@ public class Calculator {
 
 	public static double calculateEpsSurprise(double reportedEps, double predictedEps) {
 		final double absValue = Math.abs(predictedEps);
+		final double diff = calculateChange(reportedEps, predictedEps);
 
 		if (absValue < ERROR) {
+			if (diff < 0D) {
+				return -MAX_VALUE;
+			}
+			return MAX_VALUE;
+		}
+
+		double rate = (100.0D * diff) / absValue;
+		return round(rate, CORRECTION);
+	}
+
+	public static double calculatePriceOverEps(double price, double eps) {
+		final double absValue = Math.abs(eps);
+
+		if (eps <= 0D) {
 			return 0D;
 		}
 
-		double rate = (100.0D * calculateChange(reportedEps, predictedEps)) / absValue;
-		return round(rate, CORRECTION);
+		double pe = price / absValue;
+		return round(pe, CORRECTION);
 	}
 
 	public static double round(double value, double correction) {
