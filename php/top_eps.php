@@ -54,7 +54,7 @@ function addLatestPrices($link, $epsData) {
 		if (array_key_exists($assetId, $epsData)) {
 			$eps = $epsData[$assetId]["eps"];
 			$epsData[$assetId]["price"] = $row[1];
-			if (abs($eps) < 0.00001) {
+			if ($eps < 0.00001) {
 				$epsData[$assetId]["p_by_e"] = 0.0;
 			} else {
 				$epsData[$assetId]["p_by_e"] = $row[1] / $eps;
@@ -88,7 +88,7 @@ function addLatestPrices($link, $epsData) {
 		$tableResult.= toChartNumber(roundOrNull($value["revenue"], $roundPrecision)).",";
 		$tableResult.= toChartNumber(roundOrNull($value["prd_revenue"], $roundPrecision)).",";
 		$tableResult.= booleanValueOrNull($value["after_market_close"]).",";
-		$tableResult.= "'<a href=\"./show_eps.php?id=".$key."\">details ...</a>']";
+		$tableResult.= "'<a href=\"./show_eps.php?id=".$key."\">details...</a>']";
 		$i++;
 	}
 ?>

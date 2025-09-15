@@ -13,7 +13,7 @@ DTR_DS2_ARGS = {'max_depth': 5, 'min_samples_leaf': 12,\
         'min_samples_split': 2, 'criterion': 'absolute_error',\
         'random_state': 42}
 
-RFR_DS2_ARGS = {'max_depth': 5, 'min_samples_leaf': 12,\
+RFR_DS2_ARGS = {'max_depth': 6, 'min_samples_leaf': 8,\
         'min_samples_split': 2, 'n_estimators': 300,\
         'criterion': 'absolute_error', 'random_state': 42, 'oob_score': True}
 
@@ -21,20 +21,19 @@ DTR_DS1_ARGS = {'max_depth': 5, 'min_samples_leaf': 12,\
         'min_samples_split': 2, 'criterion': 'absolute_error',\
         'random_state': 42}
 
-RFR_DS1_ARGS = {'max_depth': 5, 'min_samples_leaf': 12,\
+RFR_DS1_ARGS = {'max_depth': 6, 'min_samples_leaf': 8,\
         'min_samples_split': 2, 'n_estimators': 300,\
         'criterion': 'absolute_error', 'random_state': 42, 'oob_score': True}
 
-
 CORE_COLUMNS_FOR_TRAINING = ['sector','industry','month',\
     'prev_after_market_close', 'prev_pred_eps',\
-    'prev_eps', 'prev_eps_surprize',\
+    'prev_eps', 'prev_eps_spr', 'prev_p_e',\
     'prev_ngaap_pred_eps', 'prev_ngaap_eps',\
-    'prev_ngaap_eps_surprize', 'prev_revenue_surprize',\
+    'prev_ngaap_eps_spr', 'prev_revenue_spr',\
     'after_market_close', 'pred_eps',\
-    'eps', 'eps_surprize',\
+    'eps', 'eps_spr', 'p_e',\
     'ngaap_pred_eps', 'ngaap_eps',\
-    'ngaap_eps_surprize', 'revenue_surprize',\
+    'ngaap_eps_spr', 'revenue_spr',\
     'spr_pred_eps_prev_pred_eps', 'spr_eps_prev_eps',\
     'spr_ngaap_pred_eps_prev_ngaap_pred_eps', 'spr_ngaap_eps_prev_ngaap_eps',\
     'prev_2d_rate','prev_rate','rate']
