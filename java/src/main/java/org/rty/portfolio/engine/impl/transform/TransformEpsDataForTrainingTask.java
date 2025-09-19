@@ -26,6 +26,7 @@ import org.rty.portfolio.engine.impl.dbtask.load.LoadNonGaapEpsToDbTask;
 import org.rty.portfolio.engine.impl.dbtask.load.LoadPricesToDbTask;
 import org.rty.portfolio.io.BulkCsvLoader;
 import org.rty.portfolio.io.CsvWriter;
+import org.rty.portfolio.math.ZScoreCalculator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,6 +66,23 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 		final List<AssetEpsHistoricalInfo> dataForTraining = new ArrayList<>(1024);
 		final List<AssetEpsHistoricalInfo> dataFor2DPrediction = new ArrayList<>(1024);
 		final List<AssetEpsHistoricalInfo> dataFor1DPrediction = new ArrayList<>(1024);
+
+		final ZScoreCalculator zScoreCalculatorForSector = new ZScoreCalculator();
+		final ZScoreCalculator zScoreCalculatorForIndustry = new ZScoreCalculator();
+		final ZScoreCalculator zScoreCalculatorForMoth = new ZScoreCalculator();
+		final ZScoreCalculator zScoreCalculatorForPreviousAfterMarketClose = new ZScoreCalculator();
+		final ZScoreCalculator zScoreCalculatorForPreviousPredictedEps = new ZScoreCalculator();
+		final ZScoreCalculator zScoreCalculatorForPreviousEps = new ZScoreCalculator();
+		final ZScoreCalculator zScoreCalculatorForPreviousNonGaapPredictedEps = new ZScoreCalculator();
+		final ZScoreCalculator zScoreCalculatorForPreviousNonGaapEps = new ZScoreCalculator();
+		final ZScoreCalculator zScoreCalculatorForPreviousPOverE = new ZScoreCalculator();
+		final ZScoreCalculator zScoreCalculatorForCurrentAfterMarketClose = new ZScoreCalculator();
+		final ZScoreCalculator zScoreCalculatorForCurrentPredictedEps = new ZScoreCalculator();
+		final ZScoreCalculator zScoreCalculatorForCurrentEps = new ZScoreCalculator();
+		final ZScoreCalculator zScoreCalculatorForCurrentNonGaapPredictedEps = new ZScoreCalculator();
+		final ZScoreCalculator zScoreCalculatorForCurrentNonGaapEps = new ZScoreCalculator();
+		final ZScoreCalculator zScoreCalculatorForCurrentPOverE = new ZScoreCalculator();
+
 
 		epsStore.entrySet().forEach(entry -> {
 			final String assetName = entry.getKey();
@@ -114,7 +132,22 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 								priceBeforeCurrentEps,
 								priceAtCurrentEps,
 								priceAfterCurrentEps,
-								price2DaysAfterCurrentEps));
+								price2DaysAfterCurrentEps,
+								zScoreCalculatorForSector,
+								zScoreCalculatorForIndustry,
+								zScoreCalculatorForMoth,
+								zScoreCalculatorForPreviousAfterMarketClose,
+								zScoreCalculatorForPreviousPredictedEps,
+								zScoreCalculatorForPreviousEps,
+								zScoreCalculatorForPreviousNonGaapPredictedEps,
+								zScoreCalculatorForPreviousNonGaapEps,
+								zScoreCalculatorForPreviousPOverE,
+								zScoreCalculatorForCurrentAfterMarketClose,
+								zScoreCalculatorForCurrentPredictedEps,
+								zScoreCalculatorForCurrentEps,
+								zScoreCalculatorForCurrentNonGaapPredictedEps,
+								zScoreCalculatorForCurrentNonGaapEps,
+								zScoreCalculatorForCurrentPOverE));
 					} else if (DataHandlingUtil.allNotNull(priceAtPreviousEps, price2DaysBeforeCurrentEps,
 							priceBeforeCurrentEps, priceAfterCurrentEps)) {
 						dataFor2DPrediction.add(new AssetEpsHistoricalInfo(assetName,
@@ -129,7 +162,22 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 								priceBeforeCurrentEps,
 								priceAtCurrentEps,
 								priceAfterCurrentEps,
-								null));
+								null,
+								zScoreCalculatorForSector,
+								zScoreCalculatorForIndustry,
+								zScoreCalculatorForMoth,
+								zScoreCalculatorForPreviousAfterMarketClose,
+								zScoreCalculatorForPreviousPredictedEps,
+								zScoreCalculatorForPreviousEps,
+								zScoreCalculatorForPreviousNonGaapPredictedEps,
+								zScoreCalculatorForPreviousNonGaapEps,
+								zScoreCalculatorForPreviousPOverE,
+								zScoreCalculatorForCurrentAfterMarketClose,
+								zScoreCalculatorForCurrentPredictedEps,
+								zScoreCalculatorForCurrentEps,
+								zScoreCalculatorForCurrentNonGaapPredictedEps,
+								zScoreCalculatorForCurrentNonGaapEps,
+								zScoreCalculatorForCurrentPOverE));
 					} else if (DataHandlingUtil.allNotNull(priceAtPreviousEps, price2DaysBeforeCurrentEps,
 							priceBeforeCurrentEps)) {
 						dataFor1DPrediction.add(new AssetEpsHistoricalInfo(assetName,
@@ -144,7 +192,22 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 								priceBeforeCurrentEps,
 								priceAtCurrentEps,
 								null,
-								null));
+								null,
+								zScoreCalculatorForSector,
+								zScoreCalculatorForIndustry,
+								zScoreCalculatorForMoth,
+								zScoreCalculatorForPreviousAfterMarketClose,
+								zScoreCalculatorForPreviousPredictedEps,
+								zScoreCalculatorForPreviousEps,
+								zScoreCalculatorForPreviousNonGaapPredictedEps,
+								zScoreCalculatorForPreviousNonGaapEps,
+								zScoreCalculatorForPreviousPOverE,
+								zScoreCalculatorForCurrentAfterMarketClose,
+								zScoreCalculatorForCurrentPredictedEps,
+								zScoreCalculatorForCurrentEps,
+								zScoreCalculatorForCurrentNonGaapPredictedEps,
+								zScoreCalculatorForCurrentNonGaapEps,
+								zScoreCalculatorForCurrentPOverE));
 					} else {
 						LOGGER.info("Not all the details are available for '{}' on the '{}' and '{}' dates ", assetName,
 								DatesAndSetUtil.dateToStr(currentDate),
@@ -158,6 +221,22 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 				}
 			});
 		});
+
+		zScoreCalculatorForSector.calculateMeanAndStdDev();
+		zScoreCalculatorForIndustry.calculateMeanAndStdDev();
+		zScoreCalculatorForMoth.calculateMeanAndStdDev();
+		zScoreCalculatorForPreviousAfterMarketClose.calculateMeanAndStdDev();
+		zScoreCalculatorForPreviousPredictedEps.calculateMeanAndStdDev();
+		zScoreCalculatorForPreviousEps.calculateMeanAndStdDev();
+		zScoreCalculatorForPreviousNonGaapPredictedEps.calculateMeanAndStdDev();
+		zScoreCalculatorForPreviousNonGaapEps.calculateMeanAndStdDev();
+		zScoreCalculatorForPreviousPOverE.calculateMeanAndStdDev();
+		zScoreCalculatorForCurrentAfterMarketClose.calculateMeanAndStdDev();
+		zScoreCalculatorForCurrentPredictedEps.calculateMeanAndStdDev();
+		zScoreCalculatorForCurrentEps.calculateMeanAndStdDev();
+		zScoreCalculatorForCurrentNonGaapPredictedEps.calculateMeanAndStdDev();
+		zScoreCalculatorForCurrentNonGaapEps.calculateMeanAndStdDev();
+		zScoreCalculatorForCurrentPOverE.calculateMeanAndStdDev();
 
 		writeData(FileNameUtil.adjustOutputFileName(outputFile, "training-for-2d"), dataForTraining);
 		writeData(FileNameUtil.adjustOutputFileName(outputFile, "training-for-1d"),

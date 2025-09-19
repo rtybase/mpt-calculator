@@ -14,8 +14,9 @@ import com.google.common.base.Preconditions;
 
 public class Calculator {
 	static final double MAX_VALUE = Double.MAX_VALUE - 1D;
+	static final double ERROR = 0.0000001D;
+
 	private static final double CORRECTION = 1000000.0D;
-	private static final double ERROR = 0.0000001D;
 
 	/**
 	 * @param portfolioId	can be null, ie. optional

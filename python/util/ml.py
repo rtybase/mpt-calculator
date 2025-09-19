@@ -25,14 +25,27 @@ RFR_DS1_ARGS = {'max_depth': 6, 'min_samples_leaf': 8,\
         'min_samples_split': 2, 'n_estimators': 300,\
         'criterion': 'absolute_error', 'random_state': 42, 'oob_score': True}
 
-CORE_COLUMNS_FOR_TRAINING = ['sector','industry','month',\
-    'prev_after_market_close', 'prev_pred_eps',\
-    'prev_eps', 'prev_eps_spr', 'prev_p_e',\
-    'prev_ngaap_pred_eps', 'prev_ngaap_eps',\
+#CORE_COLUMNS_FOR_TRAINING = ['sector','industry','month',\
+#    'prev_after_market_close', 'prev_pred_eps',\
+#    'prev_eps', 'prev_eps_spr', 'prev_p_e',\
+#    'prev_ngaap_pred_eps', 'prev_ngaap_eps',\
+#    'prev_ngaap_eps_spr', 'prev_revenue_spr',\
+#    'after_market_close', 'pred_eps',\
+#    'eps', 'eps_spr', 'p_e',\
+#    'ngaap_pred_eps', 'ngaap_eps',\
+#    'ngaap_eps_spr', 'revenue_spr',\
+#    'spr_pred_eps_prev_pred_eps', 'spr_eps_prev_eps',\
+#    'spr_ngaap_pred_eps_prev_ngaap_pred_eps', 'spr_ngaap_eps_prev_ngaap_eps',\
+#    'prev_2d_rate','prev_rate','rate']
+
+CORE_COLUMNS_FOR_TRAINING = ['zs_sector','zs_industry','zs_month',\
+    'zs_prev_after_market_close', 'zs_prev_pred_eps',\
+    'zs_prev_eps', 'prev_eps_spr', 'zs_prev_p_e',\
+    'zs_prev_ngaap_pred_eps', 'zs_prev_ngaap_eps',\
     'prev_ngaap_eps_spr', 'prev_revenue_spr',\
-    'after_market_close', 'pred_eps',\
-    'eps', 'eps_spr', 'p_e',\
-    'ngaap_pred_eps', 'ngaap_eps',\
+    'zs_after_market_close', 'zs_pred_eps',\
+    'zs_eps', 'eps_spr', 'zs_p_e',\
+    'zs_ngaap_pred_eps', 'zs_ngaap_eps',\
     'ngaap_eps_spr', 'revenue_spr',\
     'spr_pred_eps_prev_pred_eps', 'spr_eps_prev_eps',\
     'spr_ngaap_pred_eps_prev_ngaap_pred_eps', 'spr_ngaap_eps_prev_ngaap_eps',\
