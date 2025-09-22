@@ -1,6 +1,5 @@
 package org.rty.portfolio.engine.impl.transform;
 
-import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -13,6 +12,7 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.rty.portfolio.core.AssetPriceInfo;
 import org.rty.portfolio.core.AssetPriceInfoAccumulator;
+import org.rty.portfolio.core.utils.ToEntityConvertorsUtil;
 import org.rty.portfolio.engine.AbstractTask;
 import org.rty.portfolio.io.CsvWriter;
 import org.xml.sax.SAXException;
@@ -65,7 +65,7 @@ public class TransformEcbRatesTask extends AbstractTask {
 					String rate = attributes.getValue("rate");
 
 					if (dateValue != null) {
-						date = SCAN_DATE_FORMAT.parse(dateValue, new ParsePosition(0));
+						date = ToEntityConvertorsUtil.toDate(dateValue, SCAN_DATE_FORMAT);
 					}
 
 					if (currency != null && rate != null && date != null) {
@@ -73,7 +73,7 @@ public class TransformEcbRatesTask extends AbstractTask {
 						if (accumulator != null) {
 							try {
 								double doubleRate = Double.parseDouble(rate);
-								accumulator.add(date, doubleRate);
+								accumulator.add(date, doubleRate, null);
 							} catch (Exception ex) {
 								say("parse error for '{}', rate='{}'", currency, rate);
 							}

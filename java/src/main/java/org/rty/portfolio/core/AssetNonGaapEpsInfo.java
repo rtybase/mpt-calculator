@@ -1,5 +1,7 @@
 package org.rty.portfolio.core;
 
+import static org.rty.portfolio.core.CsvWritable.emptyIfNull;
+
 import java.util.Date;
 
 import org.rty.portfolio.core.utils.DatesAndSetUtil;
@@ -45,10 +47,10 @@ public class AssetNonGaapEpsInfo implements CsvWritable, EntryWithAssetNameAndDa
 		return new String[] {
 				assetName,
 				"" + eps,
-				"" + epsPredicted,
+				emptyIfNull(epsPredicted),
 				"" + afterMarketClose,
-				"" + revenue,
-				"" + revenuePredicted,
+				emptyIfNull(revenue),
+				emptyIfNull(revenuePredicted),
 				DatesAndSetUtil.dateToStr(date)
 		};
 	}

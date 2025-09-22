@@ -9,16 +9,19 @@ import org.rty.portfolio.core.AssetPriceInfo;
 
 public final class ToEntityConvertorsUtil {
 	static final String NA_VALUE = "N/A";
+	static final String NO_VALUE = "-";
 	static final SimpleDateFormat EPS_DATE_FORMAT = new SimpleDateFormat("MM/dd/yyyy");
 
 	private static final int EPS_VALUE_COLUMN = 1;
 	private static final int EPS_PREDICTED_COLUMN = 2;
 	private static final int EPS_DATE_COLUMN = 3;
 
-	private static final int PRICE_DATE_COLUMN = 4;
-	private static final int PRICE_RATE_OF_CHANGE_COLUMN = 3;
-	private static final int PRICE_CHANGE_COLUMN = 2;
 	private static final int PRICE_VALUE_COLUMN = 1;
+	private static final int PRICE_CHANGE_COLUMN = 2;
+	private static final int PRICE_RATE_OF_CHANGE_COLUMN = 3;
+	private static final int PRICE_DATE_COLUMN = 4;
+	private static final int PRICE_VOLUME_COLUMN = 5;
+	private static final int PRICE_VOLUME_CHANGE_RATE_COLUMN = 6;
 
 	private ToEntityConvertorsUtil() {}
 
@@ -35,13 +38,15 @@ public final class ToEntityConvertorsUtil {
 				Double.parseDouble(line[PRICE_VALUE_COLUMN].trim()),
 				Double.parseDouble(line[PRICE_CHANGE_COLUMN].trim()),
 				Double.parseDouble(line[PRICE_RATE_OF_CHANGE_COLUMN].trim()),
+				valueOrDefaultFrom(line, PRICE_VOLUME_COLUMN, null),
+				valueOrDefaultFrom(line, PRICE_VOLUME_CHANGE_RATE_COLUMN, null),
 				toDate(line[PRICE_DATE_COLUMN].trim()));
 	}
 
 	public static AssetEpsInfo toAssetEpsInfoEntity(String assetName, String[] line) {
 		return new AssetEpsInfo(assetName,
 				Double.parseDouble(line[EPS_VALUE_COLUMN].trim()),
-				doubleFromString(line[EPS_PREDICTED_COLUMN].trim()),
+				possiblyDoubleFromString(line[EPS_PREDICTED_COLUMN].trim()),
 				toDate(line[EPS_DATE_COLUMN].trim(), EPS_DATE_FORMAT));
 	}
 
@@ -55,13 +60,25 @@ public final class ToEntityConvertorsUtil {
 			return null;
 		}
 
-		return doubleFromString(value.trim());
+		return possiblyDoubleFromString(value.trim());
 	}
 
-	private static Double doubleFromString(String value) {
-		if (value.isEmpty() || NA_VALUE.equalsIgnoreCase(value)) {
+	public static double doubleFromString(String value) {
+		final String adjustedValue = value.replace(",", "");
+
+		if (adjustedValue.toLowerCase().endsWith("b")) {
+			return Double.parseDouble(adjustedValue.replace("b", "").replace("B", "")) * 1_000_000_000.D;
+		} else if (adjustedValue.toLowerCase().endsWith("m")) {
+			return Double.parseDouble(adjustedValue.replace("m", "").replace("M", "")) * 1_000_000.D;
+		}
+
+		return Double.parseDouble(adjustedValue);
+	}
+
+	private static Double possiblyDoubleFromString(String value) {
+		if (value.isEmpty() || NA_VALUE.equalsIgnoreCase(value) || NO_VALUE.equals(value)) {
 			return null;
 		}
-		return Double.parseDouble(value);
+		return doubleFromString(value);
 	}
 }

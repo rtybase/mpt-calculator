@@ -13,7 +13,9 @@ load_uk_in() {
 	echo "UK Investing data for: $2"
 	./ParseTable.exe "-link=https://uk.investing.com/$1-historical-data" "-format=CSV"
 	head -n 27 out.csv > out1.csv
-	java -jar portfolio-0.0.1-SNAPSHOT.jar TransformSeriesDataTask "-file=out1.csv" "-out_symbol=$2" "-outfile=${FOLDER_FOR_PRICE_FILES}/$3" "-date_value_index=0" "-price_value_index=1" "-date_format=MMM d, yyyy"
+	java -jar portfolio-0.0.1-SNAPSHOT.jar TransformSeriesDataTask "-file=out1.csv" "-out_symbol=$2" \
+		"-outfile=${FOLDER_FOR_PRICE_FILES}/$3" "-date_value_index=0" "-price_value_index=1" \
+		"-volume_value_index=5" "-date_format=dd/MM/yyyy"
 	rm -rf out.csv
 	rm -rf out1.csv
 	rm -rf request.tmp
@@ -63,7 +65,7 @@ java -Xmx768m -jar portfolio-0.0.1-SNAPSHOT.jar CalculateMultiAssetsPortfolioSta
 
 rm -rf inputs-ml/*
 
-java -jar portfolio-0.0.1-SNAPSHOT.jar TransformEpsDataForTrainingTask \
+java -Xmx768m -jar portfolio-0.0.1-SNAPSHOT.jar TransformEpsDataForTrainingTask \
 	"-prices=D:\data_to_load_prices" \
 	"-eps=D:\data_to_load_eps" \
 	"-n-gaap-eps=D:\data_to_load_n_gaap_eps" \

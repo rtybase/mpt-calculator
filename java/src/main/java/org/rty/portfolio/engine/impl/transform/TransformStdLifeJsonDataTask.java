@@ -2,12 +2,12 @@ package org.rty.portfolio.engine.impl.transform;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Iterator;
 import java.util.Map;
 
 import org.rty.portfolio.core.AssetPriceInfo;
+import org.rty.portfolio.core.utils.ToEntityConvertorsUtil;
 import org.rty.portfolio.engine.AbstractTask;
 import org.rty.portfolio.io.CsvWriter;
 import org.rty.portfolio.math.Calculator;
@@ -104,6 +104,8 @@ public class TransformStdLifeJsonDataTask extends AbstractTask {
 				currentPrice,
 				change,
 				Calculator.calculateRate(currentPrice, previousProce),
-				SCAN_INPUT_DATE_FORMAT.parse(dataNode.get(PRICE_DATE).asText(), new ParsePosition(0)));
+				null,
+				null,
+				ToEntityConvertorsUtil.toDate(dataNode.get(PRICE_DATE).asText(), SCAN_INPUT_DATE_FORMAT));
 	}
 }

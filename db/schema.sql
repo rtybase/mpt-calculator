@@ -37,6 +37,8 @@ create table tbl_prices (
 	dbl_price DOUBLE not null,
 	dbl_change DOUBLE not null,
 	dbl_return DOUBLE not null,
+	dbl_volume DOUBLE,
+	dbl_vol_change_rate DOUBLE,
 	dtm_date DATE not null, -- dd-mm-yy
 	dtm_time TIME not null, -- hh:mm:ss
 	primary key(fk_assetID, dtm_date, dtm_time),

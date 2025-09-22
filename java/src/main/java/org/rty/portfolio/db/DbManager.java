@@ -89,12 +89,14 @@ public class DbManager {
 		final List<String> possiblyGoodResults = new ArrayList<>(prices.size());
 
 		try (PreparedStatement pStmt = connection.prepareStatement(
-				"INSERT INTO tbl_prices (fk_assetID, dbl_price, dbl_change,dbl_return, dtm_date, dtm_time)"
-						+ " VALUES (?,?,?,?,?,?)"
+				"INSERT INTO tbl_prices (fk_assetID, dbl_price, dbl_change, dbl_return, dtm_date, dtm_time, dbl_volume, dbl_vol_change_rate)"
+						+ " VALUES (?,?,?,?,?,?,?,?)"
 						+ " ON DUPLICATE KEY UPDATE"
 						+ "	 dbl_price=VALUES(dbl_price),"
 						+ "	 dbl_change=VALUES(dbl_change),"
-						+ "	 dbl_return=VALUES(dbl_return)")) {
+						+ "	 dbl_return=VALUES(dbl_return),"
+						+ "	 dbl_volume=VALUES(dbl_volume),"
+						+ "	 dbl_vol_change_rate=VALUES(dbl_vol_change_rate)")) {
 
 			for (AssetPriceInfo price : prices) {
 				final Integer assetId = resolveAssetNameToIdOrAddToFailList(price.assetName, failedResults,
@@ -107,6 +109,8 @@ public class DbManager {
 					pStmt.setDouble(4, price.rate);
 					pStmt.setDate(5, new java.sql.Date(price.date.getTime()));
 					pStmt.setTime(6, new java.sql.Time(price.date.getTime()));
+					setDoubleValueOrNull(pStmt, 7, price.volume);
+					setDoubleValueOrNull(pStmt, 8, price.volumeChangeRate);
 
 					pStmt.addBatch();
 				}
@@ -408,7 +412,8 @@ public class DbManager {
 
 		final List<AssetPriceInfo> result = new ArrayList<>(2048);
 
-		try (PreparedStatement pStmt = connection.prepareStatement("select a.vchr_symbol, p.dbl_price, p.dbl_change, p.dbl_return, p.dtm_date"
+		try (PreparedStatement pStmt = connection.prepareStatement("select a.vchr_symbol, p.dbl_price, p.dbl_change, p.dbl_return,"
+				+ " dbl_volume, dbl_vol_change_rate, p.dtm_date"
 				+ " from tbl_prices p, tbl_assets a"
 				+ " where p.fk_assetID = a.int_assetID"
 				+ " and a.vchr_symbol is not null"
@@ -423,7 +428,9 @@ public class DbManager {
 							rs.getDouble(2),
 							rs.getDouble(3),
 							rs.getDouble(4),
-							rs.getDate(5)
+							getDoubleOrNull(rs, 5),
+							getDoubleOrNull(rs, 6),
+							rs.getDate(7)
 						));
 				}
 			}

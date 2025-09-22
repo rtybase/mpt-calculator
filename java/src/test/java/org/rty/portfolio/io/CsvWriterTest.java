@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.rty.portfolio.core.AssetPriceInfo;
 
 class CsvWriterTest {
-	private static final String CSV_PRICE_CONTENT = "\"asset\",\"10.01\",\"0.1\",\"0.01\",\"2001-02-01\"";
+	private static final String CSV_PRICE_CONTENT = "\"asset\",\"10.01\",\"0.1\",\"0.01\",\"2001-02-01\",\"\",\"\"";
 	private static final String CSV_RAW_CONTENT = "\"asset\",\"10.01\"";
 	private static final String DIR = "src/test/resources/csv-test/";
 	private static final String FILE = DIR + "out.csv";
@@ -32,7 +32,7 @@ class CsvWriterTest {
 	void setup() throws IOException {
 		Files.createDirectories(Paths.get(DIR));
 
-		priceInfo = new AssetPriceInfo(ASSET_NAME, PRICE, CHANGE, RATE, DATE);
+		priceInfo = new AssetPriceInfo(ASSET_NAME, PRICE, CHANGE, RATE, null, null, DATE);
 	}
 
 	@AfterEach

@@ -22,6 +22,7 @@ public abstract class AbstractTask implements Task {
 	public static final String DATE_VALUE_INDEX_PARAM = "-date_value_index";
 	public static final String DATE_FORMAT_PARAM = "-date_format";
 	public static final String PRICE_VALUE_INDEX_PARAM = "-price_value_index";
+	public static final String VOLUME_VALUE_INDEX_PARAM = "-volume_value_index";
 	
 	public static final String INPUT_SYMBOL = "-in_symbol";
 	public static final String OUT_SYMBOL = "-out_symbol";

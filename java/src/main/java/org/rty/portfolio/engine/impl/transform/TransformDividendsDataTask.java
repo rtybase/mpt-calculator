@@ -10,6 +10,7 @@ import java.util.Map;
 
 import org.rty.portfolio.core.AssetDividendInfo;
 import org.rty.portfolio.core.utils.DatesAndSetUtil;
+import org.rty.portfolio.core.utils.ToEntityConvertorsUtil;
 import org.rty.portfolio.engine.AbstractTask;
 import org.rty.portfolio.io.CsvWriter;
 
@@ -79,7 +80,7 @@ public class TransformDividendsDataTask extends AbstractTask {
 	private AssetDividendInfo toDividendInfo(String assetName, int payValueIndex, int dateColumn,
 			DateTimeFormatter dateFormatter, String[] line) {
 		final Date date = DatesAndSetUtil.strToDate(dateFormatter, line[dateColumn]);
-		final double price = Double.parseDouble(line[payValueIndex].replace(DIVIDEND_SIGN, "").replace(",", ""));
+		final double price = ToEntityConvertorsUtil.doubleFromString(line[payValueIndex].replace(DIVIDEND_SIGN, ""));
 
 		return new AssetDividendInfo(assetName, price, date);
 	}

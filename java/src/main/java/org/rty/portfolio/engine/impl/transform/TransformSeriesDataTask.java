@@ -9,6 +9,7 @@ import java.util.Map;
 import org.rty.portfolio.core.AssetPriceInfo;
 import org.rty.portfolio.core.AssetPriceInfoAccumulator;
 import org.rty.portfolio.core.utils.DatesAndSetUtil;
+import org.rty.portfolio.core.utils.ToEntityConvertorsUtil;
 import org.rty.portfolio.engine.AbstractTask;
 import org.rty.portfolio.io.CsvWriter;
 
@@ -24,12 +25,14 @@ public class TransformSeriesDataTask extends AbstractTask {
 		final String dateValueIndex = getValidParameterValue(parameters, DATE_VALUE_INDEX_PARAM);
 		final String priceValueIndex = getValidParameterValue(parameters, PRICE_VALUE_INDEX_PARAM);
 		final String dateFormat = getValidParameterValue(parameters, DATE_FORMAT_PARAM);
+		final String volumeColumn = parameters.getOrDefault(VOLUME_VALUE_INDEX_PARAM, "-1");
 
 		AssetPriceInfoAccumulator accumulator = populateRates(outSymbol,
 				inputFile,
 				Integer.parseInt(priceValueIndex),
 				Integer.parseInt(dateValueIndex),
-				DateTimeFormatter.ofPattern(dateFormat, Locale.US));
+				DateTimeFormatter.ofPattern(dateFormat, Locale.US),
+				Integer.parseInt(volumeColumn));
 
 		CsvWriter<AssetPriceInfo> writer = new CsvWriter<>(outputFile);
 		writer.write(accumulator.getChangeHistory());
@@ -39,9 +42,9 @@ public class TransformSeriesDataTask extends AbstractTask {
 	}
 
 	private AssetPriceInfoAccumulator populateRates(String assetName, String inputFile, int closePriceColumn,
-			int dateColumn, DateTimeFormatter dateFormatter) throws Exception {
+			int dateColumn, DateTimeFormatter dateFormatter, int volumeColumn) throws Exception {
 		final AssetPriceInfoAccumulator accumulator = new AssetPriceInfoAccumulator(assetName);
-		final int minimumColumnsToHave = Math.max(dateColumn, closePriceColumn);
+		final int minimumColumnsToHave = minimumColumnsFrom(closePriceColumn, dateColumn, volumeColumn);
 
 		final List<String[]> lines = readAllLinesFrom(inputFile);
 		if (lines.isEmpty()) {
@@ -54,8 +57,10 @@ public class TransformSeriesDataTask extends AbstractTask {
 			if (line.length > minimumColumnsToHave) {
 				try {
 					final Date date = DatesAndSetUtil.strToDate(dateFormatter, line[dateColumn]);
-					final double price = Double.parseDouble(line[closePriceColumn].replace(",", ""));
-					accumulator.add(date, price);
+					final double price = ToEntityConvertorsUtil.doubleFromString(line[closePriceColumn]);
+					final Double volume = ToEntityConvertorsUtil.valueOrDefaultFrom(line, volumeColumn, null);
+
+					accumulator.add(date, price, volume);
 				} catch (Exception ex) {
 					say("parse error at line {}, date='{}', price='{}'", 
 							i,
@@ -68,5 +73,9 @@ public class TransformSeriesDataTask extends AbstractTask {
 		}
 
 		return accumulator;
+	}
+
+	private static int minimumColumnsFrom(int closePriceColumn, int dateColumn, int volumeColumn) {
+		return Math.max(Math.max(dateColumn, closePriceColumn), volumeColumn);
 	}
 }

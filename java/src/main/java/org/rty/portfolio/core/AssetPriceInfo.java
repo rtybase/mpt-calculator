@@ -1,5 +1,7 @@
 package org.rty.portfolio.core;
 
+import static org.rty.portfolio.core.CsvWritable.emptyIfNull;
+
 import java.util.Date;
 
 import org.rty.portfolio.core.utils.DatesAndSetUtil;
@@ -14,15 +16,19 @@ public class AssetPriceInfo implements CsvWritable, EntryWithAssetNameAndDate {
 	public final double price;
 	public final double change;
 	public final double rate;
+	public final Double volume;
+	public final Double volumeChangeRate;
 	public final Date date;
 
-	public AssetPriceInfo(String assetName, double price, double change, double rate, Date date) {
+	public AssetPriceInfo(String assetName, double price, double change, double rate, Double volume,
+			Double volumeChangeRate, Date date) {
 		this.assetName = assetName;
 		this.price = price;
 		this.change = change;
 		this.rate = rate;
+		this.volume = volume;
+		this.volumeChangeRate = volumeChangeRate;
 		this.date = date;
-
 	}
 
 	@Override
@@ -42,7 +48,9 @@ public class AssetPriceInfo implements CsvWritable, EntryWithAssetNameAndDate {
 				"" + price,
 				"" + change,
 				"" + rate,
-				DatesAndSetUtil.dateToStr(date)
+				DatesAndSetUtil.dateToStr(date),
+				emptyIfNull(volume),
+				emptyIfNull(volumeChangeRate)
 		};
 	}
 

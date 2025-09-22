@@ -8,13 +8,13 @@ import org.rty.portfolio.db.DbManager;
 
 /**
  * A general purpose price CSV loader. The format must be: 
- * assetName, price, change, rate, date
+ * assetName, price, change, rate, date, volume, volumeChangeRate
  * 
  * date is in format of yyyy-MM-dd
  *
  */
 public class LoadPricesToDbTask extends GenericLoadToDbTask<AssetPriceInfo> {
-	public static final int NO_OF_COLUMNS = 5;
+	public static final int NO_OF_COLUMNS = 7;
 
 	public LoadPricesToDbTask(DbManager dbManager) {
 		super(dbManager, NO_OF_COLUMNS, false);

@@ -1,5 +1,7 @@
 package org.rty.portfolio.core;
 
+import static org.rty.portfolio.core.CsvWritable.emptyIfNull;
+
 import java.util.Date;
 
 import org.rty.portfolio.core.utils.DatesAndSetUtil;
@@ -46,7 +48,7 @@ public class AssetEpsInfo implements CsvWritable, EntryWithAssetNameAndDate {
 		return new String[] {
 				assetName,
 				"" + eps,
-				"" + epsPredicted,
+				emptyIfNull(epsPredicted),
 				DatesAndSetUtil.dateToStr(date)
 		};
 	}

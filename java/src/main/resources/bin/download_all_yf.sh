@@ -18,7 +18,9 @@ load_yf () {
 	else 
 		java -Duse-http2=true -jar portfolio-0.0.1-SNAPSHOT.jar DownloadTask "-url=https://finance.yahoo.com/quote/$1/history/" -outfile=out.html -headers=headers/yh-headers.prop
 		./ParseTable.exe "-link=out.html" "-format=CSV"
-		java -jar portfolio-0.0.1-SNAPSHOT.jar TransformSeriesDataTask "-file=out.csv" "-out_symbol=$2" "-outfile=${price_out_file}" "-date_value_index=0" "-price_value_index=4" "-date_format=MMM d, yyyy"
+		java -jar portfolio-0.0.1-SNAPSHOT.jar TransformSeriesDataTask "-file=out.csv" "-out_symbol=$2" \
+			"-outfile=${price_out_file}" "-date_value_index=0" "-price_value_index=4" \
+			"-volume_value_index=6" "-date_format=MMM d, yyyy"
 		java -jar portfolio-0.0.1-SNAPSHOT.jar TransformDividendsDataTask "-file=out.csv" "-out_symbol=$2" "-outfile=${dividend_out_file}" "-date_value_index=0" "-price_value_index=1" "-date_format=MMM d, yyyy"
 
 		rm -rf out.html
