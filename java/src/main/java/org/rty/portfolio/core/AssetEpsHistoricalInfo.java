@@ -68,7 +68,20 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 			"spr_pred_eps_prev_pred_eps", "spr_eps_prev_eps",
 			"spr_ngaap_pred_eps_prev_ngaap_pred_eps", "spr_ngaap_eps_prev_ngaap_eps",
 
-			"prev_2d_rate", "prev_rate", "rate", "next_rate", "next_2d_rate" };
+			"prev_2d_rate",
+			"prev_2d_v_chng_rate",
+
+			"prev_rate",
+			"prev_v_chng_rate",
+
+			"rate",
+			"v_chng_rate",
+
+			"next_rate",
+			"next_v_chng_rate",
+
+			"next_2d_rate",
+			"next_2d_v_chng_rate" };
 
 	private static final double PRECISION = 100D;
 	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -315,20 +328,41 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 				"" + surprise(currentNonGaapPredictedEpsValue, previousNonGaapPredictedEpsValue),
 				"" + surprise(currentNonGaapEpsValue, previousNonGaapEpsValue),
 
-				"" + round(price2DaysBeforeCurrentEps.rate),
-				"" + round(priceBeforeCurrentEps.rate),
-				"" + round(priceAtCurrentEps.rate),
-				emptyRateIfPriceInfoIsNull(priceAfterCurrentEps),
-				emptyRateIfPriceInfoIsNull(price2DaysAfterCurrentEps)
+				rateIfAvailable(price2DaysBeforeCurrentEps),
+				volumeChangeRateIfAvailable(price2DaysBeforeCurrentEps),
+
+				rateIfAvailable(priceBeforeCurrentEps),
+				volumeChangeRateIfAvailable(priceBeforeCurrentEps),
+
+				rateIfAvailable(priceAtCurrentEps),
+				volumeChangeRateIfAvailable(priceAtCurrentEps),
+
+				rateIfAvailable(priceAfterCurrentEps),
+				volumeChangeRateIfAvailable(priceAfterCurrentEps),
+
+				rateIfAvailable(price2DaysAfterCurrentEps),
+				volumeChangeRateIfAvailable(price2DaysAfterCurrentEps)
 		};
 	}
 
-	private static String emptyRateIfPriceInfoIsNull(AssetPriceInfo priceInfo) {
+	private static String rateIfAvailable(AssetPriceInfo priceInfo) {
 		if (priceInfo == null) {
 			return "";
 		}
 
 		return "" + round(priceInfo.rate);
+	}
+
+	private static String volumeChangeRateIfAvailable(AssetPriceInfo priceInfo) {
+		if (priceInfo == null) {
+			return "";
+		}
+
+		if (priceInfo.volumeChangeRate == null) {
+			return "";
+		}
+
+		return "" + round(priceInfo.volumeChangeRate);
 	}
 
 	private static double revenueSurprise(AssetNonGaapEpsInfo nonGaapEps, double defaultValue) {

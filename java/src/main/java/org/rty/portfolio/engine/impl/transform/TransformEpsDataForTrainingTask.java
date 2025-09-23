@@ -304,7 +304,7 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 
 	private static BulkCsvLoader<AssetPriceInfo> priceLoader(
 			Map<String, NavigableMap<Date, AssetPriceInfo>> priceStore) {
-		return new BulkCsvLoader<>(LoadPricesToDbTask.NO_OF_COLUMNS - 2, false) { // TODO: set to LoadPricesToDbTask.NO_OF_COLUMNS once migration is completed! 
+		return new BulkCsvLoader<>(LoadPricesToDbTask.NO_OF_COLUMNS, false) {
 
 			@Override
 			protected List<String> saveResults(List<AssetPriceInfo> dataToAdd) throws Exception {
