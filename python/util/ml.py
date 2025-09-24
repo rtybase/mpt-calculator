@@ -9,19 +9,19 @@ from sklearn.ensemble import RandomForestRegressor
 MAX_DEGREE = 5
 MODELS = {}
 
-DTR_DS2_ARGS = {'max_depth': 5, 'min_samples_leaf': 12,\
+DTR_DS2_ARGS = {'max_depth': 5, 'min_samples_leaf': 10,\
         'min_samples_split': 2, 'criterion': 'absolute_error',\
         'random_state': 42}
 
-RFR_DS2_ARGS = {'max_depth': 6, 'min_samples_leaf': 8,\
+RFR_DS2_ARGS = {'max_depth': 5, 'min_samples_leaf': 10,\
         'min_samples_split': 2, 'n_estimators': 300,\
         'criterion': 'absolute_error', 'random_state': 42, 'oob_score': True}
 
-DTR_DS1_ARGS = {'max_depth': 5, 'min_samples_leaf': 12,\
+DTR_DS1_ARGS = {'max_depth': 5, 'min_samples_leaf': 10,\
         'min_samples_split': 2, 'criterion': 'absolute_error',\
         'random_state': 42}
 
-RFR_DS1_ARGS = {'max_depth': 6, 'min_samples_leaf': 8,\
+RFR_DS1_ARGS = {'max_depth': 5, 'min_samples_leaf': 10,\
         'min_samples_split': 2, 'n_estimators': 300,\
         'criterion': 'absolute_error', 'random_state': 42, 'oob_score': True}
 
@@ -36,7 +36,9 @@ RFR_DS1_ARGS = {'max_depth': 6, 'min_samples_leaf': 8,\
 #    'ngaap_eps_spr', 'revenue_spr',\
 #    'spr_pred_eps_prev_pred_eps', 'spr_eps_prev_eps',\
 #    'spr_ngaap_pred_eps_prev_ngaap_pred_eps', 'spr_ngaap_eps_prev_ngaap_eps',\
-#    'prev_2d_rate','prev_rate','rate']
+#    'prev_2d_rate','prev_2d_v_chng_rate',\
+#    'prev_rate','prev_v_chng_rate',\
+#    'rate','v_chng_rate']
 
 CORE_COLUMNS_FOR_TRAINING = ['zs_sector','zs_industry','zs_month',\
     'zs_prev_after_market_close', 'zs_prev_pred_eps',\
@@ -49,7 +51,9 @@ CORE_COLUMNS_FOR_TRAINING = ['zs_sector','zs_industry','zs_month',\
     'ngaap_eps_spr', 'revenue_spr',\
     'spr_pred_eps_prev_pred_eps', 'spr_eps_prev_eps',\
     'spr_ngaap_pred_eps_prev_ngaap_pred_eps', 'spr_ngaap_eps_prev_ngaap_eps',\
-    'prev_2d_rate','prev_rate','rate']
+    'prev_2d_rate', 'prev_2d_v_chng_rate',\
+    'prev_rate', 'prev_v_chng_rate',\
+    'rate', 'v_chng_rate']
 
 POLY_P_MODEL_TEMPLATE = "ds{0}-m-polynomial-{1}-p"
 POLY_L_MODEL_TEMPLATE = "ds{0}-m-polynomial-{1}-l"
@@ -195,7 +199,7 @@ def load_training_dataset_1_day_after_eps(file):
 def load_training_dataset_2_days_after_eps(file):
     dataset = pd.read_csv(file)
 
-    X = dataset[[*CORE_COLUMNS_FOR_TRAINING, 'next_rate']]
+    X = dataset[[*CORE_COLUMNS_FOR_TRAINING, 'next_rate', 'next_v_chng_rate']]
     y = dataset['next_2d_rate']
 
     return X,y

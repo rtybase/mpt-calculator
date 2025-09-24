@@ -3,11 +3,15 @@ package org.rty.portfolio.core;
 import org.rty.portfolio.core.utils.DatesAndSetUtil;
 import org.rty.portfolio.math.Calculator;
 import org.rty.portfolio.math.ZScoreCalculator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class AssetEpsHistoricalInfo implements CsvWritable {
+	private static final Logger LOGGER = LoggerFactory.getLogger(AssetEpsHistoricalInfo.class.getSimpleName());
+
 	public static final String[] HEADER = new String[] { "asset_id",
 			"sector",
 			"zs_sector",
@@ -353,13 +357,16 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 		return "" + round(priceInfo.rate);
 	}
 
-	private static String volumeChangeRateIfAvailable(AssetPriceInfo priceInfo) {
+	private String volumeChangeRateIfAvailable(AssetPriceInfo priceInfo) {
 		if (priceInfo == null) {
 			return "";
 		}
 
 		if (priceInfo.volumeChangeRate == null) {
-			return "";
+			LOGGER.info("Volume change rate is null for '{}' on '{}', assuming 0.",
+					assetName,
+					DatesAndSetUtil.dateToStr(currentEps.date));
+			return "0";
 		}
 
 		return "" + round(priceInfo.volumeChangeRate);

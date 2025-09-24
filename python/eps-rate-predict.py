@@ -89,7 +89,7 @@ numpy.set_printoptions(suppress=True, threshold=sys.maxsize, linewidth=500)
 
 print("=========================<2-Days after EPS>============================")
 model_details = predict_with_all_models(DS2_FILE, [*util.ml.CORE_COLUMNS_FOR_TRAINING,\
-                    'next_rate'], 2)
+                    'next_rate', 'next_v_chng_rate'], 2)
 save_results(model_details, 2)
 
 print("=========================<1-Day after EPS>=============================")
