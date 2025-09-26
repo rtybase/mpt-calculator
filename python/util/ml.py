@@ -13,15 +13,15 @@ DTR_DS2_ARGS = {'max_depth': 5, 'min_samples_leaf': 10,\
         'min_samples_split': 2, 'criterion': 'absolute_error',\
         'random_state': 42}
 
-RFR_DS2_ARGS = {'max_depth': 5, 'min_samples_leaf': 10,\
-        'min_samples_split': 2, 'n_estimators': 300,\
+RFR_DS2_ARGS = {'max_depth': 5, 'min_samples_leaf': 4,\
+        'min_samples_split': 14, 'n_estimators': 400,\
         'criterion': 'absolute_error', 'random_state': 42, 'oob_score': True}
 
 DTR_DS1_ARGS = {'max_depth': 5, 'min_samples_leaf': 10,\
         'min_samples_split': 2, 'criterion': 'absolute_error',\
         'random_state': 42}
 
-RFR_DS1_ARGS = {'max_depth': 5, 'min_samples_leaf': 10,\
+RFR_DS1_ARGS = {'max_depth': 6, 'min_samples_leaf': 8,\
         'min_samples_split': 2, 'n_estimators': 300,\
         'criterion': 'absolute_error', 'random_state': 42, 'oob_score': True}
 
