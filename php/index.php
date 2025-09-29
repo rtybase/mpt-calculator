@@ -274,7 +274,7 @@ function loadDividendsAndEpsFor($assetId, $link) {
 		<?php } ?>
 	}
 
-	function sumbitIfRead() {
+	function sumbitIfReady() {
 		if (document.forms['main'].id.value != '-1') {
 			document.forms['main'].submit();
 		}
@@ -288,12 +288,12 @@ function loadDividendsAndEpsFor($assetId, $link) {
 	<tr><td align="right">
 		<form name="main" method="GET" action="./<?php echo basename($_SERVER['PHP_SELF']);?>">
 		<font face="verdana">Asset:</font>
-		<select name="id" onchange="sumbitIfRead();">
+		<select name="id" onchange="sumbitIfReady();">
 		<?php printAssets($id, $link);?>
 		</select>
 		<font face="verdana">Weights:</font>
-		<input type="radio" name="all" value="true" <?php if ($includeall) echo "checked";?> onchange="sumbitIfRead();">All
-		<input type="radio" name="all" value="false" <?php if (!$includeall) echo "checked";?> onchange="sumbitIfRead();">Positive only
+		<input type="radio" name="all" value="true" <?php if ($includeall) echo "checked";?> onchange="sumbitIfReady();">All
+		<input type="radio" name="all" value="false" <?php if (!$includeall) echo "checked";?> onchange="sumbitIfReady();">Positive only
 		</form>
 	</td></tr>
 
