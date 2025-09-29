@@ -6,23 +6,23 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
 
-MAX_DEGREE = 5
+MAX_DEGREE = 4
 MODELS = {}
 
-DTR_DS2_ARGS = {'max_depth': 5, 'min_samples_leaf': 10,\
+DTR_DS2_ARGS = {'max_depth': 6, 'min_samples_leaf': 8,\
         'min_samples_split': 2, 'criterion': 'absolute_error',\
         'random_state': 42}
 
-RFR_DS2_ARGS = {'max_depth': 5, 'min_samples_leaf': 4,\
-        'min_samples_split': 14, 'n_estimators': 400,\
+RFR_DS2_ARGS = {'max_depth': 6, 'min_samples_leaf': 8,\
+        'min_samples_split': 2, 'n_estimators': 400,\
         'criterion': 'absolute_error', 'random_state': 42, 'oob_score': True}
 
-DTR_DS1_ARGS = {'max_depth': 5, 'min_samples_leaf': 10,\
+DTR_DS1_ARGS = {'max_depth': 6, 'min_samples_leaf': 8,\
         'min_samples_split': 2, 'criterion': 'absolute_error',\
         'random_state': 42}
 
 RFR_DS1_ARGS = {'max_depth': 6, 'min_samples_leaf': 8,\
-        'min_samples_split': 2, 'n_estimators': 300,\
+        'min_samples_split': 2, 'n_estimators': 400,\
         'criterion': 'absolute_error', 'random_state': 42, 'oob_score': True}
 
 #CORE_COLUMNS_FOR_TRAINING = ['sector','industry','month',\

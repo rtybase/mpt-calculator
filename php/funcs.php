@@ -40,8 +40,27 @@
 	}
 
 	function printAssets($assetId, $link) {
-		$query = "select int_assetID, vchr_name from tbl_assets order by vchr_name asc";
-		printCategory($query, $assetId, $link);
+		$query = "select int_assetID, vchr_name, vchr_type from tbl_assets order by vchr_type asc, vchr_name asc";
+		$res = mysql_query($query,$link);
+
+		if (!$res) die("Invalid query: ". mysql_error());
+
+		$lastType = "";
+		while ($row = mysql_fetch_row($res)) {
+			if ($lastType != $row[2]) {
+				echo "<option value=\"-1\">--------------------&lt;&lt;&lt; ".htmlentities($row[2])." &gt;&gt;&gt;--------------------</option>\r\n";
+			}
+
+			if ($assetId == $row[0]) {
+				echo "<option value=\"$row[0]\" selected>".htmlentities($row[1])."</option>\r\n";
+			} else {
+				echo "<option value=\"$row[0]\">".htmlentities($row[1])."</option>\r\n";
+			}
+
+			$lastType = $row[2];
+		}
+
+		mysql_free_result($res);
 	}
 
 	function getLastPriceInfo($assetId, $link) {

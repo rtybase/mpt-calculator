@@ -4,7 +4,8 @@ use portfolio;
 create table tbl_assets (
 	int_assetID int(10) unsigned NOT NULL auto_increment,
 	vchr_name varchar(100) not null,
-        vchr_symbol varchar(50),
+	vchr_symbol varchar(50),
+	vchr_type VARCHAR(20) NOT NULL default "Stock",
 	primary key (int_assetID),
 	unique (vchr_name)
 ) ENGINE = InnoDB;
