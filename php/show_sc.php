@@ -56,18 +56,24 @@ function ratesForDatesWithShift($dates, $rates, $shift, $predictor) {
 	$asset1Predictor = false;
 	$asset2Predictor = false;
 
+	$predictedAsset = $asset2Name;
+	$predictedAssetId = $asset2Id;
 	if ($shift > 0) {
 		$asset1Name.= " (predictor)";
 		$asset1Predictor = true;
 	} else if ($shift < 0) {
 		$asset2Name.= " (predictor)";
 		$asset2Predictor = true;
+
+		$predictedAsset = $asset1Name;
+		$predictedAssetId = $asset1Id;
 	}
 
 	$tableResult.= "['".linkToAsset($asset1Id, $asset1Name)."','";
 	$tableResult.= linkToAsset($asset2Id, $asset2Name)."',";
 	$tableResult.= toChartNumber($shift).",";
-	$tableResult.= toChartNumber(round($details["bestCorrelation"], 5))."]";
+	$tableResult.= toChartNumber(round($details["bestCorrelation"], 5)).",";
+	$tableResult.= toChartNumber(count($details["dates"]))."]";
 ?>
 <!doctype html>
 <html>
@@ -102,6 +108,7 @@ function ratesForDatesWithShift($dates, $rates, $shift, $predictor) {
 		dataTable.addColumn('string', 'Asset 2');
 		dataTable.addColumn('number', 'Shift (days)');
 		dataTable.addColumn('number', 'Correlation');
+		dataTable.addColumn('number', 'No. Common Dates');
 		return dataTable;
 	}
 
@@ -162,6 +169,25 @@ function ratesForDatesWithShift($dates, $rates, $shift, $predictor) {
 	<tr><td><div id='table_div' style="width: 1044px;"></div></td></tr>
 	<tr><td><div id="chart1_div" style="width: 1044px; height: 350px;"></div></td></tr>
 	<tr><td><div id="chart2_div" style="width: 1044px; height: 350px;"></div></td></tr>
+<?php
+	if (!empty($details["forecast"])) {
+		$lastDate = end($details["dates"]);
+		$forecastDate = date('Y-m-d', strtotime("+1 day", strtotime($lastDate)));
+
+		$lastPriceInfo = getLastPriceInfo($predictedAssetId, $link);
+		$return1 = $details["forecast"][0];
+		$return2 = $details["forecast"][1];
+
+		$lastPrice = (float) $lastPriceInfo["dbl_price"];
+		$price1 = $lastPrice * (1 + $return1/100.0);
+		$price2 = $lastPrice * (1 + $return2/100.0);
+
+		echo "<tr><td><hr></td></tr>";
+		echo "<tr><td><font face=\"verdana\">Forecast return/price for $predictedAsset on $forecastDate:</font></td></tr>";
+		echo "<tr><td><font face=\"verdana\">Return = ".round($return1, 4).", Price = ".round($price1, 4)."</font></td></tr>";
+		echo "<tr><td><font face=\"verdana\">Return = ".round($return2, 4).", Price = ".round($price2, 4)."</font></td></tr>";
+	}
+?>
       </table></td>
     </tr></table>
   </body>

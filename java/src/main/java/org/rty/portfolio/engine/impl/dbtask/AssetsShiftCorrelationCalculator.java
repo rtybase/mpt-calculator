@@ -1,14 +1,17 @@
 package org.rty.portfolio.engine.impl.dbtask;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
+import org.apache.commons.math3.stat.StatUtils;
 import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
 import org.apache.commons.math3.util.Pair;
 import org.rty.portfolio.core.AssetsCorrelationInfo;
 import org.rty.portfolio.core.utils.DatesAndSetUtil;
+import org.rty.portfolio.math.Calculator;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -36,6 +39,7 @@ public class AssetsShiftCorrelationCalculator implements Callable<AssetsCorrelat
 		boolean hasSufficientContent = false;
 		double[] asset1CommonRates = null;
 		double[] asset2CommonRates = null;
+		double[] forecast = null;
 
 		if (DatesAndSetUtil.hasSufficientContent(dates)) {
 			asset1CommonRates = DatesAndSetUtil.getValuesByIndex(dates, asset1Rates);
@@ -45,6 +49,8 @@ public class AssetsShiftCorrelationCalculator implements Callable<AssetsCorrelat
 					asset2CommonRates);
 			result = new Pair<>(computationResult.shift, computationResult.correlation);
 			hasSufficientContent = true;
+
+			forecast = calculateForecast(computationResult);
 		}
 
 		return new AssetsCorrelationInfo(asset1Id,
@@ -54,7 +60,8 @@ public class AssetsShiftCorrelationCalculator implements Callable<AssetsCorrelat
 				result.getSecond(),
 				dates,
 				asset1CommonRates,
-				asset2CommonRates);
+				asset2CommonRates,
+				forecast);
 	}
 
 	private static ShiftCorrelationComputationResult computeBestCorrelation(double[] asset1Values, double[] asset2Values) {
@@ -84,11 +91,14 @@ public class AssetsShiftCorrelationCalculator implements Callable<AssetsCorrelat
 
 		Preconditions.checkArgument(resutArraySize > 1, "Shift is too wide!");
 
+		double valueForForecast = array1[array1.length - 1];
+
 		if (shift == 0) {
 			return new ShiftCorrelationComputationResult(shift,
 					new PearsonsCorrelation().correlation(array1, array2),
 					array1,
-					array2);
+					array2,
+					valueForForecast);
 		} else {
 			final double[] array1WithShift = new double[resutArraySize];
 			final double[] array2WithShift = new double[resutArraySize];
@@ -99,12 +109,14 @@ public class AssetsShiftCorrelationCalculator implements Callable<AssetsCorrelat
 			} else {
 				System.arraycopy(array1, positiveValueForshift, array1WithShift, 0, resutArraySize);
 				System.arraycopy(array2, 0, array2WithShift, 0, resutArraySize);
+				valueForForecast = array2[array2.length - 1];
 			}
 
 			return new ShiftCorrelationComputationResult(shift,
 					new PearsonsCorrelation().correlation(array1WithShift, array2WithShift),
 					array1WithShift,
-					array2WithShift);
+					array2WithShift,
+					valueForForecast);
 		}
 	}
 
@@ -119,15 +131,97 @@ public class AssetsShiftCorrelationCalculator implements Callable<AssetsCorrelat
 		final double[] array1WithShift;
 		final double[] array2WithShift;
 
+		final double valueForForecast;
+
 		private ShiftCorrelationComputationResult(int shift, double correlation, double[] array1WithShift,
-				double[] array2WithShift) {
+				double[] array2WithShift, double valueForForecast) {
 			this.shift = shift;
 			this.correlation = correlation;
 			this.array1WithShift = array1WithShift;
 			this.array2WithShift = array2WithShift;
 
+			this.valueForForecast = valueForForecast;
+
 			this.absCorrelation = Math.abs(correlation);
 			this.absShift = Math.absExact(shift);
 		}
+	}
+
+	@VisibleForTesting
+	static double[] calculateForecast(ShiftCorrelationComputationResult correlationResults) {
+		if (correlationResults.absShift == 1) {
+			double[] x = correlationResults.array1WithShift;
+			double[] y = correlationResults.array2WithShift;
+
+			if (correlationResults.shift < 0) {
+				x = correlationResults.array2WithShift;
+				y = correlationResults.array1WithShift;
+			}
+
+			return forecast(x,
+					correlationResults.valueForForecast,
+					y,
+					correlationResults.correlation);
+		}
+		return null;
+	}
+
+	private static double[] forecast(double[] x, double extraX, double[] y, double correlation) {
+		final double[] fullX = append(x, extraX);
+		final int n = fullX.length;
+
+		final double meanX = StatUtils.mean(fullX);
+		final double meanY = StatUtils.mean(y);
+
+		final double varianceX = StatUtils.populationVariance(fullX);
+		final double varianceY = StatUtils.populationVariance(y);
+
+		final double c_2 = varianceX * (n - 1) * square(correlation);
+		final double c = Math.sqrt(c_2);
+		final double k = pretendCovariance(x, meanX, y, meanY);
+
+		final double diffX = extraX - meanX;
+		final double diffXandCSquare = square(diffX) - c_2;
+
+		final double delta = square(k) + n * varianceY * diffXandCSquare;
+		final double deltaSqrt = tryExtractSqrt(delta);
+
+		if (Double.isNaN(deltaSqrt)) {
+			return null;
+		}
+
+		final double y1 = meanY + (-k * diffX - c * deltaSqrt) / diffXandCSquare;
+		final double y2 = meanY + (-k * diffX + c * deltaSqrt) / diffXandCSquare;
+
+		return new double[] { y1, y2 };
+	}
+
+	private static double pretendCovariance(double[] x, double meanX, double[] y, double meanY) {
+		double result = 0D;
+
+		for (int i = 0; i < x.length; i++) {
+			result += (x[i] - meanX) * (y[i] - meanY);
+		}
+
+		return result;
+	}
+
+	private static double[] append(double[] array, double element) {
+		final int n = array.length;
+		array = Arrays.copyOf(array, n + 1);
+		array[n] = element;
+		return array;
+	}
+
+	private static double square(double x) {
+		return x * x;
+	}
+
+	private static double tryExtractSqrt(double x) {
+		if (Calculator.almostZero(x)) {
+			return 0D;
+		}
+
+		return Math.sqrt(x);
 	}
 }

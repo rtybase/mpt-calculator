@@ -78,18 +78,21 @@ public class Calculator {
 	}
 
 	public static double calculateEpsSurprise(double reportedEps, double predictedEps) {
-		final double absValue = Math.abs(predictedEps);
 		final double diff = calculateChange(reportedEps, predictedEps);
 
-		if (absValue < ERROR) {
+		if (almostZero(predictedEps)) {
 			if (diff < 0D) {
 				return -MAX_VALUE;
 			}
 			return MAX_VALUE;
 		}
 
-		double rate = (100.0D * diff) / absValue;
+		double rate = (100.0D * diff) / Math.abs(predictedEps);
 		return round(rate, CORRECTION);
+	}
+
+	public static boolean almostZero(double value) {
+		return Math.abs(value) < ERROR;
 	}
 
 	public static double calculatePriceOverEps(double price, double eps) {
