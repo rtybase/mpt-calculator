@@ -1,15 +1,21 @@
 package org.rty.portfolio.engine.impl.dbtask;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.rty.portfolio.core.AssetsCorrelationInfo;
+import org.rty.portfolio.engine.impl.dbtask.AssetsShiftCorrelationCalculator.ShiftCorrelationComputationResult;
 
 class AssetsShiftCorrelationCalculatorTest {
+	private static final double[] TEST_ARRAY2 = new double[] { 2D, 4D, 6D };
+	private static final double[] TEST_ARRAY1 = new double[] { 1D, 2D, 3D };
+
 	private static final double ERROR_TOLERANCE = 0.000001D;
 
 	@Test
@@ -53,5 +59,61 @@ class AssetsShiftCorrelationCalculatorTest {
 				+ "\"dates\":[\"1\",\"2\",\"3\",\"4\",\"5\"],"
 				+ "\"asset1Rates\":[1.0,2.0,3.0,4.0,5.0],"
 				+ "\"asset2Rates\":[2.0,4.0,6.0,8.0,10.0]}", result.toString());
+	}
+
+	@Test
+	void testCorrelatioCalculationWithShiftTooWide() {
+		final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+				() -> AssetsShiftCorrelationCalculator.calculateCorrelationWithShift(TEST_ARRAY1,
+						TEST_ARRAY2,
+						2));
+		assertEquals("Shift is too wide!", ex.getMessage());
+	}
+
+	@Test
+	void testCorrelatioCalculationWithZeroShift() {
+		final ShiftCorrelationComputationResult result = AssetsShiftCorrelationCalculator
+				.calculateCorrelationWithShift(TEST_ARRAY1, TEST_ARRAY2, 0);
+
+		assertEquals(1D, result.correlation, ERROR_TOLERANCE);
+		assertEquals(1D, result.absCorrelation, ERROR_TOLERANCE);
+
+		assertEquals(0, result.shift);
+		assertEquals(0, result.absShift);
+
+		assertArrayEquals(TEST_ARRAY1, result.array1WithShift);
+		assertArrayEquals(TEST_ARRAY2, result.array2WithShift);
+	}
+
+	@Test
+	void testCorrelatioCalculationWithPositiveShift() {
+		final ShiftCorrelationComputationResult result = AssetsShiftCorrelationCalculator
+				.calculateCorrelationWithShift(new double[] { 1D, 2D, 3D, 0D },
+						new double[] { 0D, 2D, 4D, 6D }, 1);
+
+		assertEquals(1D, result.correlation, ERROR_TOLERANCE);
+		assertEquals(1D, result.absCorrelation, ERROR_TOLERANCE);
+
+		assertEquals(1, result.shift);
+		assertEquals(1, result.absShift);
+
+		assertArrayEquals(TEST_ARRAY1, result.array1WithShift);
+		assertArrayEquals(TEST_ARRAY2, result.array2WithShift);
+	}
+
+	@Test
+	void testCorrelatioCalculationWithNegativeShift() {
+		final ShiftCorrelationComputationResult result = AssetsShiftCorrelationCalculator
+				.calculateCorrelationWithShift(new double[] { 0D, 1D, 2D, 3D },
+						new double[] { 2D, 4D, 6D, 0D }, -1);
+
+		assertEquals(1D, result.correlation, ERROR_TOLERANCE);
+		assertEquals(1D, result.absCorrelation, ERROR_TOLERANCE);
+
+		assertEquals(-1, result.shift);
+		assertEquals(1, result.absShift);
+
+		assertArrayEquals(TEST_ARRAY1, result.array1WithShift);
+		assertArrayEquals(TEST_ARRAY2, result.array2WithShift);
 	}
 }

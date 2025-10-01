@@ -5,10 +5,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
+import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
 import org.apache.commons.math3.util.Pair;
 import org.rty.portfolio.core.AssetsCorrelationInfo;
 import org.rty.portfolio.core.utils.DatesAndSetUtil;
-import org.rty.portfolio.math.Calculator;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 
 public class AssetsShiftCorrelationCalculator implements Callable<AssetsCorrelationInfo> {
 	private final int asset1Id;
@@ -38,7 +41,9 @@ public class AssetsShiftCorrelationCalculator implements Callable<AssetsCorrelat
 			asset1CommonRates = DatesAndSetUtil.getValuesByIndex(dates, asset1Rates);
 			asset2CommonRates = DatesAndSetUtil.getValuesByIndex(dates, asset2Rates);
 
-			result = computeBestCorrelation(asset1CommonRates, asset2CommonRates);
+			final ShiftCorrelationComputationResult computationResult = computeBestCorrelation(asset1CommonRates,
+					asset2CommonRates);
+			result = new Pair<>(computationResult.shift, computationResult.correlation);
 			hasSufficientContent = true;
 		}
 
@@ -52,25 +57,77 @@ public class AssetsShiftCorrelationCalculator implements Callable<AssetsCorrelat
 				asset2CommonRates);
 	}
 
-	private static Pair<Integer, Double> computeBestCorrelation(double[] asset1Values, double[] asset2Values) {
+	private static ShiftCorrelationComputationResult computeBestCorrelation(double[] asset1Values, double[] asset2Values) {
 		final int shitRange = asset1Values.length / 2;
 
-		int bestShift = Integer.MIN_VALUE;
-		double bestCorrelation = Double.MIN_VALUE;
 		double maxAbsCorrelation = Double.MIN_VALUE;
+		ShiftCorrelationComputationResult bestResult = null;
 
 		for (int i = -shitRange; i <= shitRange; i++) {
-			final double correlation = Calculator.calculateCorrelationWithShift(asset1Values, asset2Values, i);
-			final double absCorrelation = Math.abs(correlation);
+			final ShiftCorrelationComputationResult result = calculateCorrelationWithShift(asset1Values, asset2Values, i);
 
-			if (absCorrelation > maxAbsCorrelation) {
-				maxAbsCorrelation = absCorrelation;
-
-				bestCorrelation = correlation;
-				bestShift = i;
+			if (result.absCorrelation > maxAbsCorrelation) {
+				maxAbsCorrelation = result.absCorrelation;
+				bestResult = result;
 			}
 		}
 
-		return new Pair<>(bestShift, bestCorrelation);
+		return bestResult;
+	}
+
+	@VisibleForTesting
+	static ShiftCorrelationComputationResult calculateCorrelationWithShift(double[] array1, double[] array2, int shift) {
+		Preconditions.checkArgument(array1.length == array2.length, "Arrays must have the same length!");
+
+		final int positiveValueForshift = Math.absExact(shift);
+		final int resutArraySize = array1.length - positiveValueForshift;
+
+		Preconditions.checkArgument(resutArraySize > 1, "Shift is too wide!");
+
+		if (shift == 0) {
+			return new ShiftCorrelationComputationResult(shift,
+					new PearsonsCorrelation().correlation(array1, array2),
+					array1,
+					array2);
+		} else {
+			final double[] array1WithShift = new double[resutArraySize];
+			final double[] array2WithShift = new double[resutArraySize];
+
+			if (shift > 0) {
+				System.arraycopy(array1, 0, array1WithShift, 0, resutArraySize);
+				System.arraycopy(array2, positiveValueForshift, array2WithShift, 0, resutArraySize);
+			} else {
+				System.arraycopy(array1, positiveValueForshift, array1WithShift, 0, resutArraySize);
+				System.arraycopy(array2, 0, array2WithShift, 0, resutArraySize);
+			}
+
+			return new ShiftCorrelationComputationResult(shift,
+					new PearsonsCorrelation().correlation(array1WithShift, array2WithShift),
+					array1WithShift,
+					array2WithShift);
+		}
+	}
+
+	@VisibleForTesting
+	static class ShiftCorrelationComputationResult {
+		final int shift;
+		final int absShift;
+
+		final double correlation;
+		final double absCorrelation;
+
+		final double[] array1WithShift;
+		final double[] array2WithShift;
+
+		private ShiftCorrelationComputationResult(int shift, double correlation, double[] array1WithShift,
+				double[] array2WithShift) {
+			this.shift = shift;
+			this.correlation = correlation;
+			this.array1WithShift = array1WithShift;
+			this.array2WithShift = array2WithShift;
+
+			this.absCorrelation = Math.abs(correlation);
+			this.absShift = Math.absExact(shift);
+		}
 	}
 }

@@ -9,22 +9,39 @@ from sklearn.ensemble import RandomForestRegressor
 MAX_DEGREE = 4
 MODELS = {}
 
-DTR_DS2_ARGS = {'max_depth': 6, 'min_samples_leaf': 8,\
+DTR_DS2_ARGS = {'max_depth': 6, 'min_samples_leaf': 7,\
         'min_samples_split': 2, 'criterion': 'absolute_error',\
         'random_state': 42}
 
-RFR_DS2_ARGS = {'max_depth': 6, 'min_samples_leaf': 8,\
+RFR_DS2_ARGS = {'max_depth': 6, 'min_samples_leaf': 7,\
         'min_samples_split': 2, 'n_estimators': 400,\
         'criterion': 'absolute_error', 'random_state': 42, 'oob_score': True}
 
-DTR_DS1_ARGS = {'max_depth': 6, 'min_samples_leaf': 8,\
+DTR_DS1_ARGS = {'max_depth': 6, 'min_samples_leaf': 7,\
         'min_samples_split': 2, 'criterion': 'absolute_error',\
         'random_state': 42}
 
-RFR_DS1_ARGS = {'max_depth': 6, 'min_samples_leaf': 8,\
+RFR_DS1_ARGS = {'max_depth': 6, 'min_samples_leaf': 7,\
         'min_samples_split': 2, 'n_estimators': 400,\
         'criterion': 'absolute_error', 'random_state': 42, 'oob_score': True}
 
+
+#DTR_DS2_ARGS = {'max_depth': 5, 'min_samples_leaf': 10,\
+#        'min_samples_split': 2, 'criterion': 'absolute_error',\
+#        'random_state': 42}
+#
+#RFR_DS2_ARGS = {'max_depth': 5, 'min_samples_leaf': 4,\
+#        'min_samples_split': 14, 'n_estimators': 400,\
+#        'criterion': 'absolute_error', 'random_state': 42, 'oob_score': True}
+#
+#DTR_DS1_ARGS = {'max_depth': 5, 'min_samples_leaf': 10,\
+#        'min_samples_split': 2, 'criterion': 'absolute_error',\
+#        'random_state': 42}
+#
+#RFR_DS1_ARGS = {'max_depth': 6, 'min_samples_leaf': 8,\
+#        'min_samples_split': 2, 'n_estimators': 300,\
+#        'criterion': 'absolute_error', 'random_state': 42, 'oob_score': True}
+#
 #CORE_COLUMNS_FOR_TRAINING = ['sector','industry','month',\
 #    'prev_after_market_close', 'prev_pred_eps',\
 #    'prev_eps', 'prev_eps_spr', 'prev_p_e',\

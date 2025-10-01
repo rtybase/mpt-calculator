@@ -1,7 +1,6 @@
 package org.rty.portfolio.math;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 
@@ -53,39 +52,6 @@ class CalculatorTest {
 	void testCorrelatioCalculationWithArrays() {
 		double covariance = Calculator.calculateCorrelation(new double[] { 1D, 2D, 3D },
 				new double[] { 2D, 4D, 6D });
-		assertEquals(1D, covariance, ERROR_TOLERANCE);
-	}
-
-	@Test
-	void testCorrelatioCalculationWithShiftTooWide() {
-		final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-				() -> Calculator.calculateCorrelationWithShift(new double[] { 1D, 2D, 3D },
-						new double[] { 2D, 4D, 6D },
-						2));
-		assertEquals("Shift is too wide!", ex.getMessage());
-	}
-
-	@Test
-	void testCorrelatioCalculationWithZeroShift() {
-		double covariance = Calculator.calculateCorrelationWithShift(new double[] { 1D, 2D, 3D },
-				new double[] { 2D, 4D, 6D },
-				0);
-		assertEquals(1D, covariance, ERROR_TOLERANCE);
-	}
-
-	@Test
-	void testCorrelatioCalculationWithPositiveShift() {
-		double covariance = Calculator.calculateCorrelationWithShift(new double[] { 1D, 2D, 3D, 0D },
-				new double[] { 0D, 2D, 4D, 6D },
-				1);
-		assertEquals(1D, covariance, ERROR_TOLERANCE);
-	}
-
-	@Test
-	void testCorrelatioCalculationWithNegativeShift() {
-		double covariance = Calculator.calculateCorrelationWithShift(new double[] { 0D, 1D, 2D, 3D },
-				new double[] { 2D, 4D, 6D, 0D },
-				-1);
 		assertEquals(1D, covariance, ERROR_TOLERANCE);
 	}
 

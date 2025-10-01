@@ -10,8 +10,6 @@ import org.apache.commons.math3.stat.correlation.Covariance;
 import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
 import org.rty.portfolio.core.PortflioOptimalResults;
 
-import com.google.common.base.Preconditions;
-
 public class Calculator {
 	static final double MAX_VALUE = Double.MAX_VALUE - 1D;
 	static final double ERROR = 0.0000001D;
@@ -62,32 +60,6 @@ public class Calculator {
 
 	public static double calculateCorrelation(double[] array1, double[] array2) {
 		return new PearsonsCorrelation().correlation(array1, array2);
-	}
-
-	public static double calculateCorrelationWithShift(double[] array1, double[] array2, int shift) {
-		Preconditions.checkArgument(array1.length == array2.length, "Arrays must have the same length!");
-
-		final int positiveValueForshift = Math.absExact(shift);
-		final int resutArraySize = array1.length - positiveValueForshift;
-
-		Preconditions.checkArgument(resutArraySize > 1, "Shift is too wide!");
-
-		if (shift == 0) {
-			return new PearsonsCorrelation().correlation(array1, array2);
-		} else {
-			double[] array1WithShift = new double[resutArraySize];
-			double[] array2WithShift = new double[resutArraySize];
-
-			if (shift > 0) {
-				System.arraycopy(array1, 0, array1WithShift, 0, resutArraySize);
-				System.arraycopy(array2, positiveValueForshift, array2WithShift, 0, resutArraySize);
-			} else {
-				System.arraycopy(array1, positiveValueForshift, array1WithShift, 0, resutArraySize);
-				System.arraycopy(array2, 0, array2WithShift, 0, resutArraySize);
-			}
-
-			return new PearsonsCorrelation().correlation(array1WithShift, array2WithShift);
-		}
 	}
 
 	public static double calculateCorrelation(double covariance, double variance1, double variance2) {
