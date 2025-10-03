@@ -182,4 +182,13 @@ class DatesAndSetUtilTest extends CommonTestRoutines {
 		assertTrue(result.isPresent());
 		assertEquals(dateFrom(15), result.get());
 	}
+
+	@Test
+	void testOneOrTheOther() {
+		Integer result = DatesAndSetUtil.oneOrTheOther(true, 1, 2);
+		assertEquals(1, result);
+
+		result = DatesAndSetUtil.oneOrTheOther(false, 1, 2);
+		assertEquals(2, result);
+	}
 }

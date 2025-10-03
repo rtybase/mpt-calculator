@@ -4,9 +4,6 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import GridSearchCV
 
-DS1_FILE = "inputs-ml/out-training-for-1d.csv"
-DS2_FILE = "inputs-ml/out-training-for-2d.csv"
-
 def best_model_params(X, y, regression_model, params):
     grid = GridSearchCV(regression_model, param_grid=params, cv=5, scoring='r2', n_jobs=-1, verbose=3)
     grid.fit(X, y)
@@ -45,10 +42,10 @@ def best_params_for_data(X, y):
     best_model_params(X, y, model, params)
 
 
-print(f"Looking for the best params from DS=2 with {DS2_FILE}", flush=True)
-X,y = util.ml.load_training_data_2_days_after_eps(DS2_FILE)
+print(f"Looking for the best params from DS=2 with {util.ml.DS2_FILE}", flush=True)
+X,y = util.ml.load_training_data_2(util.ml.DS2_FILE)
 best_params_for_data(X, y)
 
-print(f"Looking for the best params from DS=1 with {DS1_FILE}", flush=True)
-X,y = util.ml.load_training_data_1_day_after_eps(DS1_FILE)
+print(f"Looking for the best params from DS=1 with {util.ml.DS1_FILE}", flush=True)
+X,y = util.ml.load_training_data_1(util.ml.DS1_FILE)
 best_params_for_data(X, y)

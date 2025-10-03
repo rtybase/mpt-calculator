@@ -1,8 +1,8 @@
 package org.rty.portfolio.core;
 
+import org.rty.portfolio.core.utils.DataHandlingUtil;
 import org.rty.portfolio.core.utils.DatesAndSetUtil;
 import org.rty.portfolio.math.Calculator;
-import org.rty.portfolio.math.ZScoreCalculator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,78 +14,47 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 
 	public static final String[] HEADER = new String[] { "asset_id",
 			"sector",
-			"zs_sector",
 
 			"industry",
-			"zs_industry",
 			"eps_date",
-
 			"month",
-			"zs_month",
 
 			"prev_after_market_close",
-			"zs_prev_after_market_close",
-
 			"prev_pred_eps",
-			"zs_prev_pred_eps",
-
 			"prev_eps",
-			"zs_prev_eps",
-
 			"prev_eps_spr",
-
 			"prev_ngaap_pred_eps",
-			"zs_prev_ngaap_pred_eps",
-
 			"prev_ngaap_eps",
-			"zs_prev_ngaap_eps",
-
 			"prev_ngaap_eps_spr",
 			"prev_revenue_spr",
-
 			"prev_p_e",
-			"zs_prev_p_e",
 
 			"after_market_close",
-			"zs_after_market_close",
-
 			"pred_eps",
-			"zs_pred_eps",
-
 			"eps",
-			"zs_eps",
-
 			"eps_spr",
-
 			"ngaap_pred_eps",
-			"zs_ngaap_pred_eps",
-
 			"ngaap_eps",
-			"zs_ngaap_eps",
-
 			"ngaap_eps_spr",
 			"revenue_spr",
-
 			"p_e",
-			"zs_p_e",
 
 			"spr_pred_eps_prev_pred_eps", "spr_eps_prev_eps",
 			"spr_ngaap_pred_eps_prev_ngaap_pred_eps", "spr_ngaap_eps_prev_ngaap_eps",
 
-			"prev_2d_rate",
-			"prev_2d_v_chng_rate",
+			// as-of "before" or "after" EPS announcement
+			// "m" for minus, "p" for plus
+			"rate_before_m_1d",
+			"v_chng_before_m_1d",
 
-			"prev_rate",
-			"prev_v_chng_rate",
+			"rate_before",
+			"v_chng_before",
 
-			"rate",
-			"v_chng_rate",
+			"rate_after",
+			"v_chng_after",
 
-			"next_rate",
-			"next_v_chng_rate",
-
-			"next_2d_rate",
-			"next_2d_v_chng_rate" };
+			"rate_after_p_1d",
+			"v_chng_after_p_1d" };
 
 	private static final double PRECISION = 100D;
 	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -103,54 +72,23 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 
 	private final AssetPriceInfo priceAtCurrentEps;
 	private final AssetPriceInfo priceAtPreviousEps;
+	private final AssetPriceInfo priceBeforePreviousEps;
 
 	private final AssetPriceInfo price2DaysBeforeCurrentEps;
 	private final AssetPriceInfo priceBeforeCurrentEps;
 	private final AssetPriceInfo priceAfterCurrentEps;
 	private final AssetPriceInfo price2DaysAfterCurrentEps;
 
-	private final ZScoreCalculator zScoreCalculatorForSector;
-	private final ZScoreCalculator zScoreCalculatorForIndustry;
-	private final ZScoreCalculator zScoreCalculatorForMoth;
-
-	private final ZScoreCalculator zScoreCalculatorForPreviousAfterMarketClose;
-	private final ZScoreCalculator zScoreCalculatorForPreviousPredictedEps;
-	private final ZScoreCalculator zScoreCalculatorForPreviousEps;
-	private final ZScoreCalculator zScoreCalculatorForPreviousNonGaapPredictedEps;
-	private final ZScoreCalculator zScoreCalculatorForPreviousNonGaapEps;
-	private final ZScoreCalculator zScoreCalculatorForPreviousPOverE;
-
-	private final ZScoreCalculator zScoreCalculatorForCurrentAfterMarketClose;
-	private final ZScoreCalculator zScoreCalculatorForCurrentPredictedEps;
-	private final ZScoreCalculator zScoreCalculatorForCurrentEps;
-	private final ZScoreCalculator zScoreCalculatorForCurrentNonGaapPredictedEps;
-	private final ZScoreCalculator zScoreCalculatorForCurrentNonGaapEps;
-	private final ZScoreCalculator zScoreCalculatorForCurrentPOverE;
-
 	public AssetEpsHistoricalInfo(String assetName, int sectorIndex, int industryIndex,
 			AssetEpsInfo currentEps, AssetNonGaapEpsInfo currentNonGaapEps,
 			AssetEpsInfo previousEps, AssetNonGaapEpsInfo previousNonGaapEps,
 			AssetPriceInfo priceAtPreviousEps,
+			AssetPriceInfo priceBeforePreviousEps,
 			AssetPriceInfo price2DaysBeforeCurrentEps,
 			AssetPriceInfo priceBeforeCurrentEps,
 			AssetPriceInfo priceAtCurrentEps,
 			AssetPriceInfo priceAfterCurrentEps,
-			AssetPriceInfo price2DaysAfterCurrentEps,
-			ZScoreCalculator zScoreCalculatorForSector,
-			ZScoreCalculator zScoreCalculatorForIndustry,
-			ZScoreCalculator zScoreCalculatorForMoth,
-			ZScoreCalculator zScoreCalculatorForPreviousAfterMarketClose,
-			ZScoreCalculator zScoreCalculatorForPreviousPredictedEps,
-			ZScoreCalculator zScoreCalculatorForPreviousEps,
-			ZScoreCalculator zScoreCalculatorForPreviousNonGaapPredictedEps,
-			ZScoreCalculator zScoreCalculatorForPreviousNonGaapEps,
-			ZScoreCalculator zScoreCalculatorForPreviousPOverE,
-			ZScoreCalculator zScoreCalculatorForCurrentAfterMarketClose,
-			ZScoreCalculator zScoreCalculatorForCurrentPredictedEps,
-			ZScoreCalculator zScoreCalculatorForCurrentEps,
-			ZScoreCalculator zScoreCalculatorForCurrentNonGaapPredictedEps,
-			ZScoreCalculator zScoreCalculatorForCurrentNonGaapEps,
-			ZScoreCalculator zScoreCalculatorForCurrentPOverE) {
+			AssetPriceInfo price2DaysAfterCurrentEps) {
 		this.assetName = assetName;
 		this.sectorIndex = sectorIndex;
 		this.industryIndex = industryIndex;
@@ -163,43 +101,12 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 
 		this.priceAtCurrentEps = priceAtCurrentEps;
 		this.priceAtPreviousEps = priceAtPreviousEps;
+		this.priceBeforePreviousEps = priceBeforePreviousEps;
 
 		this.price2DaysBeforeCurrentEps = price2DaysBeforeCurrentEps;
 		this.priceBeforeCurrentEps = priceBeforeCurrentEps;
 		this.priceAfterCurrentEps = priceAfterCurrentEps;
 		this.price2DaysAfterCurrentEps = price2DaysAfterCurrentEps;
-
-		this.zScoreCalculatorForSector = zScoreCalculatorForSector;
-		this.zScoreCalculatorForIndustry = zScoreCalculatorForIndustry;
-		this.zScoreCalculatorForMoth = zScoreCalculatorForMoth;
-		this.zScoreCalculatorForPreviousAfterMarketClose = zScoreCalculatorForPreviousAfterMarketClose;
-		this.zScoreCalculatorForPreviousPredictedEps = zScoreCalculatorForPreviousPredictedEps;
-		this.zScoreCalculatorForPreviousEps = zScoreCalculatorForPreviousEps;
-		this.zScoreCalculatorForPreviousNonGaapPredictedEps = zScoreCalculatorForPreviousNonGaapPredictedEps;
-		this.zScoreCalculatorForPreviousNonGaapEps = zScoreCalculatorForPreviousNonGaapEps;
-		this.zScoreCalculatorForPreviousPOverE = zScoreCalculatorForPreviousPOverE;
-		this.zScoreCalculatorForCurrentAfterMarketClose = zScoreCalculatorForCurrentAfterMarketClose;
-		this.zScoreCalculatorForCurrentPredictedEps = zScoreCalculatorForCurrentPredictedEps;
-		this.zScoreCalculatorForCurrentEps = zScoreCalculatorForCurrentEps;
-		this.zScoreCalculatorForCurrentNonGaapPredictedEps = zScoreCalculatorForCurrentNonGaapPredictedEps;
-		this.zScoreCalculatorForCurrentNonGaapEps = zScoreCalculatorForCurrentNonGaapEps;
-		this.zScoreCalculatorForCurrentPOverE = zScoreCalculatorForCurrentPOverE;
-
-		zScoreCalculatorForSector.add(sectorIndex);
-		zScoreCalculatorForIndustry.add(industryIndex);
-		zScoreCalculatorForMoth.add(getMonthIndex());
-		zScoreCalculatorForPreviousAfterMarketClose.add(getPreviousAfterMarketClose());
-		zScoreCalculatorForPreviousPredictedEps.add(getPreviousPredictedEps());
-		zScoreCalculatorForPreviousEps.add(previousEps.eps);
-		zScoreCalculatorForPreviousNonGaapPredictedEps.add(getPreviousNonGaapPredictedEps());
-		zScoreCalculatorForPreviousNonGaapEps.add(getPreviousNonGaapEps());
-		zScoreCalculatorForPreviousPOverE.add(getPreviousPOverE());
-		zScoreCalculatorForCurrentAfterMarketClose.add(getCurrentAfterMarketClose());
-		zScoreCalculatorForCurrentPredictedEps.add(getCurrentPredictedEps());
-		zScoreCalculatorForCurrentEps.add(currentEps.eps);
-		zScoreCalculatorForCurrentNonGaapPredictedEps.add(getCurrentNonGaapPredictedEps());
-		zScoreCalculatorForCurrentNonGaapEps.add(getCurrentNonGaapEps());
-		zScoreCalculatorForCurrentPOverE.add(getCurrentPOverE());
 	}
 
 	@Override
@@ -233,7 +140,15 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 	}
 
 	public double getPreviousPOverE() {
-		return Calculator.calculatePriceOverEps(priceAtPreviousEps.price, previousEps.eps);
+		AssetPriceInfo info = DatesAndSetUtil.oneOrTheOther(getPreviousAfterMarketClose() == 1,
+				priceAtPreviousEps,
+				priceBeforePreviousEps);
+
+		if (info == null) {
+			info = priceAtPreviousEps;
+		}
+
+		return Calculator.calculatePriceOverEps(info.price, previousEps.eps);
 	}
 
 	public int getCurrentAfterMarketClose() {
@@ -253,7 +168,50 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 	}
 
 	public double getCurrentPOverE() {
-		return Calculator.calculatePriceOverEps(priceAtCurrentEps.price, currentEps.eps);
+		return Calculator.calculatePriceOverEps(getInfoBeforeEpsAnnouncement().price,
+				currentEps.eps);
+	}
+
+	public AssetPriceInfo getInfoBeforeMinusOneDayEpsAnnouncement() {
+		return DatesAndSetUtil.oneOrTheOther(getCurrentAfterMarketClose() == 1,
+				priceBeforeCurrentEps,
+				price2DaysBeforeCurrentEps);
+	}
+
+	public AssetPriceInfo getInfoBeforeEpsAnnouncement() {
+		return DatesAndSetUtil.oneOrTheOther(getCurrentAfterMarketClose() == 1,
+				priceAtCurrentEps,
+				priceBeforeCurrentEps);
+	}
+
+	public AssetPriceInfo getInfoAfterEpsAnnouncement() {
+		return DatesAndSetUtil.oneOrTheOther(getCurrentAfterMarketClose() == 1,
+				priceAfterCurrentEps,
+				priceAtCurrentEps);
+	}
+
+	public AssetPriceInfo getInfoAfterPlusOneDayEpsAnnouncement() {
+		return DatesAndSetUtil.oneOrTheOther(getCurrentAfterMarketClose() == 1,
+				price2DaysAfterCurrentEps,
+				priceAfterCurrentEps);
+	}
+
+	public boolean isGoodForAfterPlusOneDayEpsTraining() {
+		return DataHandlingUtil.allNotNull(getInfoBeforeMinusOneDayEpsAnnouncement(),
+				getInfoBeforeEpsAnnouncement(),
+				getInfoAfterEpsAnnouncement(),
+				getInfoAfterPlusOneDayEpsAnnouncement());
+	}
+
+	public boolean isGoodForAfterEpsTraining() {
+		return DataHandlingUtil.allNotNull(getInfoBeforeMinusOneDayEpsAnnouncement(),
+				getInfoBeforeEpsAnnouncement(),
+				getInfoAfterEpsAnnouncement());
+	}
+
+	public boolean isGoodForAfterEpsPrediction() {
+		return DataHandlingUtil.allNotNull(getInfoBeforeMinusOneDayEpsAnnouncement(),
+				getInfoBeforeEpsAnnouncement());
 	}
 
 	@Override
@@ -271,81 +229,46 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 		return new String[] {
 				assetName,
 				"" + sectorIndex,
-				"" + round(zScoreCalculatorForSector.calculateZScore(sectorIndex)),
-
 				"" + industryIndex,
-				"" + round(zScoreCalculatorForIndustry.calculateZScore(industryIndex)),
-
 				"" + DatesAndSetUtil.dateToStr(currentEps.date),
-
 				"" + getMonthIndex(),
-				"" + round(zScoreCalculatorForMoth.calculateZScore(getMonthIndex())),
 
 				"" + getPreviousAfterMarketClose(),
-				"" + round(zScoreCalculatorForPreviousAfterMarketClose.calculateZScore(getPreviousAfterMarketClose())),
-
 				"" + round(previousPredictedEpsValue),
-				"" + round(zScoreCalculatorForPreviousPredictedEps.calculateZScore(previousPredictedEpsValue)),
-
 				"" + round(previousEps.eps),
-				"" + round(zScoreCalculatorForPreviousEps.calculateZScore(previousEps.eps)),
-
 				"" + previousEpsSurprise,
-
 				"" + round(previousNonGaapPredictedEpsValue),
-				"" + round(zScoreCalculatorForPreviousNonGaapPredictedEps.calculateZScore(previousNonGaapPredictedEpsValue)),
-
 				"" + round(previousNonGaapEpsValue),
-				"" + round(zScoreCalculatorForPreviousNonGaapEps.calculateZScore(previousNonGaapEpsValue)),
-
 				"" + surprise(previousNonGaapEpsValue, previousNonGaapPredictedEpsValue),
 				"" + revenueSurprise(previousNonGaapEps, previousEpsSurprise),
-
 				"" + round(getPreviousPOverE()),
-				"" + round(zScoreCalculatorForPreviousPOverE.calculateZScore(getPreviousPOverE())),
 
 				"" + getCurrentAfterMarketClose(),
-				"" + round(zScoreCalculatorForCurrentAfterMarketClose.calculateZScore(getCurrentAfterMarketClose())),
-
 				"" + round(currentPredictedEpsValue),
-				"" + round(zScoreCalculatorForCurrentPredictedEps.calculateZScore(currentPredictedEpsValue)),
-
 				"" + round(currentEps.eps),
-				"" + round(zScoreCalculatorForCurrentEps.calculateZScore(currentEps.eps)),
-
 				"" + currentEpsSurprise,
-
 				"" + round(currentNonGaapPredictedEpsValue),
-				"" + round(zScoreCalculatorForCurrentNonGaapPredictedEps.calculateZScore(currentNonGaapPredictedEpsValue)),
-
 				"" + round(currentNonGaapEpsValue),
-				"" + round(zScoreCalculatorForCurrentNonGaapEps.calculateZScore(currentNonGaapEpsValue)),
-
 				"" + surprise(currentNonGaapEpsValue, currentNonGaapPredictedEpsValue),
 				"" + revenueSurprise(currentNonGaapEps, currentEpsSurprise),
-
 				"" + round(getCurrentPOverE()),
-				"" + round(zScoreCalculatorForCurrentPOverE.calculateZScore(getCurrentPOverE())),
 
 				"" + surprise(currentPredictedEpsValue, previousPredictedEpsValue),
 				"" + surprise(currentEps.eps, previousEps.eps),
 				"" + surprise(currentNonGaapPredictedEpsValue, previousNonGaapPredictedEpsValue),
 				"" + surprise(currentNonGaapEpsValue, previousNonGaapEpsValue),
 
-				rateIfAvailable(price2DaysBeforeCurrentEps),
-				volumeChangeRateIfAvailable(price2DaysBeforeCurrentEps),
+				rateIfAvailable(getInfoBeforeMinusOneDayEpsAnnouncement()),
+				volumeChangeRateIfAvailable(getInfoBeforeMinusOneDayEpsAnnouncement()),
 
-				rateIfAvailable(priceBeforeCurrentEps),
-				volumeChangeRateIfAvailable(priceBeforeCurrentEps),
+				rateIfAvailable(getInfoBeforeEpsAnnouncement()),
+				volumeChangeRateIfAvailable(getInfoBeforeEpsAnnouncement()),
 
-				rateIfAvailable(priceAtCurrentEps),
-				volumeChangeRateIfAvailable(priceAtCurrentEps),
+				rateIfAvailable(getInfoAfterEpsAnnouncement()),
+				volumeChangeRateIfAvailable(getInfoAfterEpsAnnouncement()),
 
-				rateIfAvailable(priceAfterCurrentEps),
-				volumeChangeRateIfAvailable(priceAfterCurrentEps),
-
-				rateIfAvailable(price2DaysAfterCurrentEps),
-				volumeChangeRateIfAvailable(price2DaysAfterCurrentEps)
+				rateIfAvailable(getInfoAfterPlusOneDayEpsAnnouncement()),
+				volumeChangeRateIfAvailable(getInfoAfterPlusOneDayEpsAnnouncement())
 		};
 	}
 

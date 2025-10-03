@@ -3,9 +3,6 @@ import util.ml
 from sklearn.metrics import r2_score
 from statistics import correlation
 
-DS1_FILE = "inputs-ml/out-training-for-1d.csv"
-DS2_FILE = "inputs-ml/out-training-for-2d.csv"
-
 def compute_matches(y_actual, y_predicted):
     return numpy.linalg.norm(y_actual - y_predicted)
 
@@ -13,10 +10,10 @@ def report_model_details(y_actual, y_predicted, dataset_index, model_name):
     r2 = r2_score(y_actual, y_predicted)
     corr = correlation(y_actual, y_predicted)
     print("---------------------------")
-    print(f"ds={dataset_index} after EPS, {model_name} distance=%s" %\
+    print(f"ds={dataset_index}, {model_name} distance=%s" %\
         (compute_matches(y_actual, y_predicted)))
-    print(f"ds={dataset_index} after EPS, {model_name} r2=%s" % (r2))
-    print(f"ds={dataset_index} after EPS, {model_name} corr=%s" % (corr))
+    print(f"ds={dataset_index}, {model_name} r2=%s" % (r2))
+    print(f"ds={dataset_index}, {model_name} corr=%s" % (corr))
 
 
 def validate_all_models(X,y_actual, dataset_index):
@@ -36,16 +33,16 @@ def validate_all_models(X,y_actual, dataset_index):
         r2 = r2_score(y_actual, y_predicted)
         corr = correlation(y_actual, y_predicted)
 
-        print("ds=%s after EPS, polynomial d=%s distance=%s" % (dataset_index, degree,\
+        print("ds=%s, polynomial d=%s distance=%s" % (dataset_index, degree,\
             compute_matches(y_actual, y_predicted)))
-        print("ds=%s after EPS, polynomial d=%s r2=%s" % (dataset_index, degree, r2))
-        print("ds=%s after EPS, polynomial d=%s corr=%s" % (dataset_index, degree, corr))
+        print("ds=%s, polynomial d=%s r2=%s" % (dataset_index, degree, r2))
+        print("ds=%s, polynomial d=%s corr=%s" % (dataset_index, degree, corr))
 
     print("==============================================")
 
 
-X,y_actual = util.ml.load_training_data_2_days_after_eps(DS2_FILE)
+X,y_actual = util.ml.load_training_data_2(util.ml.DS2_FILE)
 validate_all_models(X,y_actual, 2)
 
-X,y_actual = util.ml.load_training_data_1_day_after_eps(DS1_FILE)
+X,y_actual = util.ml.load_training_data_1(util.ml.DS1_FILE)
 validate_all_models(X,y_actual, 1)

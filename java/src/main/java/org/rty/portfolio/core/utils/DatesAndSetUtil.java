@@ -110,6 +110,13 @@ public final class DatesAndSetUtil {
 		return valueIfTrue(daysDiffFromOrevious <= maxDaysToTolerate, previous);
 	}
 
+	public static <T> T oneOrTheOther(boolean condition, T one, T theOther) {
+		if (condition) {
+			return one;
+		}
+		return theOther;
+	}
+
 	private static long daysDiff(Date date1, Date date2) {
 		if (date2 != null) {
 			return Duration.between(date1.toInstant(), date2.toInstant()).abs().toDays();

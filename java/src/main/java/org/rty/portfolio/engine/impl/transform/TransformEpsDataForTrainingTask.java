@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NavigableMap;
 
 import org.apache.commons.math3.util.Pair;
@@ -26,7 +27,6 @@ import org.rty.portfolio.engine.impl.dbtask.load.LoadNonGaapEpsToDbTask;
 import org.rty.portfolio.engine.impl.dbtask.load.LoadPricesToDbTask;
 import org.rty.portfolio.io.BulkCsvLoader;
 import org.rty.portfolio.io.CsvWriter;
-import org.rty.portfolio.math.ZScoreCalculator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,183 +67,94 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 		final List<AssetEpsHistoricalInfo> dataFor2DPrediction = new ArrayList<>(1024);
 		final List<AssetEpsHistoricalInfo> dataFor1DPrediction = new ArrayList<>(1024);
 
-		final ZScoreCalculator zScoreCalculatorForSector = new ZScoreCalculator();
-		final ZScoreCalculator zScoreCalculatorForIndustry = new ZScoreCalculator();
-		final ZScoreCalculator zScoreCalculatorForMoth = new ZScoreCalculator();
-		final ZScoreCalculator zScoreCalculatorForPreviousAfterMarketClose = new ZScoreCalculator();
-		final ZScoreCalculator zScoreCalculatorForPreviousPredictedEps = new ZScoreCalculator();
-		final ZScoreCalculator zScoreCalculatorForPreviousEps = new ZScoreCalculator();
-		final ZScoreCalculator zScoreCalculatorForPreviousNonGaapPredictedEps = new ZScoreCalculator();
-		final ZScoreCalculator zScoreCalculatorForPreviousNonGaapEps = new ZScoreCalculator();
-		final ZScoreCalculator zScoreCalculatorForPreviousPOverE = new ZScoreCalculator();
-		final ZScoreCalculator zScoreCalculatorForCurrentAfterMarketClose = new ZScoreCalculator();
-		final ZScoreCalculator zScoreCalculatorForCurrentPredictedEps = new ZScoreCalculator();
-		final ZScoreCalculator zScoreCalculatorForCurrentEps = new ZScoreCalculator();
-		final ZScoreCalculator zScoreCalculatorForCurrentNonGaapPredictedEps = new ZScoreCalculator();
-		final ZScoreCalculator zScoreCalculatorForCurrentNonGaapEps = new ZScoreCalculator();
-		final ZScoreCalculator zScoreCalculatorForCurrentPOverE = new ZScoreCalculator();
-
-
 		epsStore.entrySet().forEach(entry -> {
 			final String assetName = entry.getKey();
 			final NavigableMap<Date, AssetEpsInfo> epsData = entry.getValue();
 
-			epsData.entrySet().forEach(epsEntry -> {
-				final Date currentDate = epsEntry.getKey();
-
-				final AssetEpsInfo currentEps = epsEntry.getValue();
-				final AssetNonGaapEpsInfo currentNonGaapEps = DataHandlingUtil.getCurrentEntry(nonGaapEpsStore,
-						assetName, currentDate);
-
-				final AssetEpsInfo previousEps = DataHandlingUtil.getPreviousEntry(epsData, currentDate);
-				final AssetNonGaapEpsInfo previousNonGaapEps = DataHandlingUtil.getPreviousEntry(nonGaapEpsStore,
-						assetName, currentDate);
-
-				final Pair<Integer, Integer> sectorIndustryPair = getSectorIndustryPairFrom(assetName,
-						stocksAndsectorsStore);
-
-				final AssetPriceInfo priceAtCurrentEps = DataHandlingUtil.getCurrentEntryOrNext(priceStore, assetName,
-						currentDate);
-
-				if (DataHandlingUtil.allNotNull(sectorIndustryPair, currentEps, previousEps, priceAtCurrentEps)) {
-					final AssetPriceInfo priceAtPreviousEps = DataHandlingUtil.getCurrentEntryOrNext(priceStore,
-							assetName, previousEps.date);
-
-					final AssetPriceInfo price2DaysBeforeCurrentEps = DataHandlingUtil.get2DaysPreviousEntry(priceStore,
-							assetName, priceAtCurrentEps.date);
-					final AssetPriceInfo priceBeforeCurrentEps = DataHandlingUtil.getPreviousEntry(priceStore,
-							assetName, priceAtCurrentEps.date);
-					final AssetPriceInfo priceAfterCurrentEps = DataHandlingUtil.getNextEntry(priceStore, assetName,
-							priceAtCurrentEps.date);
-					final AssetPriceInfo price2DaysAfterCurrentEps = DataHandlingUtil.get2DaysNextEntry(priceStore,
-							assetName, priceAtCurrentEps.date);
-
-					if (DataHandlingUtil.allNotNull(priceAtPreviousEps, price2DaysBeforeCurrentEps,
-							priceBeforeCurrentEps, priceAfterCurrentEps, price2DaysAfterCurrentEps)) {
-						dataForTraining.add(new AssetEpsHistoricalInfo(assetName,
-								sectorIndustryPair.getKey(),
-								sectorIndustryPair.getValue(),
-								currentEps,
-								currentNonGaapEps,
-								previousEps,
-								previousNonGaapEps,
-								priceAtPreviousEps,
-								price2DaysBeforeCurrentEps,
-								priceBeforeCurrentEps,
-								priceAtCurrentEps,
-								priceAfterCurrentEps,
-								price2DaysAfterCurrentEps,
-								zScoreCalculatorForSector,
-								zScoreCalculatorForIndustry,
-								zScoreCalculatorForMoth,
-								zScoreCalculatorForPreviousAfterMarketClose,
-								zScoreCalculatorForPreviousPredictedEps,
-								zScoreCalculatorForPreviousEps,
-								zScoreCalculatorForPreviousNonGaapPredictedEps,
-								zScoreCalculatorForPreviousNonGaapEps,
-								zScoreCalculatorForPreviousPOverE,
-								zScoreCalculatorForCurrentAfterMarketClose,
-								zScoreCalculatorForCurrentPredictedEps,
-								zScoreCalculatorForCurrentEps,
-								zScoreCalculatorForCurrentNonGaapPredictedEps,
-								zScoreCalculatorForCurrentNonGaapEps,
-								zScoreCalculatorForCurrentPOverE));
-					} else if (DataHandlingUtil.allNotNull(priceAtPreviousEps, price2DaysBeforeCurrentEps,
-							priceBeforeCurrentEps, priceAfterCurrentEps)) {
-						dataFor2DPrediction.add(new AssetEpsHistoricalInfo(assetName,
-								sectorIndustryPair.getKey(),
-								sectorIndustryPair.getValue(),
-								currentEps,
-								currentNonGaapEps,
-								previousEps,
-								previousNonGaapEps,
-								priceAtPreviousEps,
-								price2DaysBeforeCurrentEps,
-								priceBeforeCurrentEps,
-								priceAtCurrentEps,
-								priceAfterCurrentEps,
-								null,
-								zScoreCalculatorForSector,
-								zScoreCalculatorForIndustry,
-								zScoreCalculatorForMoth,
-								zScoreCalculatorForPreviousAfterMarketClose,
-								zScoreCalculatorForPreviousPredictedEps,
-								zScoreCalculatorForPreviousEps,
-								zScoreCalculatorForPreviousNonGaapPredictedEps,
-								zScoreCalculatorForPreviousNonGaapEps,
-								zScoreCalculatorForPreviousPOverE,
-								zScoreCalculatorForCurrentAfterMarketClose,
-								zScoreCalculatorForCurrentPredictedEps,
-								zScoreCalculatorForCurrentEps,
-								zScoreCalculatorForCurrentNonGaapPredictedEps,
-								zScoreCalculatorForCurrentNonGaapEps,
-								zScoreCalculatorForCurrentPOverE));
-					} else if (DataHandlingUtil.allNotNull(priceAtPreviousEps, price2DaysBeforeCurrentEps,
-							priceBeforeCurrentEps)) {
-						dataFor1DPrediction.add(new AssetEpsHistoricalInfo(assetName,
-								sectorIndustryPair.getKey(),
-								sectorIndustryPair.getValue(),
-								currentEps,
-								currentNonGaapEps,
-								previousEps,
-								previousNonGaapEps,
-								priceAtPreviousEps,
-								price2DaysBeforeCurrentEps,
-								priceBeforeCurrentEps,
-								priceAtCurrentEps,
-								null,
-								null,
-								zScoreCalculatorForSector,
-								zScoreCalculatorForIndustry,
-								zScoreCalculatorForMoth,
-								zScoreCalculatorForPreviousAfterMarketClose,
-								zScoreCalculatorForPreviousPredictedEps,
-								zScoreCalculatorForPreviousEps,
-								zScoreCalculatorForPreviousNonGaapPredictedEps,
-								zScoreCalculatorForPreviousNonGaapEps,
-								zScoreCalculatorForPreviousPOverE,
-								zScoreCalculatorForCurrentAfterMarketClose,
-								zScoreCalculatorForCurrentPredictedEps,
-								zScoreCalculatorForCurrentEps,
-								zScoreCalculatorForCurrentNonGaapPredictedEps,
-								zScoreCalculatorForCurrentNonGaapEps,
-								zScoreCalculatorForCurrentPOverE));
-					} else {
-						LOGGER.info("Not all the details are available for '{}' on the '{}' and '{}' dates ", assetName,
-								DatesAndSetUtil.dateToStr(currentDate),
-								DatesAndSetUtil.dateToStr(previousEps.date));
-					}
-				} else {
-					if (previousEps != null) {
-						LOGGER.info("Not all the details are available for '{}' on the '{}' date.", assetName,
-								DatesAndSetUtil.dateToStr(currentDate));
-					}
-				}
-			});
+			epsData.entrySet().forEach(epsEntry -> collectHistoricalData(priceStore,
+					nonGaapEpsStore,
+					stocksAndsectorsStore,
+					dataForTraining,
+					dataFor2DPrediction,
+					dataFor1DPrediction,
+					assetName,
+					epsData,
+					epsEntry));
 		});
 
-		zScoreCalculatorForSector.calculateMeanAndStdDev();
-		zScoreCalculatorForIndustry.calculateMeanAndStdDev();
-		zScoreCalculatorForMoth.calculateMeanAndStdDev();
-		zScoreCalculatorForPreviousAfterMarketClose.calculateMeanAndStdDev();
-		zScoreCalculatorForPreviousPredictedEps.calculateMeanAndStdDev();
-		zScoreCalculatorForPreviousEps.calculateMeanAndStdDev();
-		zScoreCalculatorForPreviousNonGaapPredictedEps.calculateMeanAndStdDev();
-		zScoreCalculatorForPreviousNonGaapEps.calculateMeanAndStdDev();
-		zScoreCalculatorForPreviousPOverE.calculateMeanAndStdDev();
-		zScoreCalculatorForCurrentAfterMarketClose.calculateMeanAndStdDev();
-		zScoreCalculatorForCurrentPredictedEps.calculateMeanAndStdDev();
-		zScoreCalculatorForCurrentEps.calculateMeanAndStdDev();
-		zScoreCalculatorForCurrentNonGaapPredictedEps.calculateMeanAndStdDev();
-		zScoreCalculatorForCurrentNonGaapEps.calculateMeanAndStdDev();
-		zScoreCalculatorForCurrentPOverE.calculateMeanAndStdDev();
-
-		writeData(FileNameUtil.adjustOutputFileName(outputFile, "training-for-2d"), dataForTraining);
-		writeData(FileNameUtil.adjustOutputFileName(outputFile, "training-for-1d"),
+		writeData(FileNameUtil.adjustOutputFileName(outputFile, "training-ds-2"), dataForTraining);
+		writeData(FileNameUtil.adjustOutputFileName(outputFile, "training-ds-1"),
 				DataHandlingUtil.addLists(dataForTraining, dataFor2DPrediction));
 
-		writeData(FileNameUtil.adjustOutputFileName(outputFile, "pred-2d-after-eps"), dataFor2DPrediction);
-		writeData(FileNameUtil.adjustOutputFileName(outputFile, "pred-1d-after-eps"), dataFor1DPrediction);
+		writeData(FileNameUtil.adjustOutputFileName(outputFile, "pred-ds-2"), dataFor2DPrediction);
+		writeData(FileNameUtil.adjustOutputFileName(outputFile, "pred-ds-1"), dataFor1DPrediction);
+	}
+
+	private void collectHistoricalData(Map<String, NavigableMap<Date, AssetPriceInfo>> priceStore,
+			Map<String, NavigableMap<Date, AssetNonGaapEpsInfo>> nonGaapEpsStore,
+			Map<String, Pair<Integer, Integer>> stocksAndsectorsStore, List<AssetEpsHistoricalInfo> dataForTraining,
+			List<AssetEpsHistoricalInfo> dataFor2DPrediction, List<AssetEpsHistoricalInfo> dataFor1DPrediction,
+			String assetName, NavigableMap<Date, AssetEpsInfo> epsData, Entry<Date, AssetEpsInfo> epsEntry) {
+		final Date currentDate = epsEntry.getKey();
+		final AssetEpsInfo currentEps = epsEntry.getValue();
+		final AssetNonGaapEpsInfo currentNonGaapEps = DataHandlingUtil.getCurrentEntry(nonGaapEpsStore, assetName,
+				currentDate);
+		final AssetEpsInfo previousEps = DataHandlingUtil.getPreviousEntry(epsData, currentDate);
+		final AssetNonGaapEpsInfo previousNonGaapEps = DataHandlingUtil.getPreviousEntry(nonGaapEpsStore, assetName,
+				currentDate);
+		final Pair<Integer, Integer> sectorIndustryPair = getSectorIndustryPairFrom(assetName, stocksAndsectorsStore);
+		final AssetPriceInfo priceAtCurrentEps = DataHandlingUtil.getCurrentEntryOrNext(priceStore, assetName,
+				currentDate);
+
+		final Date currentPriceDate = priceAtCurrentEps != null ? priceAtCurrentEps.date : currentDate;
+
+		if (DataHandlingUtil.allNotNull(sectorIndustryPair, currentEps, previousEps)) {
+			final AssetPriceInfo priceAtPreviousEps = DataHandlingUtil.getCurrentEntryOrNext(priceStore, assetName,
+					previousEps.date);
+			final AssetPriceInfo priceBeforePreviousEps = DataHandlingUtil.getPreviousEntry(priceStore, assetName,
+					priceAtPreviousEps.date);
+
+			final AssetPriceInfo price2DaysBeforeCurrentEps = DataHandlingUtil.get2DaysPreviousEntry(priceStore,
+					assetName, currentPriceDate);
+			final AssetPriceInfo priceBeforeCurrentEps = DataHandlingUtil.getPreviousEntry(priceStore, assetName,
+					currentPriceDate);
+			final AssetPriceInfo priceAfterCurrentEps = DataHandlingUtil.getNextEntry(priceStore, assetName,
+					currentPriceDate);
+			final AssetPriceInfo price2DaysAfterCurrentEps = DataHandlingUtil.get2DaysNextEntry(priceStore, assetName,
+					currentPriceDate);
+
+			final AssetEpsHistoricalInfo epsHistoryInfo = new AssetEpsHistoricalInfo(assetName,
+					sectorIndustryPair.getKey(),
+					sectorIndustryPair.getValue(),
+					currentEps,
+					currentNonGaapEps,
+					previousEps,
+					previousNonGaapEps,
+					priceAtPreviousEps,
+					priceBeforePreviousEps,
+					price2DaysBeforeCurrentEps,
+					priceBeforeCurrentEps,
+					priceAtCurrentEps,
+					priceAfterCurrentEps,
+					price2DaysAfterCurrentEps);
+
+			if (epsHistoryInfo.isGoodForAfterPlusOneDayEpsTraining()) {
+				dataForTraining.add(epsHistoryInfo);
+			} else if (epsHistoryInfo.isGoodForAfterEpsTraining()) {
+				dataFor2DPrediction.add(epsHistoryInfo);
+			} else if (epsHistoryInfo.isGoodForAfterEpsPrediction()) {
+				dataFor1DPrediction.add(epsHistoryInfo);
+			} else {
+				LOGGER.info("Not all the details are available for '{}' on the '{}' and '{}' dates ", assetName,
+						DatesAndSetUtil.dateToStr(currentDate),
+						DatesAndSetUtil.dateToStr(previousEps.date));
+			}
+		} else {
+			if (previousEps != null) {
+				LOGGER.info("Not all the details are available for '{}' on the '{}' date.", assetName,
+						DatesAndSetUtil.dateToStr(currentDate));
+			}
+		}
 	}
 
 	private void loadNonGaapEpsFromFilesAndDb(final String nonGaapEpsInputFile,

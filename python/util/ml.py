@@ -6,6 +6,9 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
 
+DS1_FILE = "inputs-ml/out-training-ds-1.csv"
+DS2_FILE = "inputs-ml/out-training-ds-2.csv"
+
 MAX_DEGREE = 4
 MODELS = {}
 
@@ -42,35 +45,19 @@ RFR_DS1_ARGS = {'max_depth': 6, 'min_samples_leaf': 7,\
 #        'min_samples_split': 2, 'n_estimators': 300,\
 #        'criterion': 'absolute_error', 'random_state': 42, 'oob_score': True}
 #
-#CORE_COLUMNS_FOR_TRAINING = ['sector','industry','month',\
-#    'prev_after_market_close', 'prev_pred_eps',\
-#    'prev_eps', 'prev_eps_spr', 'prev_p_e',\
-#    'prev_ngaap_pred_eps', 'prev_ngaap_eps',\
-#    'prev_ngaap_eps_spr', 'prev_revenue_spr',\
-#    'after_market_close', 'pred_eps',\
-#    'eps', 'eps_spr', 'p_e',\
-#    'ngaap_pred_eps', 'ngaap_eps',\
-#    'ngaap_eps_spr', 'revenue_spr',\
-#    'spr_pred_eps_prev_pred_eps', 'spr_eps_prev_eps',\
-#    'spr_ngaap_pred_eps_prev_ngaap_pred_eps', 'spr_ngaap_eps_prev_ngaap_eps',\
-#    'prev_2d_rate','prev_2d_v_chng_rate',\
-#    'prev_rate','prev_v_chng_rate',\
-#    'rate','v_chng_rate']
-
-CORE_COLUMNS_FOR_TRAINING = ['zs_sector','zs_industry','zs_month',\
-    'zs_prev_after_market_close', 'zs_prev_pred_eps',\
-    'zs_prev_eps', 'prev_eps_spr', 'zs_prev_p_e',\
-    'zs_prev_ngaap_pred_eps', 'zs_prev_ngaap_eps',\
+CORE_COLUMNS_FOR_TRAINING = ['sector','industry','month',\
+    'prev_after_market_close', 'prev_pred_eps',\
+    'prev_eps', 'prev_eps_spr', 'prev_p_e',\
+    'prev_ngaap_pred_eps', 'prev_ngaap_eps',\
     'prev_ngaap_eps_spr', 'prev_revenue_spr',\
-    'zs_after_market_close', 'zs_pred_eps',\
-    'zs_eps', 'eps_spr', 'zs_p_e',\
-    'zs_ngaap_pred_eps', 'zs_ngaap_eps',\
+    'after_market_close', 'pred_eps',\
+    'eps', 'eps_spr', 'p_e',\
+    'ngaap_pred_eps', 'ngaap_eps',\
     'ngaap_eps_spr', 'revenue_spr',\
     'spr_pred_eps_prev_pred_eps', 'spr_eps_prev_eps',\
     'spr_ngaap_pred_eps_prev_ngaap_pred_eps', 'spr_ngaap_eps_prev_ngaap_eps',\
-    'prev_2d_rate', 'prev_2d_v_chng_rate',\
-    'prev_rate', 'prev_v_chng_rate',\
-    'rate', 'v_chng_rate']
+    'rate_before_m_1d', 'v_chng_before_m_1d',\
+    'rate_before', 'v_chng_before']
 
 POLY_P_MODEL_TEMPLATE = "ds{0}-m-polynomial-{1}-p"
 POLY_L_MODEL_TEMPLATE = "ds{0}-m-polynomial-{1}-l"
@@ -205,26 +192,26 @@ def predict_rfr(X, dataset_index):
 
 ####################################################################
 
-def load_training_dataset_1_day_after_eps(file):
+def load_training_dataset_1(file):
     dataset = pd.read_csv(file)
 
     X = dataset[CORE_COLUMNS_FOR_TRAINING]
-    y = dataset['next_rate']
+    y = dataset['rate_after']
 
     return X,y
 
-def load_training_dataset_2_days_after_eps(file):
+def load_training_dataset_2(file):
     dataset = pd.read_csv(file)
 
-    X = dataset[[*CORE_COLUMNS_FOR_TRAINING, 'next_rate', 'next_v_chng_rate']]
-    y = dataset['next_2d_rate']
+    X = dataset[[*CORE_COLUMNS_FOR_TRAINING, 'rate_after', 'v_chng_after']]
+    y = dataset['rate_after_p_1d']
 
     return X,y
 
-def load_training_data_1_day_after_eps(file):
-    X_ds, y_ds = load_training_dataset_1_day_after_eps(file)
+def load_training_data_1(file):
+    X_ds, y_ds = load_training_dataset_1(file)
     return X_ds.values,y_ds.values
 
-def load_training_data_2_days_after_eps(file):
-    X_ds, y_ds = load_training_dataset_2_days_after_eps(file)
+def load_training_data_2(file):
+    X_ds, y_ds = load_training_dataset_2(file)
     return X_ds.values,y_ds.values

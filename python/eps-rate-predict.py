@@ -6,8 +6,8 @@ import util.ml
 import util.db
 import util.dates
 
-DS1_FILE = "inputs-ml/out-pred-1d-after-eps.csv"
-DS2_FILE = "inputs-ml/out-pred-2d-after-eps.csv"
+DS1_FILE = "inputs-ml/out-pred-ds-1.csv"
+DS2_FILE = "inputs-ml/out-pred-ds-2.csv"
 
 def add_model_results_and_print(dictionary_to_add, model_name, model_result):
     dictionary_to_add["models"][model_name] = model_result
@@ -22,8 +22,10 @@ def predict_with_all_models(data_file, data_array, dataset_index):
 
         results['assets'] = dataset['asset_id'].tolist()
         results['dates'] = dataset['eps_date'].tolist()
+        results['amc'] = dataset['after_market_close'].tolist()
         print("assets=%s" % (results['assets']))
         print("dates=%s" % (results['dates']))
+        print("after market close=%s" % (results['amc']))
 
         X = dataset[data_array].values
         add_model_results_and_print(results, "linear", util.ml.predict_l(X, dataset_index))
@@ -79,19 +81,22 @@ def save_results(model_details, dataset_index):
 
             if (asset_id >= 0):
                 date = model_details['dates'][i]
+                after_market_close = model_details['amc'][i]
+
                 for m in models:
+                    days_after_eps = dataset_index - (1 - after_market_close)
                     prediction = model_details['models'][m][i]
-                    save_to_db(asset_id, date, dataset_index, m, prediction)
+                    save_to_db(asset_id, date, days_after_eps, m, prediction)
             else:
                 print("Could not find ID for %s" % (symbol))
 
 numpy.set_printoptions(suppress=True, threshold=sys.maxsize, linewidth=500)
 
-print("=========================<2-Days after EPS>============================")
+print("=========================<2-DS-EPS>============================")
 model_details = predict_with_all_models(DS2_FILE, [*util.ml.CORE_COLUMNS_FOR_TRAINING,\
-                    'next_rate', 'next_v_chng_rate'], 2)
+                    'rate_after', 'v_chng_after'], 2)
 save_results(model_details, 2)
 
-print("=========================<1-Day after EPS>=============================")
+print("=========================<1-DS-EPS>=============================")
 model_details = predict_with_all_models(DS1_FILE, util.ml.CORE_COLUMNS_FOR_TRAINING, 1)
 save_results(model_details, 1)
