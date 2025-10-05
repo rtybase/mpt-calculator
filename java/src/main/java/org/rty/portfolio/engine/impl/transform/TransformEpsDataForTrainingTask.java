@@ -30,6 +30,8 @@ import org.rty.portfolio.io.CsvWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
+
 /**
  * EPS and Prices loader, to prepare data from ML training.
  */
@@ -90,7 +92,8 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 		writeData(FileNameUtil.adjustOutputFileName(outputFile, "pred-ds-1"), dataFor1DPrediction);
 	}
 
-	private void collectHistoricalData(Map<String, NavigableMap<Date, AssetPriceInfo>> priceStore,
+	@VisibleForTesting
+	static void collectHistoricalData(Map<String, NavigableMap<Date, AssetPriceInfo>> priceStore,
 			Map<String, NavigableMap<Date, AssetNonGaapEpsInfo>> nonGaapEpsStore,
 			Map<String, Pair<Integer, Integer>> stocksAndsectorsStore, List<AssetEpsHistoricalInfo> dataForTraining,
 			List<AssetEpsHistoricalInfo> dataFor2DPrediction, List<AssetEpsHistoricalInfo> dataFor1DPrediction,
@@ -157,9 +160,9 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 		}
 	}
 
-	private void loadNonGaapEpsFromFilesAndDb(final String nonGaapEpsInputFile,
-			final Map<String, NavigableMap<Date, AssetEpsInfo>> epsStore,
-			final Map<String, NavigableMap<Date, AssetNonGaapEpsInfo>> nonGaapEpsStore) throws Exception {
+	private void loadNonGaapEpsFromFilesAndDb(String nonGaapEpsInputFile,
+			Map<String, NavigableMap<Date, AssetEpsInfo>> epsStore,
+			Map<String, NavigableMap<Date, AssetNonGaapEpsInfo>> nonGaapEpsStore) throws Exception {
 		final ToAssetNonGaapEpsInfoEntityConvertor convertor = new ToAssetNonGaapEpsInfoEntityConvertor(epsStore);
 		final BulkCsvLoader<AssetNonGaapEpsInfo> nonGaapEpsLoader = nonGaapEpsLoader(nonGaapEpsStore, convertor);
 
@@ -169,9 +172,9 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 		DataHandlingUtil.addDataToMapByNameAndDate(dbManager.getAllStocksNonGaapEpsInfo(YEARS_BACK), nonGaapEpsStore);
 	}
 
-	private void loadEpsAndPricesFromDb(final Map<String, NavigableMap<Date, AssetEpsInfo>> epsStore,
-			final Map<String, NavigableMap<Date, AssetPriceInfo>> priceStore,
-			final Map<String, Pair<Integer, Integer>> stocksAndsectorsStore) throws Exception {
+	private void loadEpsAndPricesFromDb(Map<String, NavigableMap<Date, AssetEpsInfo>> epsStore,
+			Map<String, NavigableMap<Date, AssetPriceInfo>> priceStore,
+			Map<String, Pair<Integer, Integer>> stocksAndsectorsStore) throws Exception {
 		say("Loading Stocks and Sectors data from DB ...");
 		addStocksSectors(stocksAndsectorsStore, dbManager.getAllStocks());
 
@@ -191,12 +194,12 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 		}
 	}
 
-	private Pair<Integer, Integer> getSectorIndustryPairFrom(final String assetName,
+	private static Pair<Integer, Integer> getSectorIndustryPairFrom(final String assetName,
 			final Map<String, Pair<Integer, Integer>> stocksAndsectorsStore) {
 		final Pair<Integer, Integer> sectorIndustryPair = stocksAndsectorsStore.get(assetName);
 
 		if (sectorIndustryPair == null) {
-			say("No stock details found for the asset '{}' (sector/industry missing) ...", assetName);
+			LOGGER.warn("No stock details found for the asset '{}' (sector/industry missing) ...", assetName);
 		}
 		return sectorIndustryPair;
 	}

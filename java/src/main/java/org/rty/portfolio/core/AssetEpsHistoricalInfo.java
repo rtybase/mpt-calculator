@@ -59,25 +59,25 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 	private static final double PRECISION = 100D;
 	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-	private final String assetName;
+	public final String assetName;
 
-	private final int sectorIndex;
-	private final int industryIndex;
+	public final int sectorIndex;
+	public final int industryIndex;
 	
-	private final AssetEpsInfo currentEps;
-	private final AssetNonGaapEpsInfo currentNonGaapEps;
+	public final AssetEpsInfo currentEps;
+	public final AssetNonGaapEpsInfo currentNonGaapEps;
 
-	private final AssetEpsInfo previousEps;
-	private final AssetNonGaapEpsInfo previousNonGaapEps;
+	public final AssetEpsInfo previousEps;
+	public final AssetNonGaapEpsInfo previousNonGaapEps;
 
-	private final AssetPriceInfo priceAtCurrentEps;
-	private final AssetPriceInfo priceAtPreviousEps;
-	private final AssetPriceInfo priceBeforePreviousEps;
+	public final AssetPriceInfo priceAtCurrentEps;
+	public final AssetPriceInfo priceAtPreviousEps;
+	public final AssetPriceInfo priceBeforePreviousEps;
 
-	private final AssetPriceInfo price2DaysBeforeCurrentEps;
-	private final AssetPriceInfo priceBeforeCurrentEps;
-	private final AssetPriceInfo priceAfterCurrentEps;
-	private final AssetPriceInfo price2DaysAfterCurrentEps;
+	public final AssetPriceInfo price2DaysBeforeCurrentEps;
+	public final AssetPriceInfo priceBeforeCurrentEps;
+	public final AssetPriceInfo priceAfterCurrentEps;
+	public final AssetPriceInfo price2DaysAfterCurrentEps;
 
 	public AssetEpsHistoricalInfo(String assetName, int sectorIndex, int industryIndex,
 			AssetEpsInfo currentEps, AssetNonGaapEpsInfo currentNonGaapEps,

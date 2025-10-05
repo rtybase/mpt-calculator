@@ -5,17 +5,17 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.Date;
+import static org.rty.portfolio.core.utils.CommonTestRoutines.ERROR_TOLERANCE;
+import static org.rty.portfolio.core.utils.CommonTestRoutines.TEST_ASSET;
+import static org.rty.portfolio.core.utils.CommonTestRoutines.newEpsInfo;
+import static org.rty.portfolio.core.utils.CommonTestRoutines.newNonGaapEpsInfo;
+import static org.rty.portfolio.core.utils.CommonTestRoutines.newPriceInfo;
 
 import org.junit.jupiter.api.Test;
 
 class AssetEpsHistoricalInfoTest {
 	private static final AssetNonGaapEpsInfo WITH_AMC = newNonGaapEpsInfo(0D, null, true);
 	private static final AssetNonGaapEpsInfo WITH_BMO = newNonGaapEpsInfo(0D, null, false);
-
-	protected static final Date D_2025_07_17 = new Date(125, 6, 17);
-	protected static final String TEST_ASSET = "MSFT";
-	protected static final double ERROR_TOLERANCE = 0.00001D;
 
 	@Test
 	void testGetMonthIndex() {
@@ -339,17 +339,5 @@ class AssetEpsHistoricalInfoTest {
 		assertFalse(info.isGoodForAfterPlusOneDayEpsTraining());
 		assertFalse(info.isGoodForAfterEpsTraining());
 		assertTrue(info.isGoodForAfterEpsPrediction());
-	}
-
-	private static AssetPriceInfo newPriceInfo(double price) {
-		return new AssetPriceInfo(TEST_ASSET, price, 0.1D, 1D, 10D, 1D, D_2025_07_17);
-	}
-
-	private static AssetEpsInfo newEpsInfo(double eps, Double predictedEps) {
-		return new AssetEpsInfo(TEST_ASSET, eps, predictedEps, D_2025_07_17);
-	}
-
-	private static AssetNonGaapEpsInfo newNonGaapEpsInfo(double eps, Double predictedEps, boolean afterMarketClose) {
-		return new AssetNonGaapEpsInfo(TEST_ASSET, eps, predictedEps, afterMarketClose, 1D, 1D, D_2025_07_17);
 	}
 }

@@ -3,8 +3,8 @@ package org.rty.portfolio.core;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.rty.portfolio.core.utils.CommonTestRoutines.dateFrom;
 
-import java.util.Date;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -102,9 +102,5 @@ class AssetPriceInfoAccumulatorTest {
 		assertEquals(ASSET_NAME, priceInfo.assetName);
 		assertEquals(expectedVolume, priceInfo.volume, ERROR_TOLERANCE);
 		assertEquals(expectedVolumeChangeRate, priceInfo.volumeChangeRate, ERROR_TOLERANCE);
-	}
-
-	private static Date dateFrom(int day) {
-		return new Date(101, 1, day);
 	}
 }
