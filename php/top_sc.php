@@ -5,12 +5,17 @@
 	include_once("./funcs.php");
 	header("Content-Type:text/html; charset=UTF-8");
 
-function getTopShiftCorrelations($link) {
+function getTopShiftCorrelations($includeFunds, $shift, $correlation, $link) {
 	$query = "SELECT a.fk_asset1ID, b.vchr_name, a.fk_asset2ID, a.int_shift, a.dbl_correlation ";
 	$query.= "FROM tbl_shift_correlations a, tbl_assets b ";
 	$query.= "WHERE a.fk_asset1ID = b.int_assetID ";
-	$query.= "AND ((a.int_shift BETWEEN 1 AND 19) OR (a.int_shift BETWEEN -19 AND -1)) ";
-	$query.= "AND ABS( a.dbl_correlation ) > 0.5 ";
+	$query.= "AND ((a.int_shift BETWEEN 1 AND $shift) OR (a.int_shift BETWEEN -".$shift." AND -1)) ";
+	$query.= "AND ABS( a.dbl_correlation ) > $correlation ";
+
+	if (!$includeFunds) {
+		$query.= "AND fk_asset1ID IN (SELECT int_assetID FROM tbl_assets WHERE vchr_type not like '%Fund') ";
+		$query.= "AND fk_asset2ID IN (SELECT int_assetID FROM tbl_assets WHERE vchr_type not like '%Fund') ";
+	}
 
 	$res = mysql_query($query, $link);
 	if (!$res) die("Invalid query: ". mysql_error());
@@ -36,8 +41,20 @@ function getTopShiftCorrelations($link) {
 	return $ret;
 }
 
+	$includeFunds = ($_GET["infu"] === "true") ? true : false;
+
+	$shift = (int) $_GET["sft"];
+	if ($shift < 1 || $shift > 19) {
+		$shift = 2;
+	}
+
+	$correlation = (float) $_GET["cr"];
+	if ($correlation <= 0.0 || $correlation > 1.0) {
+		$correlation = 0.5;
+	}
+
 	$link = connect("portfolio");
-	$shiftCorrelations = getTopShiftCorrelations($link);
+	$shiftCorrelations = getTopShiftCorrelations($includeFunds, $shift, $correlation, $link);
 
 	$tableResult = "";
 	$i = 0;
@@ -95,7 +112,24 @@ function getTopShiftCorrelations($link) {
       <td valign="top"><?php showMenu(); ?></td>
       <td><table align="center" border="0">
 	<tr><td align="left">
+		<form name="main" method="GET" action="./<?php echo basename($_SERVER['PHP_SELF']);?>">
 		<font face="verdana">Shift correlations details:</font>
+		<table align="center" border="0">
+			<tr><td align="right"><font face="verdana">Include funds?</font></td>
+			<td align="left"><input type="radio" name="infu" value="true" <?php if ($includeFunds) echo "checked";?>>
+				<font face="verdana">Yes</font>&nbsp;
+				<input type="radio" name="infu" value="false" <?php if (!$includeFunds) echo "checked";?>>
+				<font face="verdana">No</font></td></tr>
+
+			<tr><td align="right"><font face="verdana">Aboslute shift up to (+/-)</font></td>
+			<td align="left"><input tabindex="1" type="text" name="sft" value="<?php echo $shift;?>" size="10" /></td></tr>
+
+			<tr><td align="right"><font face="verdana">Absolute correlation &gt;</font></td>
+			<td align="left"><input tabindex="2" type="text" name="cr" value="<?php echo $correlation;?>" size="10" /></td></tr>
+			<tr><td align="right">&nbsp;</td>
+			<td align="left"><input tabindex="3" type="submit" value="Filter"></td></tr>
+		</table>
+		</form>
 	</td></tr>
 	<tr><td><hr/></td></tr>
 	<tr><td><div id='table_div' style="width: 1044px;"></div></td></tr>
