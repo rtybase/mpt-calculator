@@ -11,16 +11,17 @@ import org.apache.hc.client5.http.async.methods.SimpleResponseConsumer;
 import org.apache.hc.client5.http.config.ConnectionConfig;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.cookie.StandardCookieSpec;
+import org.apache.hc.client5.http.entity.BrotliDecompressingEntity;
+import org.apache.hc.client5.http.entity.GzipDecompressingEntity;
 import org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient;
 import org.apache.hc.client5.http.impl.async.HttpAsyncClients;
 import org.apache.hc.client5.http.ssl.ClientTlsStrategyBuilder;
 import org.apache.hc.core5.concurrent.FutureCallback;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.io.entity.ByteArrayEntity;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
-import org.apache.hc.client5.http.entity.GzipDecompressingEntity;
-import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.ssl.TLS;
 import org.apache.hc.core5.io.CloseMode;
 import org.apache.hc.core5.reactor.IOReactorConfig;
@@ -114,6 +115,10 @@ public class RtyHttpClientWithHTTP2Support extends HttpClient {
 		if (contentEncoding != null && "gzip".equalsIgnoreCase(contentEncoding.getValue())) {
 			HttpEntity entity = new GzipDecompressingEntity(
 					new ByteArrayEntity(response.getBodyBytes(), ContentType.APPLICATION_XML));
+			return EntityUtils.toByteArray(entity);
+		} else if (contentEncoding != null && "br".equalsIgnoreCase(contentEncoding.getValue())) {
+			HttpEntity entity = new BrotliDecompressingEntity(
+					new ByteArrayEntity(response.getBodyBytes(), ContentType.TEXT_HTML));
 			return EntityUtils.toByteArray(entity);
 		}
 
