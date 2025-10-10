@@ -33,6 +33,14 @@ create table tbl_stocks (
 	foreign key(fk_industryID) references tbl_industries (int_industryID)
 ) ENGINE = InnoDB;
 
+create table tbl_fscores (
+	vchr_symbol varchar(50) not null,
+	dtm_date DATE NOT NULL,
+	dbl_fscore DOUBLE not null,
+	primary key (vchr_symbol, dtm_date),
+	foreign key(vchr_symbol) references tbl_stocks (vchr_symbol)
+) ENGINE = InnoDB;
+
 create table tbl_prices (
 	fk_assetID int(10) unsigned NOT NULL,
 	dbl_price DOUBLE not null,
