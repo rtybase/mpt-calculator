@@ -60,9 +60,10 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 		final Map<String, NavigableMap<Date, AssetPriceInfo>> priceStore = new HashMap<>();
 		final Map<String, NavigableMap<Date, AssetNonGaapEpsInfo>> nonGaapEpsStore = new HashMap<>();
 		final Map<String, Pair<Integer, Integer>> stocksAndsectorsStore = new HashMap<>();
+		final Map<String, NavigableMap<Date, Double>> stocksAndFScoreStore = new HashMap<>();
 
 		loadEpsAndPricesFromFiles(epsInputFile, epsStore, pricesInputFile, priceStore);
-		loadEpsAndPricesFromDb(epsStore, priceStore, stocksAndsectorsStore);
+		loadEpsAndPricesFromDb(epsStore, priceStore, stocksAndsectorsStore, stocksAndFScoreStore);
 		loadNonGaapEpsFromFilesAndDb(nonGaapEpsInputFile, epsStore, nonGaapEpsStore);
 
 		final List<AssetEpsHistoricalInfo> dataForTraining = new ArrayList<>(1024);
@@ -76,6 +77,7 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 			epsData.entrySet().forEach(epsEntry -> collectHistoricalData(priceStore,
 					nonGaapEpsStore,
 					stocksAndsectorsStore,
+					stocksAndFScoreStore,
 					dataForTraining,
 					dataFor2DPrediction,
 					dataFor1DPrediction,
@@ -95,23 +97,32 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 	@VisibleForTesting
 	static void collectHistoricalData(Map<String, NavigableMap<Date, AssetPriceInfo>> priceStore,
 			Map<String, NavigableMap<Date, AssetNonGaapEpsInfo>> nonGaapEpsStore,
-			Map<String, Pair<Integer, Integer>> stocksAndsectorsStore, List<AssetEpsHistoricalInfo> dataForTraining,
-			List<AssetEpsHistoricalInfo> dataFor2DPrediction, List<AssetEpsHistoricalInfo> dataFor1DPrediction,
+			Map<String, Pair<Integer, Integer>> stocksAndsectorsStore,
+			Map<String, NavigableMap<Date, Double>> stocksAndFScoreStore,
+			List<AssetEpsHistoricalInfo> dataForTraining,
+			List<AssetEpsHistoricalInfo> dataFor2DPrediction,
+			List<AssetEpsHistoricalInfo> dataFor1DPrediction,
 			String assetName, NavigableMap<Date, AssetEpsInfo> epsData, Entry<Date, AssetEpsInfo> epsEntry) {
 		final Date currentDate = epsEntry.getKey();
+
 		final AssetEpsInfo currentEps = epsEntry.getValue();
 		final AssetNonGaapEpsInfo currentNonGaapEps = DataHandlingUtil.getCurrentEntry(nonGaapEpsStore, assetName,
 				currentDate);
+		final Double currentFScore = getClosestFScore(stocksAndFScoreStore, assetName, currentDate);
+
 		final AssetEpsInfo previousEps = DataHandlingUtil.getPreviousEntry(epsData, currentDate);
 		final AssetNonGaapEpsInfo previousNonGaapEps = DataHandlingUtil.getPreviousEntry(nonGaapEpsStore, assetName,
 				currentDate);
+		final Double previousFScore = getClosestFScore(stocksAndFScoreStore, assetName,
+				previousEps != null ? previousEps.date : null);
+
 		final Pair<Integer, Integer> sectorIndustryPair = getSectorIndustryPairFrom(assetName, stocksAndsectorsStore);
 		final AssetPriceInfo priceAtCurrentEps = DataHandlingUtil.getCurrentEntryOrNext(priceStore, assetName,
 				currentDate);
 
 		final Date currentPriceDate = priceAtCurrentEps != null ? priceAtCurrentEps.date : currentDate;
 
-		if (DataHandlingUtil.allNotNull(sectorIndustryPair, currentEps, previousEps)) {
+		if (DataHandlingUtil.allNotNull(sectorIndustryPair, currentEps, currentFScore, previousEps, previousFScore)) {
 			final AssetPriceInfo priceAtPreviousEps = DataHandlingUtil.getCurrentEntryOrNext(priceStore, assetName,
 					previousEps.date);
 			final AssetPriceInfo priceBeforePreviousEps = DataHandlingUtil.getPreviousEntry(priceStore, assetName,
@@ -131,8 +142,10 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 					sectorIndustryPair.getValue(),
 					currentEps,
 					currentNonGaapEps,
+					currentFScore,
 					previousEps,
 					previousNonGaapEps,
+					previousFScore,
 					priceAtPreviousEps,
 					priceBeforePreviousEps,
 					price2DaysBeforeCurrentEps,
@@ -174,9 +187,13 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 
 	private void loadEpsAndPricesFromDb(Map<String, NavigableMap<Date, AssetEpsInfo>> epsStore,
 			Map<String, NavigableMap<Date, AssetPriceInfo>> priceStore,
-			Map<String, Pair<Integer, Integer>> stocksAndsectorsStore) throws Exception {
+			Map<String, Pair<Integer, Integer>> stocksAndsectorsStore,
+			Map<String, NavigableMap<Date, Double>> stocksAndFScoreStore) throws Exception {
 		say("Loading Stocks and Sectors data from DB ...");
 		addStocksSectors(stocksAndsectorsStore, dbManager.getAllStocks());
+
+		say("Loading Stocks and F-Scores data from DB ...");
+		stocksAndFScoreStore.putAll(dbManager.getAllStockFScore(YEARS_BACK));
 
 		say("Loading EPS data from DB ...");
 		DataHandlingUtil.addDataToMapByNameAndDate(dbManager.getAllStocksEpsInfo(YEARS_BACK, true), epsStore);
@@ -302,5 +319,22 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 		dataToAdd.forEach(entry -> {
 			stocksAndsectorsStore.put(entry.getKey(), entry.getValue());
 		});
+	}
+
+	private static Double getClosestFScore(Map<String, NavigableMap<Date, Double>> stocksAndFScoreStore,
+			String assetName, Date date) {
+		if (date == null) {
+			return null;
+		}
+
+		final Double possibleResult = DataHandlingUtil.getCurrentEntryOrPrevious(stocksAndFScoreStore, assetName, date);
+		if (possibleResult != null) {
+			return possibleResult;
+		}
+
+		// better than nothing case
+		LOGGER.info("Using F-Score value after the '{}' date for the '{}'.", DatesAndSetUtil.dateToStr(date),
+				assetName);
+		return DataHandlingUtil.getCurrentEntryOrNext(stocksAndFScoreStore, assetName, date);
 	}
 }

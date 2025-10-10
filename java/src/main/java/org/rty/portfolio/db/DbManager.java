@@ -13,7 +13,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.Objects;
+import java.util.TreeMap;
 
 import org.apache.commons.math3.util.Pair;
 import org.rty.portfolio.core.AssetDividendInfo;
@@ -530,6 +532,34 @@ public class DbManager {
 		}
 
 		return Collections.unmodifiableList(result);
+	}
+
+	/**
+	 * Returns F-Score data for the stocks (only!) for a given period.
+	 */
+	public Map<String, NavigableMap<Date, Double>> getAllStockFScore(int yearsBack) throws Exception {
+		Preconditions.checkArgument(yearsBack > 0, "yearsBack must be > 0!");
+
+		final Map<String, NavigableMap<Date, Double>> storage = new HashMap<>();
+
+		try (PreparedStatement pStmt = connection.prepareStatement("select vchr_symbol, dtm_date, dbl_fscore"
+				+ " from tbl_fscores"
+				+ " where dtm_date between (NOW() - INTERVAL ? YEAR) and NOW()")) {
+			pStmt.setInt(1, yearsBack);
+
+			try (ResultSet rs = pStmt.executeQuery()) {
+				while (rs.next()) {
+					final String symbol = rs.getString(1);
+					final Date date = rs.getDate(2);
+					final double fscore = rs.getDouble(3);
+
+					final Map<Date, Double> row = storage.computeIfAbsent(symbol, key -> new TreeMap<>());
+					row.put(date, fscore);
+				}
+			}
+		}
+
+		return Collections.unmodifiableMap(storage);
 	}
 
 	private final void addResultToStorage(final Map<Integer, Map<String, Double>> storage, ResultSet rs)

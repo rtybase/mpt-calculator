@@ -62,6 +62,16 @@ public final class DataHandlingUtil {
 		return getNextEntry(map, assetName, key);
 	}
 
+	public static <T> T getCurrentEntryOrPrevious(Map<String, NavigableMap<Date, T>> map, String assetName, Date key) {
+		final T currentEntry = getCurrentEntry(map, assetName, key);
+
+		if (currentEntry != null) {
+			return currentEntry;
+		}
+
+		return getPreviousEntry(map, assetName, key);
+	}
+
 	public static <T> T getPreviousEntry(Map<String, NavigableMap<Date, T>> map, String assetName, Date key) {
 		NavigableMap<Date, T> assetEntry = map.get(assetName);
 		if (assetEntry == null) {

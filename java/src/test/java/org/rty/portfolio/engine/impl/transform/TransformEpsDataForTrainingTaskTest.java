@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.rty.portfolio.core.utils.CommonTestRoutines.D_2025_07_17;
+import static org.rty.portfolio.core.utils.CommonTestRoutines.ERROR_TOLERANCE;
 import static org.rty.portfolio.core.utils.CommonTestRoutines.TEST_ASSET;
 import static org.rty.portfolio.core.utils.CommonTestRoutines.dateFrom;
 import static org.rty.portfolio.core.utils.CommonTestRoutines.newEpsInfo;
@@ -32,6 +33,7 @@ class TransformEpsDataForTrainingTaskTest {
 	private Map<String, NavigableMap<Date, AssetPriceInfo>> priceStore;
 	private Map<String, NavigableMap<Date, AssetNonGaapEpsInfo>> nonGaapEpsStore;
 	private Map<String, Pair<Integer, Integer>> stocksAndsectorsStore;
+	private Map<String, NavigableMap<Date, Double>> stocksAndFScoreStore;
 	private NavigableMap<Date, AssetEpsInfo> epsData;
 
 	private List<AssetEpsHistoricalInfo> dataForTraining;
@@ -56,6 +58,7 @@ class TransformEpsDataForTrainingTaskTest {
 		priceStore = new HashMap<>();
 		nonGaapEpsStore = new HashMap<>();
 		stocksAndsectorsStore = new HashMap<>();
+		stocksAndFScoreStore = new HashMap<>();
 		epsData = new TreeMap<>();
 
 		dataForTraining = new ArrayList<>();
@@ -77,6 +80,8 @@ class TransformEpsDataForTrainingTaskTest {
 		setSectorDetails();
 		setPreviousEpsData();
 		setCurrentEpsBasicData();
+		addFScoreToStore(9D, dateFrom(15));
+		addFScoreToStore(8D, dateFrom(12));
 
 		verifyNothingCollected();
 
@@ -94,6 +99,9 @@ class TransformEpsDataForTrainingTaskTest {
 		assertNull(result.price2DaysAfterCurrentEps);
 		assertNull(result.priceAfterCurrentEps);
 		assertNull(result.priceAtCurrentEps);
+
+		assertEquals(9D, result.currentFScore, ERROR_TOLERANCE);
+		assertEquals(8D, result.previousFScore, ERROR_TOLERANCE);
 	}
 
 	@Test
@@ -101,6 +109,7 @@ class TransformEpsDataForTrainingTaskTest {
 		setSectorDetails();
 		setPreviousEpsData();
 		setCurrentEpsBasicData();
+		addFScoreToStore(9D, dateFrom(15));
 		priceAtCurrentEps = addPriceDataToStore(D_2025_07_17);
 
 		verifyNothingCollected();
@@ -126,6 +135,7 @@ class TransformEpsDataForTrainingTaskTest {
 		setSectorDetails();
 		setPreviousEpsData();
 		setCurrentEpsBasicData();
+		addFScoreToStore(9D, dateFrom(15));
 		priceAtCurrentEps = addPriceDataToStore(D_2025_07_17);
 		priceAfterCurrentEps = addPriceDataToStore(dateFrom(18));
 		price2DaysAfterCurrentEps = addPriceDataToStore(dateFrom(19));
@@ -187,7 +197,8 @@ class TransformEpsDataForTrainingTaskTest {
 		final Map.Entry<Date, AssetEpsInfo> entry = new AbstractMap.SimpleEntry<>(epsInfo.date, epsInfo);
 
 		TransformEpsDataForTrainingTask.collectHistoricalData(priceStore, nonGaapEpsStore, stocksAndsectorsStore,
-				dataForTraining, dataFor2DPrediction, dataFor1DPrediction, TEST_ASSET, epsData, entry);
+				stocksAndFScoreStore, dataForTraining, dataFor2DPrediction, dataFor1DPrediction, TEST_ASSET, epsData,
+				entry);
 	}
 
 	private AssetNonGaapEpsInfo addNonGaapEpsDataToStore(Date date) {
@@ -215,5 +226,11 @@ class TransformEpsDataForTrainingTaskTest {
 
 	private void setSectorDetails() {
 		stocksAndsectorsStore.put(TEST_ASSET, new Pair<>(1, 1));
+	}
+
+	private void addFScoreToStore(double fscore, Date date) {
+		final NavigableMap<Date, Double> details = stocksAndFScoreStore.computeIfAbsent(TEST_ASSET,
+				k -> new TreeMap<>());
+		details.put(date, fscore);
 	}
 }

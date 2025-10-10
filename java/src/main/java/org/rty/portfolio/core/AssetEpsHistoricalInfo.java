@@ -28,6 +28,7 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 			"prev_ngaap_eps_spr",
 			"prev_revenue_spr",
 			"prev_p_e",
+			"prev_f_score",
 
 			"after_market_close",
 			"pred_eps",
@@ -38,6 +39,7 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 			"ngaap_eps_spr",
 			"revenue_spr",
 			"p_e",
+			"f_score",
 
 			"spr_pred_eps_prev_pred_eps", "spr_eps_prev_eps",
 			"spr_ngaap_pred_eps_prev_ngaap_pred_eps", "spr_ngaap_eps_prev_ngaap_eps",
@@ -66,9 +68,11 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 	
 	public final AssetEpsInfo currentEps;
 	public final AssetNonGaapEpsInfo currentNonGaapEps;
+	public final double currentFScore;
 
 	public final AssetEpsInfo previousEps;
 	public final AssetNonGaapEpsInfo previousNonGaapEps;
+	public final double previousFScore;
 
 	public final AssetPriceInfo priceAtCurrentEps;
 	public final AssetPriceInfo priceAtPreviousEps;
@@ -80,8 +84,8 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 	public final AssetPriceInfo price2DaysAfterCurrentEps;
 
 	public AssetEpsHistoricalInfo(String assetName, int sectorIndex, int industryIndex,
-			AssetEpsInfo currentEps, AssetNonGaapEpsInfo currentNonGaapEps,
-			AssetEpsInfo previousEps, AssetNonGaapEpsInfo previousNonGaapEps,
+			AssetEpsInfo currentEps, AssetNonGaapEpsInfo currentNonGaapEps, double currentFScore,
+			AssetEpsInfo previousEps, AssetNonGaapEpsInfo previousNonGaapEps,  double previousFScore,
 			AssetPriceInfo priceAtPreviousEps,
 			AssetPriceInfo priceBeforePreviousEps,
 			AssetPriceInfo price2DaysBeforeCurrentEps,
@@ -95,9 +99,11 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 
 		this.currentEps = currentEps;
 		this.currentNonGaapEps = currentNonGaapEps;
+		this.currentFScore = currentFScore;
 
 		this.previousEps = previousEps;
 		this.previousNonGaapEps = previousNonGaapEps;
+		this.previousFScore = previousFScore;
 
 		this.priceAtCurrentEps = priceAtCurrentEps;
 		this.priceAtPreviousEps = priceAtPreviousEps;
@@ -242,6 +248,7 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 				"" + surprise(previousNonGaapEpsValue, previousNonGaapPredictedEpsValue),
 				"" + revenueSurprise(previousNonGaapEps, previousEpsSurprise),
 				"" + round(getPreviousPOverE()),
+				"" + previousFScore,
 
 				"" + getCurrentAfterMarketClose(),
 				"" + round(currentPredictedEpsValue),
@@ -252,6 +259,7 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 				"" + surprise(currentNonGaapEpsValue, currentNonGaapPredictedEpsValue),
 				"" + revenueSurprise(currentNonGaapEps, currentEpsSurprise),
 				"" + round(getCurrentPOverE()),
+				"" + currentFScore,
 
 				"" + surprise(currentPredictedEpsValue, previousPredictedEpsValue),
 				"" + surprise(currentEps.eps, previousEps.eps),
