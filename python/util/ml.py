@@ -12,29 +12,29 @@ DS2_FILE = "inputs-ml/out-training-ds-2.csv"
 MAX_DEGREE = 4
 MODELS = {}
 
-DTR_DS2_ARGS = {'max_depth': 6, 'min_samples_leaf': 7,\
-        'min_samples_split': 16, 'criterion': 'absolute_error',\
+DTR_DS2_ARGS = {'max_depth': 5, 'min_samples_leaf': 14,\
+        'min_samples_split': 2, 'criterion': 'absolute_error',\
         'random_state': 42}
 
-DTR_DS1_ARGS = {'max_depth': 6, 'min_samples_leaf': 6,\
-        'min_samples_split': 16, 'criterion': 'absolute_error',\
+DTR_DS1_ARGS = {'max_depth': 5, 'min_samples_leaf': 15,\
+        'min_samples_split': 2, 'criterion': 'absolute_error',\
         'random_state': 42}
 
-RFR_DS2_ARGS = {'max_depth': 6, 'min_samples_leaf': 7,\
-        'min_samples_split': 16, 'n_estimators': 300,\
+RFR_DS2_ARGS = {'max_depth': 5, 'min_samples_leaf': 7,\
+        'min_samples_split': 2, 'n_estimators': 400,\
         'criterion': 'absolute_error', 'random_state': 42, 'oob_score': True}
 
-RFR_DS1_ARGS = {'max_depth': 6, 'min_samples_leaf': 6,\
-        'min_samples_split': 16, 'n_estimators': 400,\
+RFR_DS1_ARGS = {'max_depth': 5, 'min_samples_leaf': 7,\
+        'min_samples_split': 2, 'n_estimators': 400,\
         'criterion': 'absolute_error', 'random_state': 42, 'oob_score': True}
 
 CORE_COLUMNS_FOR_TRAINING = ['sector','industry','month',\
     'prev_after_market_close', 'prev_pred_eps',\
-    'prev_eps', 'prev_eps_spr', 'prev_p_e',\
+    'prev_eps', 'prev_eps_spr', 'prev_p_e', 'prev_f_score',\
     'prev_ngaap_pred_eps', 'prev_ngaap_eps',\
     'prev_ngaap_eps_spr', 'prev_revenue_spr',\
     'after_market_close', 'pred_eps',\
-    'eps', 'eps_spr', 'p_e',\
+    'eps', 'eps_spr', 'p_e', 'f_score',\
     'ngaap_pred_eps', 'ngaap_eps',\
     'ngaap_eps_spr', 'revenue_spr',\
     'spr_pred_eps_prev_pred_eps', 'spr_eps_prev_eps',\

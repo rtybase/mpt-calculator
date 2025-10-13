@@ -109,6 +109,30 @@ function getAllEpsDetails($assetId, $link) {
 	return $tableResult;
 }
 
+function getFScore($assetSymbol, $link) {
+	$tableResult = "";
+	if (!empty($assetSymbol)) {
+		$query = "select dtm_date, dbl_fscore ";
+		$query.= "from tbl_fscores ";
+		$query.= "where vchr_symbol='$assetSymbol' ";
+		$query.= "order by dtm_date asc";
+
+		$res = mysql_query($query, $link);
+		if (!$res) die("Invalid query: ". mysql_error());
+
+		$roundPrecision = 2;
+		while ($row = mysql_fetch_array($res)) {
+			$tableResult.= ",['$row[0]',";
+			$tableResult.= toChartNumber(round($row[1], $roundPrecision))."]";
+		}
+
+		mysql_free_result($res);
+
+	}
+
+	return $tableResult;
+}
+
 	$id = (int) $_GET["id"];
 	if ($id < 1) $id = 1;
 
@@ -125,6 +149,7 @@ function getAllEpsDetails($assetId, $link) {
 	$prices = extractPricesFrom($dividendsEpsAndPrices);
 
 	$allEpsDetails = getAllEpsDetails($id, $link);
+	$fscore = getFScore($assetSymbol, $link);
 ?>
 <!doctype html>
 <html>
@@ -147,6 +172,7 @@ function getAllEpsDetails($assetId, $link) {
 
 		drawChart1();
 		drawChart2();
+		drawChart3();
 	}
 
 	function drawTable(element, data) {
@@ -218,6 +244,27 @@ function getAllEpsDetails($assetId, $link) {
 		chart.draw(data, options);
 		<?php } ?>
 	}
+
+	function drawChart3() {
+		<?php if (!empty($fscore)) { ?>
+		var data = google.visualization.arrayToDataTable([
+			[{label: 'Date', id: 'Date', type: 'string'},
+			 {label: 'F-Score', id: 'F-Score', type: 'number'}]
+			<?php echo $fscore; ?>
+		]);
+
+		var options = {
+			title: "<?php echo $assetName;?> - F-Score",
+			interpolateNulls: true,
+			explorer: {
+				actions: ['dragToZoom', 'rightClickToReset'],
+				keepInBounds: true
+			}
+		};
+		var chart = new google.visualization.LineChart(document.getElementById('chart3_div'));
+		chart.draw(data, options);
+		<?php } ?>
+	}
     </script>
   </head>
   <body>
@@ -238,9 +285,10 @@ function getAllEpsDetails($assetId, $link) {
 	}
 ?>
 	<tr><td><hr/></td></tr>
-	<tr><td><font face="verdana">EPS:</font> <div id="table_div" style="width: 1044px;"></div></td></tr>
-	<tr><td><font face="verdana">GAAP EPS:</font> <div id="chart1_div" style="width: 1044px; height: 350px;"></div></td></tr>
-	<tr><td><div id="chart2_div" style="width: 1044px; height: 350px;"></div></td></tr>
+	<tr><td><font face="verdana">EPS:</font><div id="table_div" style="width: 1044px;"></div></td></tr>
+	<tr><td><font face="verdana">GAAP EPS:</font><div id="chart1_div" style="width: 1044px; height: 350px;"></div></td></tr>
+	<tr><td><font face="verdana">Prices:</font><div id="chart2_div" style="width: 1044px; height: 350px;"></div></td></tr>
+	<tr><td><font face="verdana">F-score:</font><div id="chart3_div" style="width: 1044px; height: 350px;"></div></td></tr>
       </table></td>
     </tr></table>
   </body>
