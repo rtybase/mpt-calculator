@@ -41,17 +41,6 @@ def predict_with_all_models(data_file, data_array, dataset_index):
 
     return results
 
-def asset_id_from_symbol(symbol):
-    asset_id = -1
-    with util.db.db_conection.cursor() as cursor:
-        cursor.execute("""SELECT int_assetID FROM tbl_assets 
-                           WHERE vchr_symbol=%s""", (symbol,))
-        result = cursor.fetchall()
-        for row in result:
-            asset_id = row[0]
-
-    return asset_id
-
 def next_w_date(eps_date, days_after_eps):
     next_date = util.dates.string_to_date(eps_date)
     for i in range(days_after_eps):
@@ -77,7 +66,7 @@ def save_results(model_details, dataset_index):
         models = [k for k in model_details['models']]
         for i in range(lengh):
             symbol = model_details['assets'][i]
-            asset_id = asset_id_from_symbol(symbol)
+            asset_id = util.db.asset_id_from_symbol(symbol)
 
             if (asset_id >= 0):
                 date = model_details['dates'][i]
