@@ -29,9 +29,12 @@ def add_with_required_colums_with_date(from_list, to_list, date):
 
 def load_eps_for(date, rows):
     str_date = util.dates.date_to_string(date)
-    response = requests.get(URL % (str_date,), headers=HEADERS)
+    final_url = URL % (str_date,)
+    response = requests.get(final_url, headers=HEADERS)
 
     if response.status_code == 200:
+        print(f"Request for {final_url} returned status code {response.status_code}", flush=True)
+
         data = response.json()
         try:
             add_with_required_colums_with_date(data['data']['exceed']['table']['rows'],\
@@ -44,9 +47,9 @@ def load_eps_for(date, rows):
                 rows, str_date)
 
         except KeyError:
-            print("Unexpected JSON structure:", data)
+            print("Unexpected JSON structure:", data, flush=True)
     else:
-        print(f"Request failed with status code {response.status_code}")
+        print(f"Request for {final_url} failed with status code {response.status_code}", flush=True)
 
 
 def print_list_as_csv(lst):
@@ -60,7 +63,8 @@ def save_to_db(asset_id, eps_detail):
                            VALUES (%s,%s,%s,%s,%s)
                            ON DUPLICATE KEY UPDATE
                            dbl_eps=VALUES(dbl_eps),
-                           dbl_prd_eps=VALUES(dbl_prd_eps)""",\
+                           dbl_prd_eps=VALUES(dbl_prd_eps),
+                           int_no_of_analysts=VALUES(int_no_of_analysts)""",\
             (asset_id, eps_detail['eps'], eps_detail['consensusEPSForecast'],\
                 eps_detail['estPercent'], eps_detail['date']))
     util.db.db_conection.commit()
@@ -96,11 +100,11 @@ if len(sys.argv) > 2:
 
     saved, not_saved = try_save_to_db(rows)
 
-    print("--------- Saved records ---------")
+    print("--------- Saved records ---------", flush=True)
     print_list_as_csv(saved)
 
-    print("--------- Not saved records -----")
+    print("--------- Not saved records -----", flush=True)
     print_list_as_csv(not_saved)
 
 else:
-    print("Specify the start date (YYYY-MM-DD) and the number of days to go back!")
+    print("Specify the start date (YYYY-MM-DD) and the number of days to go back!", flush=True)
