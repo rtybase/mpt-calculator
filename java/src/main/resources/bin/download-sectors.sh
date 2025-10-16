@@ -5,7 +5,7 @@ set -ue
 FOLDER_FOR_SECTOR_FILES=${FOLDER_FOR_SECTOR_FILES:-"./data_to_load_sectors"}
 
 load_sector () {
-	ticker=$2
+	ticker=$1
 	echo "---------------------------------------------------"
 	echo "Sector data for: ${ticker}"
 

@@ -3,17 +3,6 @@ import os
 import csv
 import util.db
 
-def symbol_from_asset(assetName):
-    symbol = ""
-    with util.db.db_conection.cursor() as cursor:
-        cursor.execute("""SELECT vchr_symbol FROM tbl_assets 
-                           WHERE vchr_name=%s""", (assetName,))
-        result = cursor.fetchall()
-        for row in result:
-            symbol = row[0]
-
-    return symbol
-
 def sector_id_from_name(sectorName):
     sectorId = -1
     with util.db.db_conection.cursor() as cursor:
@@ -52,12 +41,8 @@ def error(text):
     print(text)
     sys.exit(1)
 
-def process_data(assetName, sector, industry):
-    print(f"-- asset='{assetName}', sector='{sector}', industry='{industry}'")
-
-    symbol = symbol_from_asset(assetName)
-    if len(symbol) == 0:
-        error(f"-- '{assetName}' has no symbol defined!")
+def process_data(symbol, sector, industry):
+    print(f"-- symbol='{symbol}', sector='{sector}', industry='{industry}'")
 
     sectorId = sector_id_from_name(sector)
     if sectorId < 0:
