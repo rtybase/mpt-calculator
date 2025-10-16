@@ -6,7 +6,7 @@
 	header("Content-Type:text/html; charset=UTF-8");
 
 function getEps($link) {
-	$query = "SELECT a.fk_assetID, c.vchr_name, a.dbl_eps, a.dbl_prd_eps, a.dtm_date, ";
+	$query = "SELECT a.fk_assetID, c.vchr_name, a.dbl_eps, a.dbl_prd_eps, a.int_no_of_analysts, a.dtm_date, ";
 	$query.= "    d.dbl_eps n_gaap_eps, d.dbl_prd_eps n_gaap_prd_eps, d.bln_after_market_close, ";
 	$query.= "    d.dbl_revenue / 1000000000, d.dbl_prd_revenue / 1000000000 ";
 	$query.= "FROM tbl_eps a ";
@@ -27,12 +27,13 @@ function getEps($link) {
 		$ret[$assetId]["asset"] = $row[1];
 		$ret[$assetId]["eps"] = $row[2];
 		$ret[$assetId]["prd_eps"] = $row[3];
-		$ret[$assetId]["d_date"] = $row[4];
-		$ret[$assetId]["n_gaap_eps"] = $row[5];
-		$ret[$assetId]["n_gaap_prd_eps"] = $row[6];
-		$ret[$assetId]["after_market_close"] = $row[7];
-		$ret[$assetId]["revenue"] = $row[8];
-		$ret[$assetId]["prd_revenue"] = $row[9];
+		$ret[$assetId]["no_of_analysts"] = $row[4];
+		$ret[$assetId]["d_date"] = $row[5];
+		$ret[$assetId]["n_gaap_eps"] = $row[6];
+		$ret[$assetId]["n_gaap_prd_eps"] = $row[7];
+		$ret[$assetId]["after_market_close"] = $row[8];
+		$ret[$assetId]["revenue"] = $row[9];
+		$ret[$assetId]["prd_revenue"] = $row[10];
 	}
 	mysql_free_result($res);
 
@@ -81,6 +82,7 @@ function addLatestPrices($link, $epsData) {
 		$tableResult.= "'".$value["d_date"]."',";
 		$tableResult.= toChartNumber(round($value["eps"], $roundPrecision)).",";
 		$tableResult.= toChartNumber(roundOrNull($value["prd_eps"], $roundPrecision)).",";
+		$tableResult.= toChartNumber(roundOrNull($value["no_of_analysts"], $roundPrecision)).",";
 		$tableResult.= toChartNumber(round($value["price"], $roundPrecision)).",";
 		$tableResult.= toChartNumber(round($value["p_by_e"], $roundPrecision)).",";
 		$tableResult.= toChartNumber(roundOrNull($value["n_gaap_eps"], $roundPrecision)).",";
@@ -124,6 +126,7 @@ function addLatestPrices($link, $epsData) {
 		dataTable.addColumn('string', 'Lst Rep. D.');
 		dataTable.addColumn('number', 'Eps');
 		dataTable.addColumn('number', 'p-Eps');
+		dataTable.addColumn('number', 'N.Anlts');
 		dataTable.addColumn('number', 'Lst Price');
 		dataTable.addColumn('number', 'P/E');
 		dataTable.addColumn('number', 'nGAAP Eps');

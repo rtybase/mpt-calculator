@@ -56,12 +56,13 @@ def print_list_as_csv(lst):
 
 def save_to_db(asset_id, eps_detail):
     with util.db.db_conection.cursor() as cursor:
-        cursor.execute("""INSERT INTO tbl_eps (fk_assetID, dbl_eps, dbl_prd_eps, dtm_date)
-                           VALUES (%s,%s,%s,%s)
+        cursor.execute("""INSERT INTO tbl_eps (fk_assetID,dbl_eps,dbl_prd_eps,int_no_of_analysts,dtm_date)
+                           VALUES (%s,%s,%s,%s,%s)
                            ON DUPLICATE KEY UPDATE
                            dbl_eps=VALUES(dbl_eps),
                            dbl_prd_eps=VALUES(dbl_prd_eps)""",\
-            (asset_id, eps_detail['eps'], eps_detail['consensusEPSForecast'], eps_detail['date']))
+            (asset_id, eps_detail['eps'], eps_detail['consensusEPSForecast'],\
+                eps_detail['estPercent'], eps_detail['date']))
     util.db.db_conection.commit()
 
 

@@ -69,6 +69,7 @@ create table tbl_eps (
 	fk_assetID int(10) unsigned NOT NULL,
 	dbl_eps DOUBLE not null,
 	dbl_prd_eps DOUBLE,
+	int_no_of_analysts INT UNSIGNED,
 	dtm_date DATE not null, -- dd-mm-yy
 	primary key(fk_assetID, dtm_date),
 	foreign key(fk_assetID) references tbl_assets (int_assetID)

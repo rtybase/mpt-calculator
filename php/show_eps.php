@@ -73,7 +73,7 @@ function getStockDetails($stock, $link) {
 }
 
 function getAllEpsDetails($assetId, $link) {
-	$query = "select a.dtm_date, a.dbl_eps, a.dbl_prd_eps,";
+	$query = "select a.dtm_date, a.dbl_eps, a.dbl_prd_eps, a.int_no_of_analysts,";
 	$query.= "  b.dbl_eps non_gaap_eps, b.dbl_prd_eps non_gaap_prd_eps,";
 	$query.= "  b.bln_after_market_close,";
 	$query.= "  b.dbl_revenue / 1000000000, b.dbl_prd_revenue / 1000000000 ";
@@ -98,9 +98,10 @@ function getAllEpsDetails($assetId, $link) {
 		$tableResult.= toChartNumber(roundOrNull($row[2], $roundPrecision)).",";
 		$tableResult.= toChartNumber(roundOrNull($row[3], $roundPrecision)).",";
 		$tableResult.= toChartNumber(roundOrNull($row[4], $roundPrecision)).",";
-		$tableResult.= toChartNumber(roundOrNull($row[6], $roundPrecision)).",";
+		$tableResult.= toChartNumber(roundOrNull($row[5], $roundPrecision)).",";
 		$tableResult.= toChartNumber(roundOrNull($row[7], $roundPrecision)).",";
-		$tableResult.= booleanValueOrNull($row[5])."]";
+		$tableResult.= toChartNumber(roundOrNull($row[8], $roundPrecision)).",";
+		$tableResult.= booleanValueOrNull($row[6])."]";
 
 		$i++;
 	}
@@ -186,6 +187,7 @@ function getFScore($assetSymbol, $link) {
 		dataTable.addColumn('string', 'Report Date');
 		dataTable.addColumn('number', 'Eps');
 		dataTable.addColumn('number', 'predicted Eps');
+		dataTable.addColumn('number', 'No. of Analysts');
 		dataTable.addColumn('number', 'non-GAAP Eps');
 		dataTable.addColumn('number', 'non-GAAP predicted Eps');
 		dataTable.addColumn('number', 'Revenue (B)');
