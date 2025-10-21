@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
+import java.util.Set;
 
 import org.apache.commons.math3.util.Pair;
 import org.rty.portfolio.core.AssetEpsHistoricalInfo;
@@ -41,6 +43,7 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 
 	public static final String INPUT_FILE_WITH_PRICES_PARAM = "-prices";
 	public static final String INPUT_FILE_WITH_EPS_PARAM = "-eps";
+	public static final String INPUT_FILE_WITH_EPS_WITH_ANALYSTS_PARAM = "-eps-with-analysts";
 	public static final String INPUT_FILE_WITH_NON_GAAP_EPS_PARAM = "-n-gaap-eps";
 
 	private static final int YEARS_BACK = 5;
@@ -53,6 +56,7 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 	public void execute(Map<String, String> parameters) throws Throwable {
 		final String pricesInputFile = getValidParameterValue(parameters, INPUT_FILE_WITH_PRICES_PARAM);
 		final String epsInputFile = getValidParameterValue(parameters, INPUT_FILE_WITH_EPS_PARAM);
+		final String epsWithNoOfAnalystsInputFile = getValidParameterValue(parameters, INPUT_FILE_WITH_EPS_WITH_ANALYSTS_PARAM);
 		final String outputFile = getValidParameterValue(parameters, OUTPUT_FILE_PARAM);
 		final String nonGaapEpsInputFile = getValidParameterValue(parameters, INPUT_FILE_WITH_NON_GAAP_EPS_PARAM);
 
@@ -62,13 +66,14 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 		final Map<String, Pair<Integer, Integer>> stocksAndsectorsStore = new HashMap<>();
 		final Map<String, NavigableMap<Date, Double>> stocksAndFScoreStore = new HashMap<>();
 
-		loadEpsAndPricesFromFiles(epsInputFile, epsStore, pricesInputFile, priceStore);
+		loadEpsAndPricesFromFiles(epsInputFile, epsWithNoOfAnalystsInputFile, epsStore, pricesInputFile, priceStore);
 		loadEpsAndPricesFromDb(epsStore, priceStore, stocksAndsectorsStore, stocksAndFScoreStore);
 		loadNonGaapEpsFromFilesAndDb(nonGaapEpsInputFile, epsStore, nonGaapEpsStore);
 
 		final List<AssetEpsHistoricalInfo> dataForTraining = new ArrayList<>(1024);
 		final List<AssetEpsHistoricalInfo> dataFor2DPrediction = new ArrayList<>(1024);
 		final List<AssetEpsHistoricalInfo> dataFor1DPrediction = new ArrayList<>(1024);
+		final Set<String> alreadyReportedAssets = new HashSet<>();
 
 		epsStore.entrySet().forEach(entry -> {
 			final String assetName = entry.getKey();
@@ -83,7 +88,8 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 					dataFor1DPrediction,
 					assetName,
 					epsData,
-					epsEntry));
+					epsEntry,
+					alreadyReportedAssets));
 		});
 
 		writeData(FileNameUtil.adjustOutputFileName(outputFile, "training-ds-2"), dataForTraining);
@@ -102,19 +108,20 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 			List<AssetEpsHistoricalInfo> dataForTraining,
 			List<AssetEpsHistoricalInfo> dataFor2DPrediction,
 			List<AssetEpsHistoricalInfo> dataFor1DPrediction,
-			String assetName, NavigableMap<Date, AssetEpsInfo> epsData, Entry<Date, AssetEpsInfo> epsEntry) {
+			String assetName, NavigableMap<Date, AssetEpsInfo> epsData, Entry<Date, AssetEpsInfo> epsEntry,
+			Set<String> alreadyReportedAssets) {
 		final Date currentDate = epsEntry.getKey();
 
 		final AssetEpsInfo currentEps = epsEntry.getValue();
 		final AssetNonGaapEpsInfo currentNonGaapEps = DataHandlingUtil.getCurrentEntry(nonGaapEpsStore, assetName,
 				currentDate);
-		final Double currentFScore = getClosestFScore(stocksAndFScoreStore, assetName, currentDate);
+		final Double currentFScore = getClosestFScore(stocksAndFScoreStore, assetName, currentDate, alreadyReportedAssets);
 
 		final AssetEpsInfo previousEps = DataHandlingUtil.getPreviousEntry(epsData, currentDate);
 		final AssetNonGaapEpsInfo previousNonGaapEps = DataHandlingUtil.getPreviousEntry(nonGaapEpsStore, assetName,
 				currentDate);
 		final Double previousFScore = getClosestFScore(stocksAndFScoreStore, assetName,
-				previousEps != null ? previousEps.date : null);
+				previousEps != null ? previousEps.date : null, alreadyReportedAssets);
 
 		final Pair<Integer, Integer> sectorIndustryPair = getSectorIndustryPairFrom(assetName, stocksAndsectorsStore);
 		final AssetPriceInfo priceAtCurrentEps = DataHandlingUtil.getCurrentEntryOrNext(priceStore, assetName,
@@ -122,9 +129,27 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 
 		final Date currentPriceDate = priceAtCurrentEps != null ? priceAtCurrentEps.date : currentDate;
 
-		if (DataHandlingUtil.allNotNull(sectorIndustryPair, currentEps, currentFScore, previousEps, previousFScore)) {
+		if (!DataHandlingUtil.allNotNull(sectorIndustryPair)) {
+			LOGGER.warn("Sector/Industry not set for '{}'.", assetName);
+			return;
+		}
+
+		if (!DataHandlingUtil.allNotNull(currentFScore, previousFScore) && previousEps != null) {
+			LOGGER.warn("F-Scores are not set for '{}'.", assetName);
+			return;
+		}
+
+		if (DataHandlingUtil.allNotNull(currentEps, previousEps)) {
 			final AssetPriceInfo priceAtPreviousEps = DataHandlingUtil.getCurrentEntryOrNext(priceStore, assetName,
 					previousEps.date);
+
+			if (priceAtPreviousEps == null) {
+				LOGGER.warn("Can't get previous price details for '{}' for EPS on '{}'.",
+						assetName,
+						DatesAndSetUtil.dateToStr(previousEps.date));
+				return;
+			}
+
 			final AssetPriceInfo priceBeforePreviousEps = DataHandlingUtil.getPreviousEntry(priceStore, assetName,
 					priceAtPreviousEps.date);
 
@@ -167,7 +192,7 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 			}
 		} else {
 			if (previousEps != null) {
-				LOGGER.info("Not all the details are available for '{}' on the '{}' date.", assetName,
+				LOGGER.info("EPS values not found for '{}' on the '{}' date.", assetName,
 						DatesAndSetUtil.dateToStr(currentDate));
 			}
 		}
@@ -221,13 +246,18 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 		return sectorIndustryPair;
 	}
 
-	private void loadEpsAndPricesFromFiles(String epsInputFile, Map<String, NavigableMap<Date, AssetEpsInfo>> epsStore,
-			String pricesInputFile, Map<String, NavigableMap<Date, AssetPriceInfo>> priceStore) throws Exception {
+	private void loadEpsAndPricesFromFiles(String epsInputFile, String epsWithNoOfAnalystsInputFile,
+			Map<String, NavigableMap<Date, AssetEpsInfo>> epsStore, String pricesInputFile,
+			Map<String, NavigableMap<Date, AssetPriceInfo>> priceStore) throws Exception {
 		final BulkCsvLoader<AssetEpsInfo> epsLoader = epsLoader(epsStore);
+		final BulkCsvLoader<AssetEpsInfo> epsWithNoOfAnalystsLoader = epsWithNoOfAnalystsLoader(epsStore);
 		final BulkCsvLoader<AssetPriceInfo> priceLoader = priceLoader(priceStore);
 
 		say("Loading EPS data from '{}' ...", epsInputFile);
 		epsLoader.load(epsInputFile);
+
+		say("Loading EPS data with analysts details from '{}' ...", epsWithNoOfAnalystsInputFile);
+		epsWithNoOfAnalystsLoader.load(epsWithNoOfAnalystsInputFile);
 
 		say("Loading prices data from '{}' ...", pricesInputFile);
 		priceLoader.load(pricesInputFile);
@@ -286,6 +316,37 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 		};
 	}
 
+
+	private static BulkCsvLoader<AssetEpsInfo> epsWithNoOfAnalystsLoader(Map<String, NavigableMap<Date, AssetEpsInfo>> epsStore) {
+		return new BulkCsvLoader<>(6, true) {
+
+			@Override
+			protected List<String> saveResults(List<AssetEpsInfo> dataToAdd) throws Exception {
+				DataHandlingUtil.addDataToMapByNameAndDate(dataToAdd, epsStore);
+				return Collections.emptyList();
+			}
+
+			@Override
+			protected AssetEpsInfo toEntity(String assetName, String[] line) {
+				return new AssetEpsInfo(assetName,
+						Double.parseDouble(line[1].trim()),
+						ToEntityConvertorsUtil.possiblyDoubleFromString(line[2].trim()),
+						Integer.parseInt(line[3].trim()),
+						ToEntityConvertorsUtil.toDate(line[5].trim()));
+			}
+
+			@Override
+			protected void announceHeaders(String inputFile, String[] headerLine) {
+				// nothing to do
+			}
+
+			@Override
+			protected String assetNameFrom(String[] line) {
+				return line[GenericLoadToDbTask.NAME_COLUMN].trim();
+			}
+		};
+	}
+
 	private static BulkCsvLoader<AssetNonGaapEpsInfo> nonGaapEpsLoader(
 			Map<String, NavigableMap<Date, AssetNonGaapEpsInfo>> nonGaapEpsStore,
 			ToAssetNonGaapEpsInfoEntityConvertor convertor) {
@@ -322,19 +383,29 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 	}
 
 	private static Double getClosestFScore(Map<String, NavigableMap<Date, Double>> stocksAndFScoreStore,
-			String assetName, Date date) {
+			String assetName, Date date, Set<String> alreadyReportedAssets) {
 		if (date == null) {
 			return null;
 		}
 
-		final Double possibleResult = DataHandlingUtil.getCurrentEntryOrPrevious(stocksAndFScoreStore, assetName, date);
+		Double possibleResult = DataHandlingUtil.getCurrentEntryOrPrevious(stocksAndFScoreStore, assetName, date);
 		if (possibleResult != null) {
 			return possibleResult;
 		}
 
 		// better than nothing case
-		LOGGER.info("Using F-Score value after the '{}' date for the '{}'.", DatesAndSetUtil.dateToStr(date),
-				assetName);
-		return DataHandlingUtil.getCurrentEntryOrNext(stocksAndFScoreStore, assetName, date);
+		possibleResult = DataHandlingUtil.getCurrentEntryOrNext(stocksAndFScoreStore, assetName, date);
+		if (possibleResult != null) {
+			LOGGER.info("Using F-Score value after the '{}' date for the '{}'.",
+					DatesAndSetUtil.dateToStr(date),
+					assetName);
+			return possibleResult;
+		}
+
+		if (!alreadyReportedAssets.contains(assetName)) {
+			LOGGER.warn("No F-Score found for '{}', assuming 0.", assetName);
+			alreadyReportedAssets.add(assetName);
+		}
+		return 0D;
 	}
 }

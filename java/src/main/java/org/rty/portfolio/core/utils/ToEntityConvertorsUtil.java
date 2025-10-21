@@ -75,7 +75,7 @@ public final class ToEntityConvertorsUtil {
 		return Double.parseDouble(adjustedValue);
 	}
 
-	private static Double possiblyDoubleFromString(String value) {
+	public static Double possiblyDoubleFromString(String value) {
 		if (value.isEmpty() || NA_VALUE.equalsIgnoreCase(value) || NO_VALUE.equals(value)) {
 			return null;
 		}

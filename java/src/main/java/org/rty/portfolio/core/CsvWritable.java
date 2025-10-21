@@ -3,7 +3,7 @@ package org.rty.portfolio.core;
 public interface CsvWritable {
 	String[] toCsvLine();
 
-	static String emptyIfNull(Double value) {
+	static <T extends Number> String emptyIfNull(T value) {
 		if (value == null) {
 			return "";
 		}

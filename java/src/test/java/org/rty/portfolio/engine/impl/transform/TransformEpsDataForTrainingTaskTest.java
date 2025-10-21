@@ -16,9 +16,11 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.commons.math3.util.Pair;
@@ -39,6 +41,7 @@ class TransformEpsDataForTrainingTaskTest {
 	private List<AssetEpsHistoricalInfo> dataForTraining;
 	private List<AssetEpsHistoricalInfo> dataFor2DPrediction;
 	private List<AssetEpsHistoricalInfo> dataFor1DPrediction;
+	private Set<String> alreadyReportedAssets;
 
 	private AssetEpsInfo previousEps;
 	private AssetNonGaapEpsInfo previousNonGaapEps;
@@ -64,6 +67,7 @@ class TransformEpsDataForTrainingTaskTest {
 		dataForTraining = new ArrayList<>();
 		dataFor2DPrediction = new ArrayList<>();
 		dataFor1DPrediction = new ArrayList<>();
+		alreadyReportedAssets = new HashSet<>();
 	}
 
 	@Test
@@ -198,7 +202,7 @@ class TransformEpsDataForTrainingTaskTest {
 
 		TransformEpsDataForTrainingTask.collectHistoricalData(priceStore, nonGaapEpsStore, stocksAndsectorsStore,
 				stocksAndFScoreStore, dataForTraining, dataFor2DPrediction, dataFor1DPrediction, TEST_ASSET, epsData,
-				entry);
+				entry, alreadyReportedAssets);
 	}
 
 	private AssetNonGaapEpsInfo addNonGaapEpsDataToStore(Date date) {

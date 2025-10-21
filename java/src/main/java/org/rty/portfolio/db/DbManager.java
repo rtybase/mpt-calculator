@@ -453,7 +453,7 @@ public class DbManager {
 		final List<AssetEpsInfo> result = new ArrayList<>(2048);
 
 		final String sqlCommand = String.format(
-				"select %s, e.dbl_eps, e.dbl_prd_eps, e.dtm_date"
+				"select %s, e.dbl_eps, e.dbl_prd_eps, e.int_no_of_analysts, e.dtm_date"
 					+ " from tbl_eps e, tbl_assets a"
 					+ " where e.fk_assetID = a.int_assetID"
 					+ " and a.vchr_symbol is not null"
@@ -471,7 +471,8 @@ public class DbManager {
 							rs.getString(1),
 							rs.getDouble(2),
 							getDoubleOrNull(rs, 3),
-							rs.getDate(4)
+							getIntOrNull(rs, 4),
+							rs.getDate(5)
 						));
 				}
 			}
@@ -623,6 +624,16 @@ public class DbManager {
 
 	private static Double getDoubleOrNull(ResultSet rs, int parameterIdex) throws Exception {
 		final double value = rs.getDouble(parameterIdex);
+
+		if (rs.wasNull()) {
+			return null;
+		}
+
+		return value;
+	}
+
+	private static Integer getIntOrNull(ResultSet rs, int parameterIdex) throws Exception {
+		final int value = rs.getInt(parameterIdex);
 
 		if (rs.wasNull()) {
 			return null;

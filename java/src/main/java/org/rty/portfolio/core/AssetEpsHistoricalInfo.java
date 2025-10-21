@@ -23,6 +23,7 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 			"prev_pred_eps",
 			"prev_eps",
 			"prev_eps_spr",
+			"prev_no_analysts",
 			"prev_ngaap_pred_eps",
 			"prev_ngaap_eps",
 			"prev_ngaap_eps_spr",
@@ -34,6 +35,7 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 			"pred_eps",
 			"eps",
 			"eps_spr",
+			"no_analysts",
 			"ngaap_pred_eps",
 			"ngaap_eps",
 			"ngaap_eps_spr",
@@ -243,6 +245,7 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 				"" + round(previousPredictedEpsValue),
 				"" + round(previousEps.eps),
 				"" + previousEpsSurprise,
+				numberOfAnalystsFrom(previousEps),
 				"" + round(previousNonGaapPredictedEpsValue),
 				"" + round(previousNonGaapEpsValue),
 				"" + surprise(previousNonGaapEpsValue, previousNonGaapPredictedEpsValue),
@@ -254,6 +257,7 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 				"" + round(currentPredictedEpsValue),
 				"" + round(currentEps.eps),
 				"" + currentEpsSurprise,
+				numberOfAnalystsFrom(currentEps),
 				"" + round(currentNonGaapPredictedEpsValue),
 				"" + round(currentNonGaapEpsValue),
 				"" + surprise(currentNonGaapEpsValue, currentNonGaapPredictedEpsValue),
@@ -301,6 +305,22 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 		}
 
 		return "" + round(priceInfo.volumeChangeRate);
+	}
+
+	private static String numberOfAnalystsFrom(AssetEpsInfo eps) {
+		final Integer noOfAnalysts = eps.noOfAnalysts;
+		final Double predictedEps = eps.epsPredicted;
+
+		if (noOfAnalysts == null) {
+			if (predictedEps != null) {
+				LOGGER.info("Number of analysts is null for '{}' on '{}', assuming 1.",
+						eps.assetName,
+						DatesAndSetUtil.dateToStr(eps.date));
+			}
+			return "1";
+		}
+
+		return "" + noOfAnalysts;
 	}
 
 	private static double revenueSurprise(AssetNonGaapEpsInfo nonGaapEps, double defaultValue) {

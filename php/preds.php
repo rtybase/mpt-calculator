@@ -31,7 +31,7 @@ function getPredictions($link) {
 		$tableResult.= "'".$row[5]."',";
 		$tableResult.= toChartNumber(roundOrNull($row[6], 5)).",";
 		$tableResult.= toChartNumber(roundOrNull($row[7], 5)).",";
-		$tableResult.= "'<a href=\"./show_eps.php?id=".$row[0]."\">details ...</a>']";
+		$tableResult.= "'<a href=\"./show_eps.php?id=".$row[0]."\">details...</a>']";
 		$i++;
 	}
 	mysql_free_result($res);
@@ -102,7 +102,7 @@ function getPredictions($link) {
 	function generateDataHeaders() {
 		var dataTable = new google.visualization.DataTable();
 		dataTable.addColumn('string', 'Asset');
-		dataTable.addColumn('string', 'EPS Report Day');
+		dataTable.addColumn('string', 'EPS Rep. Day');
 		dataTable.addColumn('number', 'Day(s) After EPS');
 		dataTable.addColumn('string', 'Prediction Day (incl. hols)');
 		dataTable.addColumn('string', 'Model');

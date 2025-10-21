@@ -15,12 +15,14 @@ public class AssetEpsInfo implements CsvWritable, EntryWithAssetNameAndDate {
 	public final String assetName;
 	public final double eps;
 	public final Double epsPredicted;
+	public final Integer noOfAnalysts;
 	public final Date date;
 
 	public AssetEpsInfo(String assetName, double eps, Date date) {
 		this.assetName = assetName;
 		this.eps = eps;
 		this.epsPredicted = null;
+		this.noOfAnalysts = null;
 		this.date = date;
 
 	}
@@ -29,6 +31,16 @@ public class AssetEpsInfo implements CsvWritable, EntryWithAssetNameAndDate {
 		this.assetName = assetName;
 		this.eps = eps;
 		this.epsPredicted = epsPredicted;
+		this.noOfAnalysts = null;
+		this.date = date;
+
+	}
+
+	public AssetEpsInfo(String assetName, double eps, Double epsPredicted, Integer noOfAnalysts, Date date) {
+		this.assetName = assetName;
+		this.eps = eps;
+		this.epsPredicted = epsPredicted;
+		this.noOfAnalysts = noOfAnalysts;
 		this.date = date;
 
 	}
@@ -49,6 +61,7 @@ public class AssetEpsInfo implements CsvWritable, EntryWithAssetNameAndDate {
 				assetName,
 				"" + eps,
 				emptyIfNull(epsPredicted),
+				emptyIfNull(noOfAnalysts),
 				DatesAndSetUtil.dateToStr(date)
 		};
 	}
