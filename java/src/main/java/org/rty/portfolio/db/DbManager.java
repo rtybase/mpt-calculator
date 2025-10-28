@@ -575,8 +575,10 @@ public class DbManager {
 
 	private Integer queryDbForAssetIdFromName(String assetName) throws Exception {
 		try (PreparedStatement pStmt = connection
-				.prepareStatement("SELECT int_assetID FROM tbl_assets WHERE UPPER(vchr_name)=UPPER(?)")) {
+				.prepareStatement("SELECT int_assetID FROM tbl_assets WHERE UPPER(vchr_name)=UPPER(?)"
+						+ " OR UPPER(vchr_symbol)=UPPER(?)")) {
 			pStmt.setString(1, assetName);
+			pStmt.setString(2, assetName);
 
 			try (ResultSet rs = pStmt.executeQuery()) {
 				while (rs.next()) {

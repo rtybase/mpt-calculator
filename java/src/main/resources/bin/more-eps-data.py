@@ -1,5 +1,7 @@
 import requests
 import sys
+import os
+import csv
 import pandas as pd
 import util.dates
 import util.db
@@ -11,6 +13,13 @@ HEADERS = {
     "Accept": "application/json",
     "Origin": "https://www.nasdaq.com",
     "Referer": "https://www.nasdaq.com/"
+}
+
+ALIASES = {
+    "HSBC": "HSBA.L",
+    "GSK": "GSK.L",
+    "LYG": "LLOY.L",
+    "BP": "BP.L"
 }
 
 REQUIRED_COLUMNS = ['symbol','eps','consensusEPSForecast','estPercent','surprisePercent']
@@ -75,7 +84,11 @@ def try_save_to_db(lst):
     not_saved = []
 
     for eps_detail in lst:
-        asset_id = util.db.asset_id_from_symbol(eps_detail['symbol'])
+        symbol = eps_detail['symbol']
+        asset_id = util.db.asset_id_from_symbol(symbol)
+
+        if asset_id < 0 and symbol in ALIASES:
+            asset_id = util.db.asset_id_from_symbol(ALIASES[symbol])
 
         if asset_id >= 0:
             save_to_db(asset_id, eps_detail)
@@ -85,6 +98,24 @@ def try_save_to_db(lst):
 
     return saved, not_saved
 
+def process_data(rows):
+    saved, not_saved = try_save_to_db(rows)
+
+    print("--------- Saved records ---------", flush=True)
+    print_list_as_csv(saved)
+
+    print("--------- Not saved records -----", flush=True)
+    print_list_as_csv(not_saved)
+
+def load_data_from(path):
+    print("- Loading from:", path, flush=True)
+    rows = []
+    with open(path, mode ='r') as file:
+        content = csv.DictReader(file)
+        for line in content:
+            rows.append(line)
+
+    return rows
 
 if len(sys.argv) > 2:
     start_date = util.dates.string_to_date(sys.argv[1])
@@ -98,13 +129,16 @@ if len(sys.argv) > 2:
         if not util.dates.is_weekend(date):
             load_eps_for(date, rows)
 
-    saved, not_saved = try_save_to_db(rows)
+    process_data(rows)
 
-    print("--------- Saved records ---------", flush=True)
-    print_list_as_csv(saved)
-
-    print("--------- Not saved records -----", flush=True)
-    print_list_as_csv(not_saved)
+elif len(sys.argv) > 1:
+    folderContent = os.scandir(sys.argv[1])
+    for entry in folderContent:
+        if entry.is_file() and entry.name.endswith(".csv"):
+            rows = load_data_from(entry.path)
+            process_data(rows)
 
 else:
-    print("Specify the start date (YYYY-MM-DD) and the number of days to go back!", flush=True)
+    print("""Specify either 
+              - the start date (YYYY-MM-DD) and the number of days to go back or
+              - the file to load from!""", flush=True)
