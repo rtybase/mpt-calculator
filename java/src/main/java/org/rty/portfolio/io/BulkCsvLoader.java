@@ -63,8 +63,7 @@ public abstract class BulkCsvLoader<T> {
 			saveResultsAndCollectErrors(dataToAdd, totalFail);
 		}
 
-		LOGGER.info("File: '{}'. Total processed {}", inputFile, total);
-		LOGGER.info("File: '{}'. Operations failed {}", inputFile, totalFail);
+		LOGGER.info("File: '{}'. Total processed/failed {}/{}", inputFile, total, totalFail);
 	}
 
 	private List<T> loadDataFromFile(String inputFile, AtomicInteger total, AtomicInteger totalFail) throws Exception {

@@ -12,7 +12,8 @@ function mergeDividendsEpsAndPricesFor($assetId, $link) {
 	$minDate = key($divsAndEps);
 	reset($divsAndEps);
 
-	$query = "select dtm_date, dbl_price from tbl_prices where fk_assetID=$assetId ";
+	$query = "select dtm_date, dbl_price, dbl_vol_change_rate, dbl_return ";
+	$query.= " from tbl_prices where fk_assetID=$assetId ";
 	$query.= " and dtm_date>=\"".$minDate."\" order by dtm_date asc";
 
 	$res = mysql_query($query, $link);
@@ -23,6 +24,8 @@ function mergeDividendsEpsAndPricesFor($assetId, $link) {
 			$divsAndEps[$row[0]] = array();
 		}
 		$divsAndEps[$row[0]]["price"] = $row[1];
+		$divsAndEps[$row[0]]["vol_change_rate"] = $row[2];
+		$divsAndEps[$row[0]]["return"] = $row[3];
 	}
 
 	mysql_free_result($res);
@@ -49,6 +52,26 @@ function extractPricesFrom($dividendsEpsAndPrices) {
 	foreach ($dividendsEpsAndPrices as $key => $value) {
 		$result .= ",['".$key."',null,null,null,null";
 		$result .= ",".valueOrNullFrom($value["price"])."]";
+	}
+
+	return $result;
+}
+
+function extractVolChangeRateFrom($dividendsEpsAndPrices) {
+	$result = "";
+	foreach ($dividendsEpsAndPrices as $key => $value) {
+		$result .= ",['".$key."',null,null,null,null";
+		$result .= ",".valueOrNullFrom($value["vol_change_rate"])."]";
+	}
+
+	return $result;
+}
+
+function extractReturnsFrom($dividendsEpsAndPrices) {
+	$result = "";
+	foreach ($dividendsEpsAndPrices as $key => $value) {
+		$result .= ",['".$key."',null,null,null,null";
+		$result .= ",".valueOrNullFrom($value["return"])."]";
 	}
 
 	return $result;
@@ -148,6 +171,8 @@ function getFScore($assetSymbol, $link) {
 
 	$dividendsAndEpsDetails = extractDividendsAndEpsFrom($dividendsEpsAndPrices);
 	$prices = extractPricesFrom($dividendsEpsAndPrices);
+	$volumeChanges = extractVolChangeRateFrom($dividendsEpsAndPrices);
+	$returns = extractReturnsFrom($dividendsEpsAndPrices);
 
 	$allEpsDetails = getAllEpsDetails($id, $link);
 	$fscore = getFScore($assetSymbol, $link);
@@ -174,6 +199,8 @@ function getFScore($assetSymbol, $link) {
 		drawChart1();
 		drawChart2();
 		drawChart3();
+		drawChart4();
+		drawChart5();
 	}
 
 	function drawTable(element, data) {
@@ -267,6 +294,56 @@ function getFScore($assetSymbol, $link) {
 		chart.draw(data, options);
 		<?php } ?>
 	}
+
+	function drawChart4() {
+		<?php if (!empty($returns)) { ?>
+		var data = google.visualization.arrayToDataTable([
+			[{label: 'Date', id: 'Date', type: 'string'},
+			 {label: 'Div. Pay', id: 'Div. Pay', type: 'number'},
+			 {label: 'EPS', id: 'EPS', type: 'number'},
+			 {label: 'Prd. EPS', id: 'Prd. EPS', type: 'number'},
+			 {label: 'End of Fin. Period EPS', id: 'End of Fin. Period EPS', type: 'number'},
+			 {label: 'Return rates', id: 'Return rates', type: 'number'}]
+			<?php echo $returns; ?>
+		]);
+
+		var options = {
+			title: "<?php echo $assetName;?> - return rates",
+			interpolateNulls: true,
+			explorer: {
+				actions: ['dragToZoom', 'rightClickToReset'],
+				keepInBounds: true
+			}
+		};
+		var chart = new google.visualization.LineChart(document.getElementById('chart4_div'));
+		chart.draw(data, options);
+		<?php } ?>
+	}
+
+	function drawChart5() {
+		<?php if (!empty($volumeChanges)) { ?>
+		var data = google.visualization.arrayToDataTable([
+			[{label: 'Date', id: 'Date', type: 'string'},
+			 {label: 'Div. Pay', id: 'Div. Pay', type: 'number'},
+			 {label: 'EPS', id: 'EPS', type: 'number'},
+			 {label: 'Prd. EPS', id: 'Prd. EPS', type: 'number'},
+			 {label: 'End of Fin. Period EPS', id: 'End of Fin. Period EPS', type: 'number'},
+			 {label: 'Vol. chng rate', id: 'Vol. chng rate', type: 'number'}]
+			<?php echo $volumeChanges; ?>
+		]);
+
+		var options = {
+			title: "<?php echo $assetName;?> - volume change rates",
+			interpolateNulls: true,
+			explorer: {
+				actions: ['dragToZoom', 'rightClickToReset'],
+				keepInBounds: true
+			}
+		};
+		var chart = new google.visualization.LineChart(document.getElementById('chart5_div'));
+		chart.draw(data, options);
+		<?php } ?>
+	}
     </script>
   </head>
   <body>
@@ -290,6 +367,8 @@ function getFScore($assetSymbol, $link) {
 	<tr><td><font face="verdana">EPS:</font><div id="table_div" style="width: 1044px;"></div></td></tr>
 	<tr><td><font face="verdana">GAAP EPS:</font><div id="chart1_div" style="width: 1044px; height: 350px;"></div></td></tr>
 	<tr><td><font face="verdana">Prices:</font><div id="chart2_div" style="width: 1044px; height: 350px;"></div></td></tr>
+	<tr><td><font face="verdana">Returns:</font><div id="chart4_div" style="width: 1044px; height: 350px;"></div></td></tr>
+	<tr><td><font face="verdana">Vol. change rate:</font><div id="chart5_div" style="width: 1044px; height: 350px;"></div></td></tr>
 	<tr><td><font face="verdana">F-score:</font><div id="chart3_div" style="width: 1044px; height: 350px;"></div></td></tr>
       </table></td>
     </tr></table>
