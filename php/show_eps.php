@@ -77,24 +77,6 @@ function extractReturnsFrom($dividendsEpsAndPrices) {
 	return $result;
 }
 
-function getStockDetails($stock, $link) {
-	$ret = array();
-	if (!empty($stock)) {
-		$query = "SELECT a.vchr_symbol, b.vchr_name, c.vchr_name ";
-		$query.= "FROM tbl_stocks a, tbl_sectors b, tbl_industries c ";
-		$query.= "WHERE a.fk_sectorID=b.int_sectorID AND ";
-		$query.= "a.fk_industryID=c.int_industryID AND ";
-		$query.= "a.vchr_symbol='".$stock."'";
-
-		$res = mysql_query($query, $link);
-		if (!$res) die("Invalid query: ". mysql_error());
-
-		while ($row = mysql_fetch_array($res)) $ret = $row;
-		mysql_free_result($res);
-	}
-	return $ret;
-}
-
 function getAllEpsDetails($assetId, $link) {
 	$query = "select a.dtm_date, a.dbl_eps, a.dbl_prd_eps, a.int_no_of_analysts,";
 	$query.= "  b.dbl_eps non_gaap_eps, b.dbl_prd_eps non_gaap_prd_eps,";

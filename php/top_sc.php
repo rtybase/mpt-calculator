@@ -66,7 +66,7 @@ function getTopShiftCorrelations($includeFunds, $shift, $correlation, $link) {
 		$tableResult.= "'".linkToAsset($value["asset2Id"], $value["asset2Name"])."',";
 		$tableResult.= toChartNumber($value["shift"]).",";
 		$tableResult.= toChartNumber(round($value["correlation"], 5)).",";
-		$tableResult.= "'<a href=\"./show_sc.php?asset1=".$value["asset1Id"]."&asset2=".$value["asset2Id"]."\">details ...</a>']";
+		$tableResult.= "'<a href=\"./show_sc.php?asset1=".$value["asset1Id"]."&asset2=".$value["asset2Id"]."\">details...</a>']";
 		$i++;
 	}
 ?>

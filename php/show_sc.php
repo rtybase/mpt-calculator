@@ -39,7 +39,6 @@ function ratesForDatesWithShift($dates, $rates, $shift, $predictor) {
 	$query = "SELECT txt_json FROM  tbl_shift_correlations ";
 	$query.= "WHERE (fk_asset1ID=$asset1Id) AND (fk_asset2ID=$asset2Id) ";
 
-	$tableResult = "";
 	$res = mysql_query($query, $link);
 	if (!$res) die("Invalid query: ". mysql_error());
 
@@ -69,7 +68,7 @@ function ratesForDatesWithShift($dates, $rates, $shift, $predictor) {
 		$predictedAssetId = $asset1Id;
 	}
 
-	$tableResult.= "['".linkToAsset($asset1Id, $asset1Name)."','";
+	$tableResult = "['".linkToAsset($asset1Id, $asset1Name)."','";
 	$tableResult.= linkToAsset($asset2Id, $asset2Name)."',";
 	$tableResult.= toChartNumber($shift).",";
 	$tableResult.= toChartNumber(round($details["bestCorrelation"], 5)).",";
@@ -172,18 +171,18 @@ function ratesForDatesWithShift($dates, $rates, $shift, $predictor) {
 <?php
 	if (!empty($details["forecast"])) {
 		$lastDate = end($details["dates"]);
-		$forecastDate = date('Y-m-d', strtotime("+1 day", strtotime($lastDate)));
+		$forecastDate = nextDateFrom($lastDate);
 
 		$lastPriceInfo = getLastPriceInfo($predictedAssetId, $link);
 		$return1 = $details["forecast"][0];
 		$return2 = $details["forecast"][1];
 
 		$lastPrice = (float) $lastPriceInfo["dbl_price"];
-		$price1 = $lastPrice * (1 + $return1/100.0);
-		$price2 = $lastPrice * (1 + $return2/100.0);
+		$price1 = nextPriceFrom($lastPrice, $return1);
+		$price2 = nextPriceFrom($lastPrice, $return2);
 
 		echo "<tr><td><hr></td></tr>";
-		echo "<tr><td><font face=\"verdana\">Forecast return/price for $predictedAsset on $forecastDate:</font></td></tr>";
+		echo "<tr><td><font face=\"verdana\">Forecast return/price for $predictedAsset on $forecastDate (more <a href=\"./all_sc.php?id=$predictedAssetId\">here...</a>):</font></td></tr>";
 		echo "<tr><td><font face=\"verdana\">Return = ".round($return1, 4).", Price = ".round($price1, 4)."</font></td></tr>";
 		echo "<tr><td><font face=\"verdana\">Return = ".round($return2, 4).", Price = ".round($price2, 4)."</font></td></tr>";
 	}

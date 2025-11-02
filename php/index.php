@@ -301,6 +301,7 @@ function loadDividendsAndEpsFor($assetId, $link) {
 	<tr><td><font face="verdana">Betas:</font><div id="table_betas_div" style="width: 1044px;"></div></td></tr>
 	<tr><td><div id="prices_chart_div" style="width: 1044px; height: 350px;"></div></td></tr>
 <?php if (!empty($dividendsAndEpsDetails)) { ?>
+	<tr><td align="right"><a href="./show_eps.php?id=<?php echo $id?>"><i>More EPS details &gt;&gt;</i></a></td></tr>
 	<tr><td><div id="div_eps_chart_div" style="width: 1044px; height: 350px;"></div></td></tr>
 <?php } ?>
 	<tr><td><font face="verdana">Rates:</font><div id="table_rates_data_div" style="width: 1044px;"></div></td></tr>

@@ -154,7 +154,7 @@ function getAllPredictedByShiftCorrelations($assetId, $assetName, $link) {
 	<tr><td><font face="verdana">All <?php echo count($allCorrelations); ?> correlations for : <?php echo $mainAsset; ?></font></td></tr>
 	<tr><td><hr/></td></tr>
 	<tr><td><font face="verdana">Predicting:</font> <div id="chart1_div" style="width: 1044px;"></div></td></tr>
-	<tr><td><font face="verdana">Predicted by:</font> <div id="chart2_div" style="width: 1044px;"></div></td></tr>
+	<tr><td><font face="verdana">Predicted by (more <a href="./all_sc.php?id=<?php echo $id; ?>">here...</a>):</font> <div id="chart2_div" style="width: 1044px;"></div></td></tr>
 	<tr><td><div id='table_div' style="width: 1044px;"></div></td></tr>
       </table></td>
     </tr></table>

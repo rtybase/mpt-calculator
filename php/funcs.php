@@ -229,6 +229,32 @@
 		return round($value * 100, 3);
 	}
 
+	function nextDateFrom($fromDate) {
+		return date('Y-m-d', strtotime("+1 day", strtotime($fromDate)));
+	}
+
+	function nextPriceFrom($lastPrice, $returnRate) {
+		return $lastPrice * (1 + $returnRate/100.0);
+	}
+
+	function getStockDetails($stock, $link) {
+		$ret = array();
+		if (!empty($stock)) {
+			$query = "SELECT a.vchr_symbol, b.vchr_name, c.vchr_name ";
+			$query.= "FROM tbl_stocks a, tbl_sectors b, tbl_industries c ";
+			$query.= "WHERE a.fk_sectorID=b.int_sectorID AND ";
+			$query.= "a.fk_industryID=c.int_industryID AND ";
+			$query.= "a.vchr_symbol='".$stock."'";
+
+			$res = mysql_query($query, $link);
+			if (!$res) die("Invalid query: ". mysql_error());
+
+			while ($row = mysql_fetch_array($res)) $ret = $row;
+			mysql_free_result($res);
+		}
+		return $ret;
+	}
+
 	function loadDividendsFor($assetId, $link) {
 		$res = mysql_query("select dtm_date, dbl_pay from tbl_dividends where fk_assetID=$assetId order by dtm_date asc", $link);
 
