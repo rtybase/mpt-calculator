@@ -230,7 +230,18 @@
 	}
 
 	function nextDateFrom($fromDate) {
-		return date('Y-m-d', strtotime("+1 day", strtotime($fromDate)));
+		$dt = strtotime($fromDate);
+
+		$mydate = getdate($dt);
+		$weekDay = $mydate['wday'];
+
+		if ($weekDay == 5) {
+			return date('Y-m-d', strtotime("+3 day", $dt));
+		} else if ($weekDay == 6) {
+			return date('Y-m-d', strtotime("+2 day", $dt));
+		}
+
+		return date('Y-m-d', strtotime("+1 day", $dt));
 	}
 
 	function nextPriceFrom($lastPrice, $returnRate) {

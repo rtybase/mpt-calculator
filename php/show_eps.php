@@ -346,7 +346,7 @@ function getFScore($assetSymbol, $link) {
 	}
 ?>
 	<tr><td><hr/></td></tr>
-	<tr><td><font face="verdana">EPS:</font><div id="table_div" style="width: 1044px;"></div></td></tr>
+	<tr><td><font face="verdana">EPS (more <a href="./all_sc.php?id=<?php echo $id; ?>">here...</a>):</font><div id="table_div" style="width: 1044px;"></div></td></tr>
 	<tr><td><font face="verdana">GAAP EPS:</font><div id="chart1_div" style="width: 1044px; height: 350px;"></div></td></tr>
 	<tr><td><font face="verdana">Prices:</font><div id="chart2_div" style="width: 1044px; height: 350px;"></div></td></tr>
 	<tr><td><font face="verdana">Returns:</font><div id="chart4_div" style="width: 1044px; height: 350px;"></div></td></tr>

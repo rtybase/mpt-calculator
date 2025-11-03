@@ -94,6 +94,39 @@ function mergeDataToTableFormat($oneDayShiftCorrelations, $lastPriceInfo, $isFor
 	return $result;
 }
 
+function getEpsPredictions($assetId, $link) {
+	global $RETURN_ROUND_PRECISION;
+
+	$query = "SELECT a.dtm_eps_date, a.int_days_after_eps, a.dtm_prd_date, ";
+	$query.= "  a.vchr_model, a.dbl_prd_return, b.dbl_return ";
+	$query.= "FROM tbl_predictions a ";
+	$query.= "LEFT JOIN tbl_prices b ON a.fk_assetID=b.fk_assetID ";
+	$query.= "  AND a.dtm_prd_date=b.dtm_date ";
+	$query.= "WHERE  a.fk_assetID=$assetId ";
+	$query.= "AND  a.dtm_eps_date BETWEEN (NOW() - INTERVAL 60 DAY) AND NOW() ";
+	$query.= "ORDER BY a.dtm_prd_date DESC, a.vchr_model ASC";
+
+	$res = mysql_query($query, $link);
+	if (!$res) die("Invalid query: ". mysql_error());
+
+	$tableResult = "";
+	$i = 0;
+	while ($row = mysql_fetch_row($res)) {
+		if ($i == 0) $tableResult.= "[";
+		else $tableResult.= ",[";
+
+		$tableResult.= "'".$row[0]."',";
+		$tableResult.= toChartNumber($row[1]).",";
+		$tableResult.= "'".$row[2]."',";
+		$tableResult.= "'<nobr>".$row[3]."</nobr>',";
+		$tableResult.= toChartNumber(roundOrNull($row[4], $RETURN_ROUND_PRECISION)).",";
+		$tableResult.= toChartNumber(roundOrNull($row[5], $RETURN_ROUND_PRECISION))."]";
+		$i++;
+	}
+	mysql_free_result($res);
+	return $tableResult;
+}
+
 	$id = (int) $_GET["id"];
 	if ($id < 1) $id = 1;
 
@@ -109,6 +142,7 @@ function mergeDataToTableFormat($oneDayShiftCorrelations, $lastPriceInfo, $isFor
 	$lastPriceInfo = getLastPriceInfo($id, $link);
 
 	$oneDayPredictions = mergeDataToTableFormat($oneDayShiftCorrelations, $lastPriceInfo, $isForex);
+	$epsPredictions = getEpsPredictions($id, $link);
 ?>
 <!doctype html>
 <html>
@@ -122,21 +156,26 @@ function mergeDataToTableFormat($oneDayShiftCorrelations, $lastPriceInfo, $isFor
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type='text/javascript'>
 	google.charts.load('current', {'packages':['table']});
-	google.charts.setOnLoadCallback(drawTableAndCharts);
+	google.charts.setOnLoadCallback(drawTables);
 
-	function drawTableAndCharts() {
-		var data = generateHeader();
-		data.addRows([<?php echo $oneDayPredictions; ?>]);
-		drawTable('table_div', data);
+	function drawTables() {
+		drawTable1();
+		drawTable2();
 	}
 
 	function drawTable(element, data) {
-		data.setProperty(0, 0, 'style', 'width:1000px');
+		data.setProperty(0, 0, 'style', 'width:550px');
 		var table = new google.visualization.Table(document.getElementById(element));
 		table.draw(data, {showRowNumber: false, allowHtml: true});
 	}
 
-	function generateHeader() {
+	function drawTable1() {
+		var data = generateHeader1();
+		data.addRows([<?php echo $oneDayPredictions; ?>]);
+		drawTable('table_div1', data);
+	}
+
+	function generateHeader1() {
 		var dataTable = new google.visualization.DataTable();
 		dataTable.addColumn('string', 'Predicting Asset');
 		dataTable.addColumn('number', 'Shift');
@@ -164,6 +203,23 @@ function mergeDataToTableFormat($oneDayShiftCorrelations, $lastPriceInfo, $isFor
 
 		return dataTable;
 	}
+
+	function drawTable2() {
+		var data = generateHeader2();
+		data.addRows([<?php echo $epsPredictions; ?>]);
+		drawTable('table_div2', data);
+	}
+
+	function generateHeader2() {
+		var dataTable = new google.visualization.DataTable();
+		dataTable.addColumn('string', 'EPS Report Day');
+		dataTable.addColumn('number', 'Day(s) After EPS');
+		dataTable.addColumn('string', 'Prediction Day (including holidays)');
+		dataTable.addColumn('string', 'Model');
+		dataTable.addColumn('number', 'Predicted R.');
+		dataTable.addColumn('number', 'Actual R.');
+		return dataTable;
+	}
     </script>
   </head>
   <body>
@@ -171,7 +227,7 @@ function mergeDataToTableFormat($oneDayShiftCorrelations, $lastPriceInfo, $isFor
       <td valign="top"><?php showMenu(); ?></td>
       <td><table align="center" border="0">
 	<tr><td  align="left">
-		<font face="verdana">Predictions from 1 day shift correlations: <?php 
+		<font face="verdana">Predictions: <?php 
 			echo linkToAsset($id, $assetName, false);
 			if (!empty($assetSymbol))
 			echo " or <a href=\"https://finance.yahoo.com/quote/".$assetSymbol."/\">YF=".$assetSymbol."</a>"; 
@@ -184,7 +240,9 @@ function mergeDataToTableFormat($oneDayShiftCorrelations, $lastPriceInfo, $isFor
 	}
 ?>
 	<tr><td><hr/></td></tr>
-	<tr><td><font face="verdana">Predictions:</font><div id="table_div" style="width: 1044px;"></div></td></tr>
+	<tr><td><font face="verdana">Predictions from 1 day shift correlations:</font><div id="table_div1" style="width: 1044px;"></div></td></tr>
+	<tr><td>&nbsp;</td></tr>
+	<tr><td><font face="verdana">Predictions from EPS:</font><div id="table_div2" style="width: 1044px;"></div></td></tr>
       </table></td>
     </tr></table>
   </body>
