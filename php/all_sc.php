@@ -170,9 +170,15 @@ function getEpsPredictions($assetId, $link) {
 	}
 
 	function drawTable1() {
+<?php
+	if (!empty($oneDayPredictions)) {
+?>
 		var data = generateHeader1();
 		data.addRows([<?php echo $oneDayPredictions; ?>]);
 		drawTable('table_div1', data);
+<?php
+	}
+?>
 	}
 
 	function generateHeader1() {
@@ -205,9 +211,15 @@ function getEpsPredictions($assetId, $link) {
 	}
 
 	function drawTable2() {
+<?php
+	if (!empty($epsPredictions)) {
+?>
 		var data = generateHeader2();
 		data.addRows([<?php echo $epsPredictions; ?>]);
 		drawTable('table_div2', data);
+<?php 
+	}
+?>
 	}
 
 	function generateHeader2() {
