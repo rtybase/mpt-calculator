@@ -21,8 +21,11 @@ load_n_gaap_eps () {
 			-outfile=s-id.json
 
 		if [ -s s-id.json ]; then
-			symbol_id=`cat s-id.json | python -m json.tool | grep -iE "exchange.*(NASDAQ|NYSE)" -A 3 -B 5 | grep -iE "symbol.*\"$ticker\"" -A 3 -B 5 | sed -e 's/,//g'  | grep -iE "\"id\":" | awk -F ' ' '{ print $2}'`
-#			symbol_id=`cat s-id.json | python -m json.tool | grep -iE "exchange.*NASDAQ" -A 3 -B 5 | grep -iE "symbol.*\"$ticker\"" -A 3 -B 5 | sed -e 's/,//g'  | grep -iE "\"id\":" | awk -F ' ' '{ print $2}'`
+			symbol_id=`cat s-id.json | python -m json.tool | grep -iE "exchange.*NYSE" -A 3 -B 5 | grep -iE "symbol.*\"$ticker\"" -A 3 -B 5 | sed -e 's/,//g'  | grep -iE "\"id\":" | awk -F ' ' '{ print $2}'`
+
+			if [[ -z "$symbol_id" ]]; then
+				symbol_id=`cat s-id.json | python -m json.tool | grep -iE "exchange.*NASDAQ" -A 3 -B 5 | grep -iE "symbol.*\"$ticker\"" -A 3 -B 5 | sed -e 's/,//g'  | grep -iE "\"id\":" | awk -F ' ' '{ print $2}'`
+			fi
 
 			java -Duse-http2=true -jar portfolio-0.0.1-SNAPSHOT.jar DownloadTask \
 				"-url=https://endpoints.investing.com/earnings/v1/instruments/$symbol_id/earnings?limit=10" \
