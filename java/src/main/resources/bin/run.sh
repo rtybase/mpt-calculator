@@ -41,7 +41,7 @@ rm -rf ecb_rates.xml
 
 load_uk_in "indices/uk-100" "FTSE100" "ftse100-1.csv"
 
-./download_all_yf.sh inputs/yf-inputs.txt
+./download_all_yf.sh inputs/yf-inputs.txt 5d
 ./download-eps.sh inputs/eps-inputs.txt
 ./download-earnings.sh inputs/eps-inputs.txt
 ./download-n-gaap-eps.sh inputs/eps-inputs.txt
@@ -59,15 +59,18 @@ rm -rf ${FOLDER_FOR_EARNINGS_FILES}
 rm -rf ${FOLDER_FOR_N_GAAP_EPS_FILES}
 
 java -Xmx512m -jar portfolio-0.0.1-SNAPSHOT.jar CalculateAssetStatsTask
-java -Xmx768m -jar portfolio-0.0.1-SNAPSHOT.jar Calculate2AssetsPortfolioStatsTask
-java -Xmx768m -jar portfolio-0.0.1-SNAPSHOT.jar CalculateAssetsShiftCorrelationTask
-java -Xmx768m -jar portfolio-0.0.1-SNAPSHOT.jar CalculateMultiAssetsPortfolioStatsTask
+java -Xmx1024m -XX:+UnlockExperimentalVMOptions -XX:+EnableJVMCI -XX:-UseJVMCICompiler \
+	-jar portfolio-0.0.1-SNAPSHOT.jar Calculate2AssetsPortfolioStatsTask
+java -Xmx1024m -XX:+UnlockExperimentalVMOptions -XX:+EnableJVMCI -XX:-UseJVMCICompiler \
+	-jar portfolio-0.0.1-SNAPSHOT.jar CalculateAssetsShiftCorrelationTask
+java -Xmx1024m -jar portfolio-0.0.1-SNAPSHOT.jar CalculateMultiAssetsPortfolioStatsTask
 
 rm -rf inputs-ml/*
 
-java -Xmx768m -jar portfolio-0.0.1-SNAPSHOT.jar TransformEpsDataForTrainingTask \
+java -Xmx2048m -jar portfolio-0.0.1-SNAPSHOT.jar TransformEpsDataForTrainingTask \
 	"-prices=D:\data_to_load_prices" \
 	"-eps=D:\data_to_load_eps" \
+	"-eps-with-analysts=D:\data_to_load_eps_with_analysts" \
 	"-n-gaap-eps=D:\data_to_load_n_gaap_eps" \
 	"-outfile=inputs-ml/out.csv"
 

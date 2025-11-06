@@ -21,7 +21,7 @@ mkdir -p ${FOLDER_FOR_FSCORE_FILES}
 
 ./download-sectors.sh inputs/new-assets.txt
 ./download-f-score.sh inputs/new-assets.txt
-./download_all_yf.sh inputs/new-assets.txt
+./download_all_yf.sh inputs/new-assets.txt 5y
 ./download-eps.sh inputs/new-assets.txt
 ./download-earnings.sh inputs/new-assets.txt
 ./download-n-gaap-eps.sh inputs/new-assets.txt
