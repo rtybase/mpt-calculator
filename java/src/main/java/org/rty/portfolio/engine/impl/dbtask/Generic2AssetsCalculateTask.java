@@ -37,10 +37,15 @@ public abstract class Generic2AssetsCalculateTask<T> extends GenericCalculateTas
 
 		for (int i = 0; i < indexes.length; ++i) {
 			for (int j = i + 1; j < indexes.length; ++j) {
-				taskExecutor.addTask(calculatorFrom(storage, indexes[i], indexes[j]));
+				final boolean triggeredCalculations = taskExecutor
+						.addTask(calculatorFrom(storage, indexes[i], indexes[j]));
+
+				if (triggeredCalculations) {
+					dbManager.commit();
+				}
+
 				total.incrementAndGet();
 			}
-			dbManager.commit();
 		}
 
 		taskExecutor.close();

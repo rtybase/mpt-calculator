@@ -27,12 +27,21 @@ public class ConcurrentTaskExecutorWithBatching<T> implements AutoCloseable {
 		this.batchSize = batchSize;
 	}
 
-	public synchronized void addTask(Callable<T> task) throws Exception {
+	/**
+	 * Returns true if adding tasks triggered calculations, otherwise (task was only
+	 * scheduled for the execution) - false. It could be an useful indicator to do a
+	 * (for example) DB commit.
+	 */
+	public synchronized boolean addTask(Callable<T> task) throws Exception {
 		tasksToExecute.add(task);
 
 		if (tasksToExecute.size() >= batchSize) {
 			executeTasks();
+
+			return true;
 		}
+
+		return false;
 	}
 
 	@Override
