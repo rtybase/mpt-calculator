@@ -9,22 +9,29 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 
 public class ConcurrentTaskExecutorWithBatching<T> implements AutoCloseable {
 	private final ExecutorService executor;
 	private final List<Callable<T>> tasksToExecute;
-	private final ExceptionThrowingConsumer<List<Future<T>>> batchCompletionRoutine;
-	private final int batchSize;
+	private final ExceptionThrowingConsumer<List<T>> batchCompletionRoutine;
 
-	public ConcurrentTaskExecutorWithBatching(int numberOfThread, int taskQueuSize, int batchSize,
-			ExceptionThrowingConsumer<List<Future<T>>> batchCompletionRoutine) {
+	private final int numberOfThreads;
+	private final int batchSize;
+	private final int entriesPerPartition;
+
+	public ConcurrentTaskExecutorWithBatching(int numberOfThreads, int taskQueuSize, int batchSize,
+			ExceptionThrowingConsumer<List<T>> batchCompletionRoutine) {
 		Objects.requireNonNull(batchCompletionRoutine, "batchCompletionRoutine must not be null!");
 		Preconditions.checkArgument(batchSize > 0, "batchSize must be > 0!");
 
-		this.executor = ConcurrencyUtil.createExecutorService(numberOfThread, taskQueuSize);
+		this.executor = ConcurrencyUtil.createExecutorService(numberOfThreads, taskQueuSize);
 		this.batchCompletionRoutine = batchCompletionRoutine;
 		tasksToExecute = new ArrayList<>(batchSize);
+
 		this.batchSize = batchSize;
+		this.numberOfThreads = numberOfThreads;
+		this.entriesPerPartition = batchSize / numberOfThreads;
 	}
 
 	/**
@@ -55,13 +62,66 @@ public class ConcurrentTaskExecutorWithBatching<T> implements AutoCloseable {
 	}
 
 	private void executeTasks() throws Exception {
-		final List<Future<T>> result = executor.invokeAll(tasksToExecute);
-		batchCompletionRoutine.accept(result);
+		if (tasksToExecute.size() <= numberOfThreads) {
+			final List<Future<T>> futureResults = executor.invokeAll(tasksToExecute);
+			batchCompletionRoutine.accept(futuresToResults(futureResults));
+		} else {
+			List<BulkExecutor<T>> bulkTasks = partition();
+			final List<Future<List<T>>> futureResults = executor.invokeAll(bulkTasks);
+
+			final List<T> allResults = new ArrayList<>(batchSize);
+
+			for (Future<List<T>> futureResult : futureResults) {
+				allResults.addAll(futureResult.get());
+			}
+
+			batchCompletionRoutine.accept(allResults);
+		}
 		tasksToExecute.clear();
+	}
+
+	private List<BulkExecutor<T>> partition() {
+		List<List<Callable<T>>> partitions = Lists.partition(tasksToExecute, entriesPerPartition);
+		List<BulkExecutor<T>> result = new ArrayList<>(partitions.size());
+
+		for (List<Callable<T>> partition : partitions) {
+			result.add(new BulkExecutor<>(partition));
+		}
+
+		return result;
+	}
+
+	private List<T> futuresToResults(List<Future<T>> futures) throws Exception {
+		List<T> results = new ArrayList<>(futures.size());
+
+		for (Future<T> future : futures) {
+			results.add(future.get());
+		}
+
+		return results;
 	}
 
 	@FunctionalInterface
 	public interface ExceptionThrowingConsumer<T> {
-	    void accept(T t) throws Exception;
+		void accept(T t) throws Exception;
+	}
+
+	private static class BulkExecutor<T> implements Callable<List<T>> {
+		private final List<Callable<T>> tasks;
+
+		private BulkExecutor(List<Callable<T>> tasks) {
+			this.tasks = tasks;
+		}
+
+		@Override
+		public List<T> call() throws Exception {
+			List<T> results = new ArrayList<>(tasks.size());
+
+			for (Callable<T> task : tasks) {
+				results.add(task.call());
+			}
+
+			return results;
+		}
 	}
 }

@@ -1,5 +1,6 @@
 import util.ml
 import numpy
+import time
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -20,10 +21,14 @@ def plot_feature_importance(X, model, model_name, dataset_index):
     plt.show()
 
 def fit_and_plot_with(X_ds, y_ds, dt_args, rf_args, dataset_index):
+    start_time = time.time()
     dt_model = util.ml.train_decision_tree_model(X_ds.values, y_ds.values, dt_args)
+    print("--- Decision tree took %s seconds to fit ---" % (time.time() - start_time), flush=True)
     plot_feature_importance(X_ds, dt_model, "Decision Tree", dataset_index)
 
+    start_time = time.time()
     rf_model = util.ml.train_random_f_regression_model(X_ds.values, y_ds.values, rf_args)
+    print("--- Random forest took %s seconds to fit ---" % (time.time() - start_time), flush=True)
     plot_feature_importance(X_ds, rf_model, "Random Forest", dataset_index)
 
 

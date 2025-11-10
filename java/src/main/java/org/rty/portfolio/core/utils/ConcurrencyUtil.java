@@ -11,12 +11,12 @@ public final class ConcurrencyUtil {
 	private ConcurrencyUtil() {
 	}
 
-	public static ExecutorService createExecutorService(int numberOfThread, int taskQueuSize) {
-		Preconditions.checkArgument(numberOfThread > 0, "numberOfThread must be > 0!");
+	public static ExecutorService createExecutorService(int numberOfThreads, int taskQueuSize) {
+		Preconditions.checkArgument(numberOfThreads > 0, "numberOfThread must be > 0!");
 		Preconditions.checkArgument(taskQueuSize > 0, "taskQueuSize must be > 0!");
 
-		return new ThreadPoolExecutor(numberOfThread,
-				numberOfThread,
+		return new ThreadPoolExecutor(numberOfThreads,
+				numberOfThreads,
 				0L,
 				TimeUnit.MILLISECONDS,
 				new ArrayBlockingQueue<>(taskQueuSize),

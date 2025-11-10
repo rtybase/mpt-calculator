@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Future;
 
 import org.junit.jupiter.api.Test;
 import org.rty.portfolio.core.utils.ConcurrentTaskExecutorWithBatching.ExceptionThrowingConsumer;
@@ -81,11 +80,11 @@ class ConcurrentTaskExecutorWithBatchingTest {
 		assertEquals(expected, result);
 	}
 
-	private static ExceptionThrowingConsumer<List<Future<Integer>>> createSupplier(Set<Integer> result)
+	private static ExceptionThrowingConsumer<List<Integer>> createSupplier(Set<Integer> result)
 			throws Exception {
-		return listOfFutures -> {
-			for (Future<Integer> f : listOfFutures) {
-				result.add(f.get());
+		return listOfResults -> {
+			for (Integer i : listOfResults) {
+				result.add(i);
 			}
 		};
 	}
