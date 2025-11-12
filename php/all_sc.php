@@ -188,21 +188,21 @@ function getEpsPredictions($assetId, $link) {
 		dataTable.addColumn('number', 'Corrltn');
 		dataTable.addColumn('number', 'Cn.Dates');
 		dataTable.addColumn('string', 'Frcst Date');
-		dataTable.addColumn('number', 'R.min');
-		dataTable.addColumn('number', 'P.min');
+		dataTable.addColumn('number', 'Rt.min');
+		dataTable.addColumn('number', 'Pr.min');
 <?php 
 	if ($isForex) {
 ?>
-		dataTable.addColumn('number', '1/P.min');
+		dataTable.addColumn('number', '1/Pr.min');
 <?php 
 	}
 ?>
-		dataTable.addColumn('number', 'R.max');
-		dataTable.addColumn('number', 'P.max');
+		dataTable.addColumn('number', 'Rt.max');
+		dataTable.addColumn('number', 'Pr.max');
 <?php 
 	if ($isForex) {
 ?>
-		dataTable.addColumn('number', '1/P.max');
+		dataTable.addColumn('number', '1/Pr.max');
 <?php 
 	}
 ?>
@@ -224,12 +224,12 @@ function getEpsPredictions($assetId, $link) {
 
 	function generateHeader2() {
 		var dataTable = new google.visualization.DataTable();
-		dataTable.addColumn('string', 'EPS Report Day');
+		dataTable.addColumn('string', 'EPS Report Date');
 		dataTable.addColumn('number', 'Day(s) After EPS');
-		dataTable.addColumn('string', 'Prediction Day (including holidays)');
+		dataTable.addColumn('string', 'Prediction Date (incl. holidays)');
 		dataTable.addColumn('string', 'Model');
-		dataTable.addColumn('number', 'Predicted R.');
-		dataTable.addColumn('number', 'Actual R.');
+		dataTable.addColumn('number', 'Predicted Rate');
+		dataTable.addColumn('number', 'Actual Rate');
 		return dataTable;
 	}
     </script>

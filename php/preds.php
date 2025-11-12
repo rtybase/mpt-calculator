@@ -102,9 +102,9 @@ function getPredictions($link) {
 	function generateDataHeaders() {
 		var dataTable = new google.visualization.DataTable();
 		dataTable.addColumn('string', 'Asset');
-		dataTable.addColumn('string', 'EPS Rep. Day');
+		dataTable.addColumn('string', 'EPS Rep. Date');
 		dataTable.addColumn('number', 'Day(s) After EPS');
-		dataTable.addColumn('string', 'Prediction Day (incl. hols)');
+		dataTable.addColumn('string', 'Prediction Date (incl. hols)');
 		dataTable.addColumn('string', 'Model');
 		dataTable.addColumn('number', 'Predicted Return');
 		dataTable.addColumn('number', 'Actual Return');
