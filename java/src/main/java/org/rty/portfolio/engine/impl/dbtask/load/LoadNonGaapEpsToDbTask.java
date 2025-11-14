@@ -31,6 +31,7 @@ public class LoadNonGaapEpsToDbTask extends GenericLoadToDbTask<AssetNonGaapEpsI
 	public void execute(Map<String, String> parameters) throws Exception {
 		say("Loading EPS data from DB ...");
 		Map<String, NavigableMap<Date, AssetEpsInfo>> epsStore = new HashMap<>();
+		DataHandlingUtil.addDataToMapByNameAndDate(dbManager.getAllStocksEpsInfo(YEARS_BACK, true), epsStore);
 		DataHandlingUtil.addDataToMapByNameAndDate(dbManager.getAllStocksEpsInfo(YEARS_BACK, false), epsStore);
 		convertor = new ToAssetNonGaapEpsInfoEntityConvertor(epsStore);
 

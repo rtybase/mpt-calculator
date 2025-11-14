@@ -26,7 +26,7 @@ def industry_id_from_name(industryName):
     return industryId
 
 def save_to_db(symbol, sectorId, industryId):
-    print(f"--- adding ('{symbol}', {sectorId}, {industryId})")
+    print(f"--- adding ('{symbol}', {sectorId}, {industryId})", flush=True)
     with util.db.db_conection.cursor() as cursor:
         cursor.execute("""INSERT into tbl_stocks 
                            (vchr_symbol,fk_sectorID,fk_industryID) 
@@ -38,11 +38,11 @@ def save_to_db(symbol, sectorId, industryId):
     util.db.db_conection.commit()
 
 def error(text):
-    print(text)
+    print(text, flush=True)
     sys.exit(1)
 
 def process_data(symbol, sector, industry):
-    print(f"-- symbol='{symbol}', sector='{sector}', industry='{industry}'")
+    print(f"-- symbol='{symbol}', sector='{sector}', industry='{industry}'", flush=True)
 
     sectorId = sector_id_from_name(sector)
     if sectorId < 0:
@@ -55,7 +55,7 @@ def process_data(symbol, sector, industry):
     save_to_db(symbol, sectorId, industryId)
 
 def load_stocks_from(path):
-    print("- Loading from:", path)
+    print("- Loading from:", path, flush=True)
     with open(path, mode ='r') as file:
         content = csv.reader(file)
         for line in content:

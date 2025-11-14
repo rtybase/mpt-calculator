@@ -49,6 +49,10 @@ if [ "${period}" == "5d" ]; then
 	end=`date +%s`
 	start=`date --date='5 days ago' +%s`
 	extra="?period1=${start}&period2=${end}"
+elif [ "${period}" == "1m" ]; then
+	end=`date +%s`
+	start=`date --date='30 days ago' +%s`
+	extra="?period1=${start}&period2=${end}"
 elif [ "${period}" == "5y" ]; then
 	end=`date +%s`
 	start=`date --date='5 years ago' +%s`

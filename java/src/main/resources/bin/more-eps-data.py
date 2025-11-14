@@ -19,7 +19,8 @@ ALIASES = {
     "HSBC": "HSBA.L",
     "GSK": "GSK.L",
     "LYG": "LLOY.L",
-    "BP": "BP.L"
+    "BP": "BP.L",
+    "NGG": "NG.L"
 }
 
 REQUIRED_COLUMNS = ['symbol','eps','consensusEPSForecast','estPercent','surprisePercent']
@@ -66,6 +67,12 @@ def print_list_as_csv(lst):
     df.to_csv(sys.stdout, index=False, encoding='utf-8')
 
 
+def print_symbols(lst):
+    for eps_detail in lst:
+        symbol = eps_detail['symbol']
+        print(f"{symbol}={symbol}", flush=True)
+
+
 def save_to_db(asset_id, eps_detail):
     with util.db.db_conection.cursor() as cursor:
         cursor.execute("""INSERT INTO tbl_eps (fk_assetID,dbl_eps,dbl_prd_eps,int_no_of_analysts,dtm_date)
@@ -101,11 +108,14 @@ def try_save_to_db(lst):
 def process_data(rows):
     saved, not_saved = try_save_to_db(rows)
 
-    print("--------- Saved records ---------", flush=True)
+    print("----- Saved records ------------", flush=True)
     print_list_as_csv(saved)
 
-    print("--------- Not saved records -----", flush=True)
+    print("----- Not saved records --------", flush=True)
     print_list_as_csv(not_saved)
+
+    print("----- Saved for extra loading --", flush=True)
+    print_symbols(saved)
 
 def load_data_from(path):
     print("- Loading from:", path, flush=True)
