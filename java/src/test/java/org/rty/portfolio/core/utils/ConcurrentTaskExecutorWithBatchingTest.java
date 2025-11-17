@@ -64,7 +64,7 @@ class ConcurrentTaskExecutorWithBatchingTest {
 		ConcurrentTaskExecutorWithBatching<Integer> executor = new ConcurrentTaskExecutorWithBatching<Integer>(1, 1, 2,
 				createSupplier(result));
 
-		final Set<Integer> expected = Set.of(1, 2, 3);
+		final Set<Integer> expected = Set.of(1, 2, 3, 4, 5, 6, 7, 8);
 
 		expected.forEach(val -> {
 			try {
