@@ -12,7 +12,7 @@ import org.rty.portfolio.engine.AbstractDbTask;
 import com.mysql.jdbc.Statement;
 
 public abstract class GenericCalculateTask<T> extends AbstractDbTask {
-	private static final int NUMBER_OF_THREADS = 4;
+	private static final int NUMBER_OF_THREADS = 3;
 
 	public GenericCalculateTask(DbManager dbManager) {
 		super(dbManager);
@@ -20,8 +20,8 @@ public abstract class GenericCalculateTask<T> extends AbstractDbTask {
 
 	protected final ConcurrentTaskExecutorWithBatching<T> createExecutor(final AtomicInteger totalFail) {
 		final ConcurrentTaskExecutorWithBatching<T> taskExecutor = new ConcurrentTaskExecutorWithBatching<>(NUMBER_OF_THREADS,
-				NUMBER_OF_THREADS * 2,
-				NUMBER_OF_THREADS * 2048,
+				NUMBER_OF_THREADS,
+				NUMBER_OF_THREADS * 1024,
 				newResultProcessingConsumer(totalFail));
 		return taskExecutor;
 	}
@@ -44,6 +44,7 @@ public abstract class GenericCalculateTask<T> extends AbstractDbTask {
 
 			if (!listOfResults.isEmpty()) {
 				saveResultsAndReportErrors(listOfResults, totalFail);
+				dbManager.commit();
 			}
 		};
 	}

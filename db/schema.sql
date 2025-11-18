@@ -261,8 +261,6 @@ BEGIN
 	DELETE FROM tbl_avgreturns_1y;
 	DELETE FROM tbl_avgreturns_2y;
 	DELETE FROM tbl_avgreturns_5y;
-	DELETE FROM tbl_correlations;
-	DELETE FROM tbl_shift_correlations;
 
 	INSERT INTO tbl_avgreturns (fk_assetID, dbl_avgreturn, dbl_varience)
 	SELECT fk_assetID, AVG(dbl_return), VAR_POP(dbl_return)

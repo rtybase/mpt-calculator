@@ -271,7 +271,11 @@ public class DbManager {
 	public 	int[] addBulkShiftCorrelations(List<AssetsCorrelationInfo> assetsShiftCorrelations) throws Exception {
 		try (PreparedStatement pStmt = connection.prepareStatement(
 				"INSERT INTO tbl_shift_correlations (fk_asset1ID, fk_asset2ID, int_shift, dbl_correlation, txt_json)"
-						+ " VALUES (?,?,?,?,?)")) {
+						+ " VALUES (?,?,?,?,?)"
+						+ " ON DUPLICATE KEY UPDATE"
+						+ "	 int_shift=VALUES(int_shift),"
+						+ "	 dbl_correlation=VALUES(dbl_correlation),"
+						+ "	 txt_json=VALUES(txt_json)")) {
 
 			for (AssetsCorrelationInfo assetsShiftCorrelation : assetsShiftCorrelations) {
 				pStmt.setInt(1, assetsShiftCorrelation.asset1Id);
@@ -321,7 +325,14 @@ public class DbManager {
 	public int[] addNew2AssetsPortfolioInfo(List<PortfolioStatistics> results) throws Exception {
 		try (PreparedStatement pStmt = connection.prepareStatement(
 				"INSERT INTO tbl_correlations (fk_asset1ID, fk_asset2ID, dbl_covariance, dbl_correlation, dbl_weight1, dbl_weight2, dbl_portret, dbl_portvar)"
-						+ " VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
+						+ " VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+						+ " ON DUPLICATE KEY UPDATE"
+						+ "	 dbl_covariance=VALUES(dbl_covariance),"
+						+ "	 dbl_correlation=VALUES(dbl_correlation),"
+						+ "	 dbl_weight1=VALUES(dbl_weight1),"
+						+ "	 dbl_weight2=VALUES(dbl_weight2),"
+						+ "	 dbl_portret=VALUES(dbl_portret),"
+						+ "	 dbl_portvar=VALUES(dbl_portvar)")) {
 
 			for (PortfolioStatistics result : results) {
 				pStmt.setInt(1, result.assetIds.get(0));

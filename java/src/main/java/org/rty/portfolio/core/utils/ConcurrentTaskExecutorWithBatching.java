@@ -5,20 +5,17 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 
 public class ConcurrentTaskExecutorWithBatching<T> implements AutoCloseable {
 	private final ExecutorService executor;
 	private final List<Callable<T>> tasksToExecute;
 	private final ExceptionThrowingConsumer<List<T>> batchCompletionRoutine;
-
-	private final int numberOfThreads;
 	private final int batchSize;
-	private final int entriesPerPartition;
+
+	private final Object syncObject = new Object();
 
 	public ConcurrentTaskExecutorWithBatching(int numberOfThreads, int taskQueuSize, int batchSize,
 			ExceptionThrowingConsumer<List<T>> batchCompletionRoutine) {
@@ -30,25 +27,14 @@ public class ConcurrentTaskExecutorWithBatching<T> implements AutoCloseable {
 		tasksToExecute = new ArrayList<>(batchSize);
 
 		this.batchSize = batchSize;
-		this.numberOfThreads = numberOfThreads;
-		this.entriesPerPartition = batchSize / numberOfThreads;
 	}
 
-	/**
-	 * Returns true if adding tasks triggered calculations, otherwise (task was only
-	 * scheduled for the execution) - false. It could be an useful indicator to do a
-	 * (for example) DB commit.
-	 */
-	public synchronized boolean addTask(Callable<T> task) throws Exception {
+	public synchronized void addTask(Callable<T> task) throws Exception {
 		tasksToExecute.add(task);
 
 		if (tasksToExecute.size() >= batchSize) {
 			executeTasks();
-
-			return true;
 		}
-
-		return false;
 	}
 
 	@Override
@@ -62,43 +48,16 @@ public class ConcurrentTaskExecutorWithBatching<T> implements AutoCloseable {
 	}
 
 	private void executeTasks() throws Exception {
-		if (tasksToExecute.size() <= numberOfThreads) {
-			final List<Future<T>> futureResults = executor.invokeAll(tasksToExecute);
-			batchCompletionRoutine.accept(futuresToResults(futureResults));
-		} else {
-			List<BulkExecutor<T>> bulkTasks = partition();
-			final List<Future<List<T>>> futureResults = executor.invokeAll(bulkTasks);
-
-			final List<T> allResults = new ArrayList<>(batchSize);
-
-			for (Future<List<T>> futureResult : futureResults) {
-				allResults.addAll(futureResult.get());
-			}
-
-			batchCompletionRoutine.accept(allResults);
-		}
+		BulkExecutor<T> bulkTask = prepareTaskToSubmit();
 		tasksToExecute.clear();
+
+		executor.submit(bulkTask);
 	}
 
-	private List<BulkExecutor<T>> partition() {
-		List<List<Callable<T>>> partitions = Lists.partition(tasksToExecute, entriesPerPartition);
-		List<BulkExecutor<T>> result = new ArrayList<>(partitions.size());
+	private BulkExecutor<T> prepareTaskToSubmit() {
+		final List<Callable<T>> tasks = new ArrayList<>(tasksToExecute);
 
-		for (List<Callable<T>> partition : partitions) {
-			result.add(new BulkExecutor<>(partition));
-		}
-
-		return result;
-	}
-
-	private List<T> futuresToResults(List<Future<T>> futures) throws Exception {
-		List<T> results = new ArrayList<>(futures.size());
-
-		for (Future<T> future : futures) {
-			results.add(future.get());
-		}
-
-		return results;
+		return new BulkExecutor<>(tasks, batchCompletionRoutine, syncObject);
 	}
 
 	@FunctionalInterface
@@ -106,22 +65,31 @@ public class ConcurrentTaskExecutorWithBatching<T> implements AutoCloseable {
 		void accept(T t) throws Exception;
 	}
 
-	private static class BulkExecutor<T> implements Callable<List<T>> {
+	private static class BulkExecutor<T> implements Callable<Void> {
+		private final ExceptionThrowingConsumer<List<T>> batchCompletionRoutine;
 		private final List<Callable<T>> tasks;
+		private final Object syncObject;
 
-		private BulkExecutor(List<Callable<T>> tasks) {
+		private BulkExecutor(List<Callable<T>> tasks, ExceptionThrowingConsumer<List<T>> batchCompletionRoutine,
+				Object syncObject) {
 			this.tasks = tasks;
+			this.batchCompletionRoutine = batchCompletionRoutine;
+			this.syncObject = syncObject;
 		}
 
 		@Override
-		public List<T> call() throws Exception {
+		public Void call() throws Exception {
 			List<T> results = new ArrayList<>(tasks.size());
 
 			for (Callable<T> task : tasks) {
 				results.add(task.call());
 			}
 
-			return results;
+			synchronized (syncObject) {
+				batchCompletionRoutine.accept(results);
+			}
+
+			return null;
 		}
 	}
 }
