@@ -26,7 +26,11 @@ mkdir -p ${FOLDER_FOR_N_GAAP_EPS_FILES}
 echo "---------------------------------------------------"
 echo "Standard Life data"
 java -jar portfolio-0.0.1-SNAPSHOT.jar DownloadTask "-url=https://secure.standardlife.co.uk/secure/fundfilter/rest/results/funds/GROUP_PENSIONS/GPP/null/existingcustomer?_=1601483195897" -outfile=std-life.json
-java -jar portfolio-0.0.1-SNAPSHOT.jar TransformStdLifeJsonDataTask "-file=std-life.json" "-outfile=${FOLDER_FOR_PRICE_FILES}/std-life.csv"
+java -jar portfolio-0.0.1-SNAPSHOT.jar TransformStdLifeJsonDataTask "-file=std-life.json" "-outfile=${FOLDER_FOR_PRICE_FILES}/std-life1.csv"
+rm -rf std-life.json
+
+java -jar portfolio-0.0.1-SNAPSHOT.jar DownloadTask "-url=https://secure.standardlife.co.uk/secure/fundfilter/rest/results/funds/INDIVIDUAL_PENSIONS/PPP/null/existingcustomer?_=1601483195897" -outfile=std-life.json
+java -jar portfolio-0.0.1-SNAPSHOT.jar TransformStdLifeJsonDataTask "-file=std-life.json" "-outfile=${FOLDER_FOR_PRICE_FILES}/std-life2.csv"
 rm -rf std-life.json
 
 echo "---------------------------------------------------"

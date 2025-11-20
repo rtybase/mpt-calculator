@@ -241,8 +241,9 @@ function getEpsPredictions($assetId, $link) {
 	<tr><td  align="left">
 		<font face="verdana">Predictions: <?php 
 			echo linkToAsset($id, $assetName, false);
-			if (!empty($assetSymbol))
-			echo " or <a href=\"https://finance.yahoo.com/quote/".$assetSymbol."/\">YF=".$assetSymbol."</a>"; 
+			if (!empty($assetRecord["vchr_price_symbol"])) {
+				echo " or <a href=\"https://finance.yahoo.com/quote/".$assetRecord["vchr_price_symbol"]."/\">YF=".$assetRecord["vchr_price_symbol"]."</a>"; 
+			}
 		?></font>
 	</td></tr>
 <?php

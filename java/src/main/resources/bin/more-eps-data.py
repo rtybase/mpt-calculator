@@ -15,13 +15,7 @@ HEADERS = {
     "Referer": "https://www.nasdaq.com/"
 }
 
-ALIASES = {
-    "HSBC": "HSBA.L",
-    "GSK": "GSK.L",
-    "LYG": "LLOY.L",
-    "BP": "BP.L",
-    "NGG": "NG.L"
-}
+ALIASES = {}
 
 REQUIRED_COLUMNS = ['symbol','eps','consensusEPSForecast','estPercent','surprisePercent']
 

@@ -15,11 +15,12 @@ def max_id():
 def save_to_db(assetId, assetName, symbol):
     with util.db.db_conection.cursor() as cursor:
         cursor.execute("""INSERT into tbl_assets 
-                           (int_assetID,vchr_name,vchr_symbol) 
-                           values (%s,%s,%s)
+                           (int_assetID,vchr_name,vchr_symbol,vchr_price_symbol) 
+                           values (%s,%s,%s,%s)
                            ON DUPLICATE KEY UPDATE
-                           vchr_symbol=VALUES(vchr_symbol)""",\
-            (assetId, assetName, symbol))
+                           vchr_symbol=VALUES(vchr_symbol),
+                           vchr_price_symbol=VALUES(vchr_price_symbol)""",\
+            (assetId, assetName, symbol, symbol))
     util.db.db_conection.commit()
 
 

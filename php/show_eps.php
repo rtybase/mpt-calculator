@@ -174,10 +174,17 @@ function getFScore($assetSymbol, $link) {
 	google.charts.setOnLoadCallback(drawTableAndCharts);
 
 	function drawTableAndCharts() {
+<?php
+	if (!empty($allEpsDetails)) {
+?>
+
 		var data = generateHeader();
 		data.addRows([<?php echo $allEpsDetails; ?>]);
 		drawTable('table_div', data);
 
+<?php
+	}
+?>
 		drawChart1();
 		drawChart2();
 		drawChart3();
@@ -335,8 +342,9 @@ function getFScore($assetSymbol, $link) {
 	<tr><td  align="left">
 		<font face="verdana">EPS, dividends and prices: <?php 
 			echo linkToAsset($id, $assetName, false);
-			if (!empty($assetSymbol))
-			echo " or <a href=\"https://finance.yahoo.com/quote/".$assetSymbol."/\">YF=".$assetSymbol."</a>"; 
+			if (!empty($assetRecord["vchr_price_symbol"])) {
+				echo " or <a href=\"https://finance.yahoo.com/quote/".$assetRecord["vchr_price_symbol"]."/\">YF=".$assetRecord["vchr_price_symbol"]."</a>"; 
+			}
 		?></font>
 	</td></tr>
 <?php
