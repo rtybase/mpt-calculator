@@ -21,7 +21,7 @@ public abstract class GenericCalculateTask<T> extends AbstractDbTask {
 	protected final ConcurrentTaskExecutorWithBatching<T> createExecutor(final AtomicInteger totalFail) {
 		final ConcurrentTaskExecutorWithBatching<T> taskExecutor = new ConcurrentTaskExecutorWithBatching<>(NUMBER_OF_THREADS,
 				NUMBER_OF_THREADS,
-				NUMBER_OF_THREADS * 1024,
+				(NUMBER_OF_THREADS + 1) * 1024,
 				newResultProcessingConsumer(totalFail));
 		return taskExecutor;
 	}

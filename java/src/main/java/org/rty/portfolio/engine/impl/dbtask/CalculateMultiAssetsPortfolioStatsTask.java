@@ -41,8 +41,7 @@ public class CalculateMultiAssetsPortfolioStatsTask extends GenericCalculateTask
 		taskExecutor.close();
 
 		long ex_time = System.currentTimeMillis() - start;
-		say("{}. Execution time: {}ms,", DONE, ex_time);
-		say("Total processed {}", total);
+		say("{}. Execution time: {}ms. Total processed {}.", DONE, ex_time, total);
 	}
 
 	@Override
@@ -80,8 +79,7 @@ public class CalculateMultiAssetsPortfolioStatsTask extends GenericCalculateTask
 			}
 		}
 
-		say("Total portfolio definitions loaded {}", total);
-		say("Operations failed {}", failed);
+		say("Total portfolio definitions loaded/failed {}/{}", total, failed);
 		return portfolios;
 	}
 }
