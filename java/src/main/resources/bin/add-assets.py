@@ -1,6 +1,7 @@
 import sys
 import configparser
 import util.db
+import util.flow
 
 def max_id():
     total_count = 0
@@ -39,5 +40,4 @@ if len(sys.argv) > 1:
         assetId += 1
 
 else:
-    print("Specify the file with assets!")
-    sys.exit(1)
+    util.flow.error("Specify the file with assets!")

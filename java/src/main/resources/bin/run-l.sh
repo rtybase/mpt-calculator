@@ -23,6 +23,8 @@ curl "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist-90d.xml" > ecb_ra
 java -jar portfolio-0.0.1-SNAPSHOT.jar TransformEcbRatesTask "-file=ecb_rates.xml" "-outfile=${FOLDER_FOR_PRICE_FILES}/ecb.csv"
 rm -rf ecb_rates.xml
 
+python lists.py L > "inputs/yf-inputs-l.txt"
+
 ./all_downloads.sh "inputs/yf-inputs-l.txt" 1m ""
 
 ./all_loads.sh

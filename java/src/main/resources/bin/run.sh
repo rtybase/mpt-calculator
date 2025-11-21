@@ -41,6 +41,9 @@ rm -rf ecb_rates.xml
 
 load_uk_in "indices/uk-100" "FTSE100" "ftse100-1.csv"
 
+python lists.py STOCKS > "inputs/eps-inputs.txt"
+python lists.py ALL > "inputs/yf-inputs.txt"
+
 ./all_downloads.sh "inputs/yf-inputs.txt" "1m" "inputs/eps-inputs.txt"
 
 ./all_loads.sh

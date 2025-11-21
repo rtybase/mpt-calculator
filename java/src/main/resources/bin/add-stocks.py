@@ -2,6 +2,7 @@ import sys
 import os
 import csv
 import util.db
+import util.flow
 
 def sector_id_from_name(sectorName):
     sectorId = -1
@@ -37,20 +38,16 @@ def save_to_db(symbol, sectorId, industryId):
             (symbol, sectorId, industryId))
     util.db.db_conection.commit()
 
-def error(text):
-    print(text, flush=True)
-    sys.exit(1)
-
 def process_data(symbol, sector, industry):
     print(f"-- symbol='{symbol}', sector='{sector}', industry='{industry}'", flush=True)
 
     sectorId = sector_id_from_name(sector)
     if sectorId < 0:
-        error(f"-- '{sector}' is not defined in DB!")
+        util.flow.error(f"-- '{sector}' is not defined in DB!")
 
     industryId = industry_id_from_name(industry)
     if industryId < 0:
-        error(f"-- '{industry}' is not defined in DB!")
+        util.flow.error(f"-- '{industry}' is not defined in DB!")
 
     save_to_db(symbol, sectorId, industryId)
 
@@ -72,4 +69,4 @@ if len(sys.argv) > 1:
             load_stocks_from(entry.path)
 
 else:
-    error("Specify the folder with the files to load from!")
+    util.flow.error("Specify the folder with the files to load from!")

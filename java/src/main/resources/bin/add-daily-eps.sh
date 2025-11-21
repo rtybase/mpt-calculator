@@ -19,3 +19,5 @@ java -jar portfolio-0.0.1-SNAPSHOT.jar LoadNonGaapEpsToDbTask "-file=${FOLDER_FO
 
 rm -rf ${FOLDER_FOR_N_GAAP_EPS_FILES}
 rm "${file_pattern}.txt"
+
+./run-ml.sh
