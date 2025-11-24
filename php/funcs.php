@@ -209,6 +209,7 @@
 	<a href="./top_eps.php">EPS</a><br/>
 	<a href="./port_f.php">Custom portfolios</a><br/>
 	<a href="./top_sc.php">Shift correlations</a><br/>
+	<a href="./top_score.php">Scores</a><br/>
 	<a href="./preds.php">Predictions</a><br/>
 	<a href="./stale_d.php">Stale data</a>
 <?php	}
@@ -335,5 +336,12 @@
 
 		ksort($result);
 		return $result;
+	}
+
+	function priceOverEarnings($price, $eps) {
+		if ($eps < 0.00001) {
+			return 0.0;
+		}
+		return $price / $eps;
 	}
 ?>

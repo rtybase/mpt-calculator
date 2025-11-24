@@ -55,11 +55,7 @@ function addLatestPrices($link, $epsData) {
 		if (array_key_exists($assetId, $epsData)) {
 			$eps = $epsData[$assetId]["eps"];
 			$epsData[$assetId]["price"] = $row[1];
-			if ($eps < 0.00001) {
-				$epsData[$assetId]["p_by_e"] = 0.0;
-			} else {
-				$epsData[$assetId]["p_by_e"] = $row[1] / $eps;
-			}
+			$epsData[$assetId]["p_by_e"] = priceOverEarnings($row[1], $eps);
 		}
 	}
 	mysql_free_result($res);
