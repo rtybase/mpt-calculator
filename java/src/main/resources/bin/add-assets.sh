@@ -5,7 +5,6 @@ set -ue
 source ./all_configs.sh
 
 export FOLDER_FOR_SECTOR_FILES="./data_to_load_sectors"
-export FOLDER_FOR_FSCORE_FILES="./data_to_load_fscore"
 
 mkdir -p ${FOLDER_FOR_SECTOR_FILES}
 mkdir -p ${FOLDER_FOR_PRICE_FILES}

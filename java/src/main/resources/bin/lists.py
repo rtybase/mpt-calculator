@@ -15,7 +15,16 @@ LISTS = {
     "STOCKS": """SELECT vchr_symbol, vchr_name FROM tbl_assets 
 		WHERE vchr_type="Stock" 
 		AND vchr_symbol is not null
-		ORDER by vchr_name"""
+		ORDER by vchr_name""",
+    "SCORE": """SELECT e.vchr_symbol, e.vchr_symbol
+		FROM tbl_fscores e
+		INNER JOIN (
+			SELECT vchr_symbol, max( dtm_date ) dtm_date
+			FROM tbl_fscores
+			GROUP BY vchr_symbol
+		)f ON e.vchr_symbol = f.vchr_symbol
+		AND e.dtm_date = f.dtm_date
+		WHERE e.dtm_date <= ( NOW( ) - INTERVAL 60 DAY )"""
 }
 
 if len(sys.argv) > 1:

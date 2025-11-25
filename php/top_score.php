@@ -103,7 +103,7 @@
 		dataTable.addColumn('number', 'P/E');
 
 		dataTable.addColumn('number', 'F-Score');
-		dataTable.addColumn('string', 'Symbol Date');
+		dataTable.addColumn('string', 'Score Date');
 
 		dataTable.addColumn('number', 'Price');
 		dataTable.addColumn('string', 'Price Date');
