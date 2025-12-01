@@ -11,6 +11,9 @@ create table tbl_assets (
 	unique (vchr_name)
 ) ENGINE = InnoDB;
 
+CREATE UNIQUE INDEX idx_tbl_assets_symbol
+ON tbl_assets (vchr_symbol);
+
 create table tbl_sectors (
 	int_sectorID int(10) unsigned NOT NULL auto_increment,
 	vchr_name varchar(100) not null,
