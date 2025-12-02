@@ -1,34 +1,52 @@
 import pandas as pd
+#import cupy as cp
 import joblib
 
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
+from xgboost import XGBRegressor
 
 DS1_FILE = "inputs-ml/out-training-ds-1.csv"
 DS2_FILE = "inputs-ml/out-training-ds-2.csv"
 
-MAX_DEGREE = 4
+MAX_DEGREE = 3
 MODELS = {}
 
-DTR_DS2_ARGS = {'max_depth': 5, 'min_samples_leaf': 12,\
+DTR_DS2_ARGS = {'max_depth': 5, 'min_samples_leaf': 14,\
         'min_samples_split': 2, 'criterion': 'absolute_error',\
         'random_state': 42}
 
-DTR_DS1_ARGS = {'max_depth': 5, 'min_samples_leaf': 6,\
+DTR_DS1_ARGS = {'max_depth': 6, 'min_samples_leaf': 16,\
         'min_samples_split': 2, 'criterion': 'absolute_error',\
         'random_state': 42}
 
-RFR_DS2_ARGS = {'max_depth': 5, 'min_samples_leaf': 7,\
+RFR_DS2_ARGS = {'max_depth': 5, 'min_samples_leaf': 14,\
         'min_samples_split': 2, 'n_estimators': 400,\
         'criterion': 'absolute_error', 'random_state': 42,\
         'oob_score': True, 'n_jobs': -1}
 
-RFR_DS1_ARGS = {'max_depth': 5, 'min_samples_leaf': 7,\
+RFR_DS1_ARGS = {'max_depth': 6, 'min_samples_leaf': 16,\
         'min_samples_split': 2, 'n_estimators': 400,\
         'criterion': 'absolute_error', 'random_state': 42,\
         'oob_score': True, 'n_jobs': -1}
+
+XGB_DS1_ARGS = {'reg_alpha': 8.54327702906688, 'reg_lambda': 7.960301462774691,\
+        'colsample_bytree': 0.7853045036707974, 'subsample': 0.9342611289677315,\
+        'learning_rate': 0.03187866984798271, 'max_depth': 7,\
+        'n_estimators': 502, 'random_state': 42,\
+        'n_jobs': -1, 'nthread': -1,\
+        'objective': 'reg:squarederror', 'tree_method': 'hist',\
+        'device': 'cuda'}
+
+XGB_DS2_ARGS = {'reg_alpha': 8.54327702906688, 'reg_lambda': 7.960301462774691,\
+        'colsample_bytree': 0.7853045036707974, 'subsample': 0.9342611289677315,\
+        'learning_rate': 0.03187866984798271, 'max_depth': 7,\
+        'n_estimators': 502, 'random_state': 42,\
+        'n_jobs': -1, 'nthread': -1,\
+        'objective': 'reg:squarederror', 'tree_method': 'hist',\
+        'device': 'cuda'}
 
 CORE_COLUMNS_FOR_TRAINING = ['sector','industry','month',\
     'prev_after_market_close', 'prev_pred_eps', 'prev_eps',\
@@ -50,6 +68,7 @@ POLY_L_MODEL_TEMPLATE = "ds{0}-m-polynomial-{1}-l"
 LINEAR_MODEL_TEMPLATE = "ds{0}-m-linear"
 D_TREE_MODEL_TEMPLATE = "ds{0}-m-dtr"
 R_FREG_MODEL_TEMPLATE = "ds{0}-m-rfr"
+XGBREG_MODEL_TEMPLATE = "ds{0}-m-xgb"
 
 ####################################################################
 
@@ -105,6 +124,17 @@ def train_random_f_regression_model_by_index(X, y, dataset_index):
 
     return train_random_f_regression_model(X, y, RFR_DS2_ARGS)
 
+def train_xgb_regression_model(X, y, args):
+    xgb_model = XGBRegressor(**args)
+    xgb_model.fit(X,y)
+    return xgb_model
+
+def train_xgb_regression_model_by_index(X, y, dataset_index):
+    if (dataset_index == 1):
+        return train_xgb_regression_model(X, y, XGB_DS1_ARGS)
+
+    return train_xgb_regression_model(X, y, XGB_DS2_ARGS)
+
 ####################################################################
 
 def train_and_save_polynomial(X, y, degree, dataset_index):
@@ -134,6 +164,12 @@ def train_and_save_rfr(X, y, dataset_index):
     model = train_random_f_regression_model_by_index(X, y, dataset_index)
     save_model(model_name, model)
 
+def train_and_save_xgb(X, y, dataset_index):
+    model_name = XGBREG_MODEL_TEMPLATE.format(dataset_index)
+
+    model = train_xgb_regression_model_by_index(X, y, dataset_index)
+    save_model(model_name, model)
+
 ####################################################################
 
 def load_polynomial_model(degree, dataset_index):
@@ -156,6 +192,10 @@ def load_rfr_model(dataset_index):
     model_name = R_FREG_MODEL_TEMPLATE.format(dataset_index)
     return load_model(model_name)
 
+def load_xgb_model(dataset_index):
+    model_name = XGBREG_MODEL_TEMPLATE.format(dataset_index)
+    return load_model(model_name)
+
 ####################################################################
 
 def predict_p(degree, X, dataset_index):
@@ -174,6 +214,21 @@ def predict_dtr(X, dataset_index):
 def predict_rfr(X, dataset_index):
     model = load_rfr_model(dataset_index)
     return model.predict(X)
+
+def predict_xgb(X, dataset_index):
+    model = load_xgb_model(dataset_index)
+
+#    trained_on_gpu = False
+#    booster = model.get_booster()
+#    config = booster.save_config()
+
+#    if "gpu" in config.lower():
+#        trained_on_gpu = True
+
+#    if trained_on_gpu:
+#        return model.predict(cp.array(X)).astype(float)
+
+    return model.predict(X).astype(float)
 
 ####################################################################
 

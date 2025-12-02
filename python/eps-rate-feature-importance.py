@@ -20,7 +20,7 @@ def plot_feature_importance(X, model, model_name, dataset_index):
     plt.tight_layout()
     plt.show()
 
-def fit_and_plot_with(X_ds, y_ds, dt_args, rf_args, dataset_index):
+def fit_and_plot_with(X_ds, y_ds, dataset_index, dt_args, rf_args, xgb_args):
     start_time = time.time()
     dt_model = util.ml.train_decision_tree_model(X_ds.values, y_ds.values, dt_args)
     print("--- Decision tree took %s seconds to fit ---" % (time.time() - start_time), flush=True)
@@ -31,11 +31,18 @@ def fit_and_plot_with(X_ds, y_ds, dt_args, rf_args, dataset_index):
     print("--- Random forest took %s seconds to fit ---" % (time.time() - start_time), flush=True)
     plot_feature_importance(X_ds, rf_model, "Random Forest", dataset_index)
 
+    start_time = time.time()
+    xgb_model = util.ml.train_xgb_regression_model(X_ds.values, y_ds.values, xgb_args)
+    print("--- XGB %s seconds to fit ---" % (time.time() - start_time), flush=True)
+    plot_feature_importance(X_ds, xgb_model, "XGB", dataset_index)
+
 
 print(f"Looking for features in DS=2 from {util.ml.DS2_FILE}", flush=True)
 X_ds, y_ds = util.ml.load_training_dataset_2(util.ml.DS2_FILE)
-fit_and_plot_with(X_ds, y_ds, util.ml.DTR_DS2_ARGS, util.ml.RFR_DS2_ARGS, 2)
+fit_and_plot_with(X_ds, y_ds, 2,\
+    util.ml.DTR_DS2_ARGS, util.ml.RFR_DS2_ARGS, util.ml.XGB_DS2_ARGS)
 
 print(f"Looking for features in DS=1 from {util.ml.DS1_FILE}", flush=True)
 X_ds, y_ds = util.ml.load_training_dataset_1(util.ml.DS1_FILE)
-fit_and_plot_with(X_ds, y_ds, util.ml.DTR_DS1_ARGS, util.ml.RFR_DS1_ARGS, 1)
+fit_and_plot_with(X_ds, y_ds, 1,\
+    util.ml.DTR_DS1_ARGS, util.ml.RFR_DS1_ARGS, util.ml.XGB_DS1_ARGS)

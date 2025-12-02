@@ -26,6 +26,9 @@ def validate_all_models(X,y_actual, dataset_index):
     y_predicted = util.ml.predict_rfr(X, dataset_index)
     report_model_details(y_actual, y_predicted, dataset_index, 'r-freg')
 
+    y_predicted = util.ml.predict_xgb(X, dataset_index)
+    report_model_details(y_actual, y_predicted, dataset_index, 'xgb-reg')
+
     for degree in range(2, util.ml.MAX_DEGREE + 1):
         print("---------------------------")
 

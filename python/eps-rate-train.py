@@ -4,6 +4,7 @@ def train_all_models(X, y, dataset_index):
     util.ml.train_and_save_linear(X, y, dataset_index)
     util.ml.train_and_save_dtr(X, y, dataset_index)
     util.ml.train_and_save_rfr(X, y, dataset_index)
+    util.ml.train_and_save_xgb(X, y, dataset_index)
 
     for degree in range(2, util.ml.MAX_DEGREE + 1):
         util.ml.train_and_save_polynomial(X, y, degree, dataset_index)

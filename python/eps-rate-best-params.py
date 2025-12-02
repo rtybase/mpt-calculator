@@ -51,7 +51,7 @@ def xgb_model_and_paramrs():
     }
 
     model = XGBRegressor(random_state=42, nthread=-1, device='cuda',\
-                tree_method='gpu_hist', gpu_id=0, early_stopping_rounds=50)
+                tree_method='hist', early_stopping_rounds=50)
     return model, params
 
 def best_params_for_data(X, y):

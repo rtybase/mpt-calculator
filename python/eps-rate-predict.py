@@ -31,6 +31,7 @@ def predict_with_all_models(data_file, data_array, dataset_index):
         add_model_results_and_print(results, "linear", util.ml.predict_l(X, dataset_index))
         add_model_results_and_print(results, "d-tree", util.ml.predict_dtr(X, dataset_index))
         add_model_results_and_print(results, "r-freg", util.ml.predict_rfr(X, dataset_index))
+        add_model_results_and_print(results, "xgb-reg", util.ml.predict_xgb(X, dataset_index))
 
         for degree in range(2, util.ml.MAX_DEGREE + 1):
             add_model_results_and_print(results, "poly-d{0}".format(degree),\
