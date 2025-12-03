@@ -217,6 +217,17 @@ create table tbl_custom_portfolios_data (
 	foreign key(fk_portfolioID) references tbl_custom_portfolios (int_portfolioID)
 ) ENGINE = InnoDB DEFAULT CHARSET=utf8;
 
+create table tbl_ml_quality (
+	int_dataset int(10) unsigned NOT NULL,
+	vchr_metric varchar(50)  NOT NULL,
+	vchr_model varchar(50)  NOT NULL,
+	dtm_report_date DATE NOT NULL,
+	dbl_result DOUBLE NOT NULL,
+	bln_after_retrain BOOLEAN NOT NULL,
+	primary key(int_dataset, vchr_metric, vchr_model, dtm_report_date)
+) ENGINE = InnoDB;
+
+
 ----------------
 delimiter //
 
