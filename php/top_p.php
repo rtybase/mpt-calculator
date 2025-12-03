@@ -7,10 +7,10 @@
 
 	$link = connect("portfolio");
 
-	$query = "SELECT B.fk_asset1ID, ";
-	$query.= "B.fk_asset2ID, A.vchr_name, ";
+	$query = "SELECT B.fk_asset1ID, B.fk_asset2ID, A.vchr_name, ";
 	$query.= "B.dbl_correlation, B.dbl_weight1, B.dbl_weight2, B.dbl_portret, B.dbl_portvar ";
-	$query.= "FROM  tbl_correlations as B, tbl_assets as A ";
+	$query.= "FROM tbl_correlations AS B USE INDEX FOR ORDER BY (idx_correlations_asset2ID_portret), ";
+	$query.= "tbl_assets AS A USE INDEX (idx_tbl_assets_assetID_name) ";
 	$query.= "WHERE B.fk_asset2ID=A.int_assetID ";
 	$query.= "ORDER BY B.dbl_portret DESC ";
 	$query.= "LIMIT 0, 50";

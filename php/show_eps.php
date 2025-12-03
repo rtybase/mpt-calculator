@@ -1,5 +1,5 @@
 <?php
-// Show EPS by price script
+// Show EPS details
 	include_once("../lib/mysql.php");
 	include_once("../lib/utils.php");
 	include_once("./funcs.php");

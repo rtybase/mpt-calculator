@@ -14,6 +14,9 @@ create table tbl_assets (
 CREATE UNIQUE INDEX idx_tbl_assets_symbol
 ON tbl_assets (vchr_symbol);
 
+CREATE INDEX idx_tbl_assets_assetID_name
+ON tbl_assets (int_assetID, vchr_name);
+
 create table tbl_sectors (
 	int_sectorID int(10) unsigned NOT NULL auto_increment,
 	vchr_name varchar(100) not null,
@@ -180,6 +183,9 @@ create table tbl_correlations (
 	foreign key(fk_asset1ID) references tbl_assets (int_assetID),
 	foreign key(fk_asset2ID) references tbl_assets (int_assetID)
 ) ENGINE = InnoDB;
+
+CREATE INDEX idx_correlations_asset2ID_portret
+ON tbl_correlations (fk_asset2ID, dbl_portret);
 
 create table tbl_shift_correlations (
 	fk_asset1ID int(10) unsigned NOT NULL,
