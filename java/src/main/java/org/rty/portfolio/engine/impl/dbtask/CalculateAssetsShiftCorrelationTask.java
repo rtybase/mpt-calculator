@@ -8,6 +8,7 @@ import org.rty.portfolio.core.AssetsCorrelationInfo;
 import org.rty.portfolio.db.DbManager;
 
 public class CalculateAssetsShiftCorrelationTask extends Generic2AssetsCalculateTask<AssetsCorrelationInfo> {
+	private static final int SHIFT_THRESHOLD = 30;
 	private static final int YEARS_BACK = 1;
 
 	public CalculateAssetsShiftCorrelationTask(DbManager dbManager) {
@@ -28,6 +29,13 @@ public class CalculateAssetsShiftCorrelationTask extends Generic2AssetsCalculate
 
 		if (Integer.MIN_VALUE == result.bestShift) {
 			say("Skipping {} - correlation not found.", result);
+			return false;
+		}
+
+		if (Math.absExact(result.bestShift) > SHIFT_THRESHOLD) {
+			say("Skipping assetId1/assetId2 {}/{} - shift {} is too wide.", result.asset1Id,
+					result.asset2Id,
+					result.bestShift);
 			return false;
 		}
 
