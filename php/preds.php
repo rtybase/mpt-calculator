@@ -117,7 +117,7 @@ function getPredictions($link) {
     <table align="center" border="0"><tr>
       <td valign="top"><?php showMenu(); ?></td>
       <td><div id="dashboard_div"><table align="center" border="0">
-	<tr><td align="left"><font face="verdana">Returns predictions from EPS:</font></td></tr>
+	<tr><td align="left"><font face="verdana">Returns predictions from EPS, check <a href="./ml_q.php">ML-Quality</a>:</font></td></tr>
 	<tr><td><hr/></td></tr>
 	<tr><td><div id="filter_div"></div></td></tr>
 	<tr><td><div id="table_div" style="width: 1040px;"></div></td></tr>

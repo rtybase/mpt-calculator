@@ -211,6 +211,7 @@
 	<a href="./top_sc.php">Shift correlations</a><br/>
 	<a href="./top_score.php">Scores</a><br/>
 	<a href="./preds.php">Predictions</a><br/>
+	<a href="./ml_q.php">ML-Quality</a><br/>
 	<a href="./stale_d.php">Stale data</a>
 <?php	}
 
