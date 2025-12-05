@@ -3,12 +3,32 @@ import util.ml
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import RandomizedSearchCV
 from xgboost import XGBRegressor
 
-def best_model_params(X, y, regression_model, params):
-    grid = GridSearchCV(regression_model, param_grid=params, cv=5, scoring='r2', n_jobs=-1, verbose=3)
-    grid.fit(X, y)
-    print(">>>>>>>>Best parameters:", grid.best_params_)
+CV_COUNT = 5
+SCORING = 'r2'
+N_JOBS = -1
+VERBOSITY = 3
+
+def use_grid_search(regression_model, params):
+    return GridSearchCV(regression_model, param_grid=params, cv=CV_COUNT,\
+        scoring=SCORING, n_jobs=N_JOBS, verbose=VERBOSITY)
+
+def use_random_search(regression_model, params):
+    return RandomizedSearchCV(regression_model, param_distributions=params, cv=CV_COUNT,\
+        scoring=SCORING, n_iter=30, n_jobs=N_JOBS, verbose=VERBOSITY)
+
+def search_model(regression_model, params, use_grid):
+    if use_grid:
+        return use_grid_search(regression_model, params)
+
+    return use_random_search(regression_model, params)
+
+def best_model_params(X, y, regression_model, params, use_grid):
+    model = search_model(regression_model, params, use_grid)
+    model.fit(X, y)
+    print(">>>>>>>>Best parameters:", model.best_params_)
 
 def dtr_model_and_paramrs():
     params = {
@@ -57,15 +77,15 @@ def xgb_model_and_paramrs():
 def best_params_for_data(X, y):
     print("For decision tree ...", flush=True)
     model, params = dtr_model_and_paramrs()
-    best_model_params(X, y, model, params)
+    best_model_params(X, y, model, params, True)
 
     print("For random forest ...", flush=True)
     model, params = rfr_model_and_paramrs()
-    best_model_params(X, y, model, params)
+    best_model_params(X, y, model, params, False)
 
     print("For xgb boost ...", flush=True)
     model, params = xgb_model_and_paramrs()
-    best_model_params(X, y, model, params)
+    best_model_params(X, y, model, params, True)
 
 
 print(f"Looking for the best params from DS=2 with {util.ml.DS2_FILE}", flush=True)
