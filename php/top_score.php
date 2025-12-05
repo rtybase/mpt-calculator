@@ -13,7 +13,7 @@
 	$query.= "	b.dbl_fscore, b.dtm_date as score_date, ";
 	$query.= "	c.dbl_price, c.dtm_date as price_date, ";
 	$query.= "	d.dbl_eps, d.dtm_date as eps_date ";
-	$query.= "FROM tbl_assets a ";
+	$query.= "FROM tbl_assets a USE INDEX (idx_tbl_assets_assetID_name_symbol_type) ";
 	$query.= "INNER JOIN ( ";
 	$query.= "	SELECT e.vchr_symbol, e.dbl_fscore, e.dtm_date FROM tbl_fscores e ";
 	$query.= "	INNER JOIN ( ";

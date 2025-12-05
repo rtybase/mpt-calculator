@@ -17,6 +17,9 @@ ON tbl_assets (vchr_symbol);
 CREATE INDEX idx_tbl_assets_assetID_name
 ON tbl_assets (int_assetID, vchr_name);
 
+CREATE INDEX idx_tbl_assets_assetID_name_symbol_type
+ON tbl_assets (int_assetID, vchr_name, vchr_symbol, vchr_type);
+
 create table tbl_sectors (
 	int_sectorID int(10) unsigned NOT NULL auto_increment,
 	vchr_name varchar(100) not null,
