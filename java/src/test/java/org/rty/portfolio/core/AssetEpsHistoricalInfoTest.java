@@ -30,8 +30,8 @@ class AssetEpsHistoricalInfoTest {
 		final AssetEpsHistoricalInfo info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1, null, null, 9D, null, null, 9D,
 				null, null, null, null, null, null, null);
 
-		assertEquals(1, info.getPreviousAfterMarketClose());
-		assertEquals(1, info.getCurrentAfterMarketClose());
+		assertEquals(0, info.getPreviousAfterMarketClose());
+		assertEquals(0, info.getCurrentAfterMarketClose());
 	}
 
 	@Test
@@ -40,7 +40,7 @@ class AssetEpsHistoricalInfoTest {
 				newNonGaapEpsInfo(0D, 0D, false), 9D, null, null, null, null, null, null, null);
 
 		assertEquals(0, info.getPreviousAfterMarketClose());
-		assertEquals(1, info.getCurrentAfterMarketClose());
+		assertEquals(0, info.getCurrentAfterMarketClose());
 	}
 
 	@Test
@@ -48,7 +48,7 @@ class AssetEpsHistoricalInfoTest {
 		final AssetEpsHistoricalInfo info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1, null,
 				newNonGaapEpsInfo(0D, 0D, false), 9D, null, null, 9D, null, null, null, null, null, null, null);
 
-		assertEquals(1, info.getPreviousAfterMarketClose());
+		assertEquals(0, info.getPreviousAfterMarketClose());
 		assertEquals(0, info.getCurrentAfterMarketClose());
 	}
 

@@ -370,7 +370,7 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 		if (nonGaapEps != null) {
 			return nonGaapEps.afterMarketClose ? 1 : 0;
 		}
-		return 1;
+		return 0;
 	}
 
 	private static double round(double v) {
