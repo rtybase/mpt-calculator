@@ -15,8 +15,6 @@ public class ConcurrentTaskExecutorWithBatching<T> implements AutoCloseable {
 	private final ExceptionThrowingConsumer<List<T>> batchCompletionRoutine;
 	private final int batchSize;
 
-	private final Object syncObject = new Object();
-
 	public ConcurrentTaskExecutorWithBatching(int numberOfThreads, int taskQueuSize, int batchSize,
 			ExceptionThrowingConsumer<List<T>> batchCompletionRoutine) {
 		Objects.requireNonNull(batchCompletionRoutine, "batchCompletionRoutine must not be null!");
@@ -57,7 +55,7 @@ public class ConcurrentTaskExecutorWithBatching<T> implements AutoCloseable {
 	private BulkExecutor<T> prepareTaskToSubmit() {
 		final List<Callable<T>> tasks = new ArrayList<>(tasksToExecute);
 
-		return new BulkExecutor<>(tasks, batchCompletionRoutine, syncObject);
+		return new BulkExecutor<>(tasks, batchCompletionRoutine);
 	}
 
 	@FunctionalInterface
@@ -68,13 +66,10 @@ public class ConcurrentTaskExecutorWithBatching<T> implements AutoCloseable {
 	private static class BulkExecutor<T> implements Callable<Void> {
 		private final ExceptionThrowingConsumer<List<T>> batchCompletionRoutine;
 		private final List<Callable<T>> tasks;
-		private final Object syncObject;
 
-		private BulkExecutor(List<Callable<T>> tasks, ExceptionThrowingConsumer<List<T>> batchCompletionRoutine,
-				Object syncObject) {
+		private BulkExecutor(List<Callable<T>> tasks, ExceptionThrowingConsumer<List<T>> batchCompletionRoutine) {
 			this.tasks = tasks;
 			this.batchCompletionRoutine = batchCompletionRoutine;
-			this.syncObject = syncObject;
 		}
 
 		@Override
@@ -85,9 +80,7 @@ public class ConcurrentTaskExecutorWithBatching<T> implements AutoCloseable {
 				results.add(task.call());
 			}
 
-			synchronized (syncObject) {
-				batchCompletionRoutine.accept(results);
-			}
+			batchCompletionRoutine.accept(results);
 
 			return null;
 		}

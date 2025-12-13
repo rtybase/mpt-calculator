@@ -13,6 +13,9 @@ import com.mysql.jdbc.Statement;
 
 public abstract class GenericCalculateTask<T> extends AbstractDbTask {
 	private static final int NUMBER_OF_THREADS = computeNoOfThreads();
+	private static final int BATCH_SIZE = 4096;
+
+	private final Object syncObject = new Object();
 
 	public GenericCalculateTask(DbManager dbManager) {
 		super(dbManager);
@@ -21,7 +24,7 @@ public abstract class GenericCalculateTask<T> extends AbstractDbTask {
 	protected final ConcurrentTaskExecutorWithBatching<T> createExecutor(final AtomicInteger totalFail) {
 		final ConcurrentTaskExecutorWithBatching<T> taskExecutor = new ConcurrentTaskExecutorWithBatching<>(NUMBER_OF_THREADS,
 				NUMBER_OF_THREADS,
-				(NUMBER_OF_THREADS + 1) * 1024,
+				BATCH_SIZE,
 				newResultProcessingConsumer(totalFail));
 		return taskExecutor;
 	}
@@ -43,8 +46,10 @@ public abstract class GenericCalculateTask<T> extends AbstractDbTask {
 			}
 
 			if (!listOfResults.isEmpty()) {
-				saveResultsAndReportErrors(listOfResults, totalFail);
-				dbManager.commit();
+				synchronized (syncObject) {
+					saveResultsAndReportErrors(listOfResults, totalFail);
+					dbManager.commit();
+				}
 			}
 		};
 	}
