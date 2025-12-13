@@ -12,7 +12,7 @@ import org.rty.portfolio.engine.AbstractDbTask;
 import com.mysql.jdbc.Statement;
 
 public abstract class GenericCalculateTask<T> extends AbstractDbTask {
-	private static final int NUMBER_OF_THREADS = 3;
+	private static final int NUMBER_OF_THREADS = computeNoOfThreads();
 
 	public GenericCalculateTask(DbManager dbManager) {
 		super(dbManager);
@@ -62,5 +62,15 @@ public abstract class GenericCalculateTask<T> extends AbstractDbTask {
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
+	}
+
+	private static int computeNoOfThreads() {
+		int noOfCpus = Runtime.getRuntime().availableProcessors();
+
+		if (noOfCpus <= 3) {
+			return 3;
+		}
+
+		return noOfCpus - 1; // leave one for the system needs!
 	}
 }
