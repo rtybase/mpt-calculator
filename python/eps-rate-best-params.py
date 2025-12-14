@@ -12,12 +12,14 @@ N_JOBS = -1
 VERBOSITY = 3
 
 def use_grid_search(regression_model, params):
+    print("Using grid search ...", flush=True)
     return GridSearchCV(regression_model, param_grid=params, cv=CV_COUNT,\
         scoring=SCORING, n_jobs=N_JOBS, verbose=VERBOSITY)
 
 def use_random_search(regression_model, params):
+    print("Using random search ...", flush=True)
     return RandomizedSearchCV(regression_model, param_distributions=params, cv=CV_COUNT,\
-        scoring=SCORING, n_iter=30, n_jobs=N_JOBS, verbose=VERBOSITY)
+        scoring=SCORING, n_iter=11, n_jobs=N_JOBS, verbose=VERBOSITY)
 
 def search_model(regression_model, params, use_grid):
     if use_grid:
@@ -34,7 +36,7 @@ def dtr_model_and_paramrs():
     params = {
         'max_depth': [5, 6, 7],
         'min_samples_split': [2, 4, 6, 8, 10],
-        'min_samples_leaf': [1, 2, 4, 6, 7, 8, 10, 12, 14, 15],
+        'min_samples_leaf': [4, 6, 7, 8, 10, 12, 14, 15, 16, 18],
         'criterion': ['absolute_error']
     }
 
@@ -46,7 +48,7 @@ def rfr_model_and_paramrs():
         'n_estimators': [200, 300, 400],
         'max_depth': [5, 6],
         'min_samples_split': [2, 4, 6, 8, 10],
-        'min_samples_leaf': [1, 2, 4, 6, 7, 8],
+        'min_samples_leaf': [4, 6, 7, 8, 10, 12, 14, 15, 16, 18],
         'criterion': ['absolute_error']
     }
 
@@ -55,13 +57,13 @@ def rfr_model_and_paramrs():
 
 def xgb_model_and_paramrs():
     params = {
-        'n_estimators':[500, 502],
+        'n_estimators':[400, 500],
         'min_child_weight':[4, 5],
         'gamma':[i/10.0 for i in range(3, 6)],
         'subsample':[i/10.0 for i in range(6, 11)],
         'colsample_bytree':[i/10.0 for i in range(6, 11)],
         'max_depth': [4, 6, 7],
-        'objective': ['reg:squarederror', 'reg:tweedie'],
+        'objective': ['reg:squarederror'],
         'booster': ['gbtree', 'gblinear'],
         'eval_metric': ['rmse'],
         'eta': [i/10.0 for i in range(3, 6)],
@@ -71,7 +73,7 @@ def xgb_model_and_paramrs():
     }
 
     model = XGBRegressor(random_state=42, nthread=-1, device='cuda',\
-                tree_method='hist', early_stopping_rounds=50)
+                tree_method='hist', early_stopping_rounds=100)
     return model, params
 
 def best_params_for_data(X, y):
