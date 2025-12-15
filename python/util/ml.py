@@ -14,39 +14,42 @@ DS2_FILE = "inputs-ml/out-training-ds-2.csv"
 MAX_DEGREE = 3
 MODELS = {}
 
-DTR_DS2_ARGS = {'max_depth': 5, 'min_samples_leaf': 14,\
+DTR_DS2_ARGS = {'max_depth': 5, 'min_samples_leaf': 15,\
         'min_samples_split': 2, 'criterion': 'absolute_error',\
         'random_state': 42}
 
-DTR_DS1_ARGS = {'max_depth': 6, 'min_samples_leaf': 16,\
+DTR_DS1_ARGS = {'max_depth': 5, 'min_samples_leaf': 10,\
         'min_samples_split': 2, 'criterion': 'absolute_error',\
         'random_state': 42}
 
-RFR_DS2_ARGS = {'max_depth': 5, 'min_samples_leaf': 14,\
+RFR_DS2_ARGS = {'max_depth': 5, 'min_samples_leaf': 15,\
         'min_samples_split': 2, 'n_estimators': 400,\
         'criterion': 'absolute_error', 'random_state': 42,\
         'oob_score': True, 'n_jobs': -1}
 
-RFR_DS1_ARGS = {'max_depth': 6, 'min_samples_leaf': 16,\
+RFR_DS1_ARGS = {'max_depth': 5, 'min_samples_leaf': 10,\
         'min_samples_split': 2, 'n_estimators': 400,\
         'criterion': 'absolute_error', 'random_state': 42,\
         'oob_score': True, 'n_jobs': -1}
 
-XGB_DS1_ARGS = {'reg_alpha': 8.54327702906688, 'reg_lambda': 7.960301462774691,\
-        'colsample_bytree': 0.7853045036707974, 'subsample': 0.9342611289677315,\
-        'learning_rate': 0.03187866984798271, 'max_depth': 7,\
-        'n_estimators': 502, 'random_state': 42,\
+XGB_DS2_ARGS = {'booster': 'gbtree', 'eval_metric': 'rmse',\
+        'reg_alpha': 8.54327702906688, 'reg_lambda': 7.960301462774691,\
+        'colsample_bytree': 0.8, 'subsample': 0.9342611289677315,\
+        'learning_rate': 0.03187866984798271, 'max_depth': 5,\
+        'n_estimators': 400, 'random_state': 42,\
         'n_jobs': -1, 'nthread': -1,\
         'objective': 'reg:squarederror', 'tree_method': 'hist',\
         'device': 'cuda'}
 
-XGB_DS2_ARGS = {'reg_alpha': 8.54327702906688, 'reg_lambda': 7.960301462774691,\
-        'colsample_bytree': 0.7853045036707974, 'subsample': 0.9342611289677315,\
-        'learning_rate': 0.03187866984798271, 'max_depth': 7,\
-        'n_estimators': 502, 'random_state': 42,\
+XGB_DS1_ARGS = {'booster': 'gbtree', 'eval_metric': 'rmse',\
+        'reg_alpha': 8.54327702906688, 'reg_lambda': 7.960301462774691,\
+        'colsample_bytree': 0.6, 'subsample': 0.9342611289677315,\
+        'learning_rate': 0.03187866984798271, 'max_depth': 6,\
+        'n_estimators': 400, 'random_state': 42,\
         'n_jobs': -1, 'nthread': -1,\
         'objective': 'reg:squarederror', 'tree_method': 'hist',\
         'device': 'cuda'}
+
 
 CORE_COLUMNS_FOR_TRAINING = ['sector','industry','month',\
     'prev_after_market_close', 'prev_pred_eps', 'prev_eps',\
