@@ -4,8 +4,6 @@ set -ue
 
 source ./all_configs.sh
 
-export FOLDER_FOR_SECTOR_FILES="./data_to_load_sectors"
-
 mkdir -p ${FOLDER_FOR_SECTOR_FILES}
 mkdir -p ${FOLDER_FOR_PRICE_FILES}
 mkdir -p ${FOLDER_FOR_DIVIDEND_FILES}

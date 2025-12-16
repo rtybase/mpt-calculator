@@ -2,6 +2,7 @@
 set -o pipefail
 set -ue
 
+export FOLDER_FOR_SECTOR_FILES="./data_to_load_sectors"
 export FOLDER_FOR_PRICE_FILES="./data_to_load_prices"
 export FOLDER_FOR_DIVIDEND_FILES="./data_to_load_dividends"
 export FOLDER_FOR_EPS_FILES="./data_to_load_eps"
