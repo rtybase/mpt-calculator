@@ -25,7 +25,7 @@ load_sector () {
 				tr -s '[:blank:]' | \
 				sed -e 's/ \"/\"/g' | \
 				paste -d "," - - | \
-				awk -F ',' -v 'OFS=,' -v TICKER="${ticker}" '{ print "\"" TICKER "\"", $1, $2}' 1>${sector_out_file} 2>/dev/null
+				awk -v 'OFS=,' -v TICKER="${ticker}" '{ print "\"" TICKER "\"", $0 }' 1>${sector_out_file} 2>/dev/null
 		else
 			echo "No data for ${ticker}"
 		fi
