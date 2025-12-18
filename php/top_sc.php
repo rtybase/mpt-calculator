@@ -6,7 +6,8 @@
 	header("Content-Type:text/html; charset=UTF-8");
 
 function getTopShiftCorrelations($includeFunds, $shift, $correlation, $link) {
-	$query = "SELECT a.fk_asset1ID, b.vchr_name, a.fk_asset2ID, a.int_shift, a.dbl_correlation ";
+	$query = "SELECT a.fk_asset1ID, b.vchr_name, a.fk_asset2ID, a.int_shift, ";
+	$query.= "a.dbl_correlation, a.int_continuous_updates, a.dtm_last_update_date ";
 	$query.= "FROM tbl_shift_correlations a, tbl_assets b ";
 	$query.= "WHERE a.fk_asset1ID = b.int_assetID ";
 	$query.= "AND ((a.int_shift BETWEEN 1 AND $shift) OR (a.int_shift BETWEEN -".$shift." AND -1)) ";
@@ -33,6 +34,9 @@ function getTopShiftCorrelations($includeFunds, $shift, $correlation, $link) {
 		$ret[$i]["asset2Name"] = getName($row[2], $link);
 		$ret[$i]["shift"] = $row[3];
 		$ret[$i]["correlation"] = $row[4];
+
+		$ret[$i]["continuousUpdates"] = $row[5];
+		$ret[$i]["lastUpdateDate"] = $row[6];
 
 		$i++;
 	}
@@ -66,6 +70,8 @@ function getTopShiftCorrelations($includeFunds, $shift, $correlation, $link) {
 		$tableResult.= "'".linkToAsset($value["asset2Id"], $value["asset2Name"])."',";
 		$tableResult.= toChartNumber($value["shift"]).",";
 		$tableResult.= toChartNumber(round($value["correlation"], 5)).",";
+		$tableResult.= toChartNumber($value["continuousUpdates"]).",";
+		$tableResult.= "'".$value["lastUpdateDate"]."',";
 		$tableResult.= "'<a href=\"./show_sc.php?asset1=".$value["asset1Id"]."&asset2=".$value["asset2Id"]."\">details...</a>']";
 		$i++;
 	}
@@ -102,6 +108,8 @@ function getTopShiftCorrelations($includeFunds, $shift, $correlation, $link) {
 		dataTable.addColumn('string', 'Asset 2');
 		dataTable.addColumn('number', 'Shift (days)');
 		dataTable.addColumn('number', 'Correlation');
+		dataTable.addColumn('number', 'Cont Updates');
+		dataTable.addColumn('string', 'Last Update');
 		dataTable.addColumn('string', 'More');
 		return dataTable;
 	}

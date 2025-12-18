@@ -270,12 +270,14 @@ public class DbManager {
 	 */
 	public 	int[] addBulkShiftCorrelations(List<AssetsCorrelationInfo> assetsShiftCorrelations) throws Exception {
 		try (PreparedStatement pStmt = connection.prepareStatement(
-				"INSERT INTO tbl_shift_correlations (fk_asset1ID, fk_asset2ID, int_shift, dbl_correlation, txt_json)"
-						+ " VALUES (?,?,?,?,?)"
+				"INSERT INTO tbl_shift_correlations (fk_asset1ID, fk_asset2ID, int_shift, dbl_correlation, dtm_last_update_date, txt_json)"
+						+ " VALUES (?,?,?,?, now(),?)"
 						+ " ON DUPLICATE KEY UPDATE"
-						+ "	 int_shift=VALUES(int_shift),"
-						+ "	 dbl_correlation=VALUES(dbl_correlation),"
-						+ "	 txt_json=VALUES(txt_json)")) {
+						+ "	int_shift=VALUES(int_shift),"
+						+ "	dbl_correlation=VALUES(dbl_correlation),"
+						+ "	txt_json=VALUES(txt_json),"
+						+ " dtm_last_update_date=now(),"
+						+ " int_continuous_updates=int_continuous_updates + 1")) {
 
 			for (AssetsCorrelationInfo assetsShiftCorrelation : assetsShiftCorrelations) {
 				pStmt.setInt(1, assetsShiftCorrelation.asset1Id);

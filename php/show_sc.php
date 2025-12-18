@@ -36,15 +36,20 @@ function ratesForDatesWithShift($dates, $rates, $shift, $predictor) {
 
 	$link = connect("portfolio");
 
-	$query = "SELECT txt_json FROM  tbl_shift_correlations ";
+	$query = "SELECT txt_json, int_continuous_updates, dtm_last_update_date ";
+	$query.= "FROM  tbl_shift_correlations ";
 	$query.= "WHERE (fk_asset1ID=$asset1Id) AND (fk_asset2ID=$asset2Id) ";
 
 	$res = mysql_query($query, $link);
 	if (!$res) die("Invalid query: ". mysql_error());
 
 	$details = array();
+	$continuousUpdates = 0;
+	$lastUpdateDate = "";
 	while ($row = mysql_fetch_row($res)) {
 		$details = json_decode($row[0], true);
+		$continuousUpdates = $row[1];
+		$lastUpdateDate = $row[2];
 	}
 	mysql_free_result($res);
 
@@ -72,7 +77,10 @@ function ratesForDatesWithShift($dates, $rates, $shift, $predictor) {
 	$tableResult.= linkToAsset($asset2Id, $asset2Name)."',";
 	$tableResult.= toChartNumber($shift).",";
 	$tableResult.= toChartNumber(round($details["bestCorrelation"], 5)).",";
-	$tableResult.= toChartNumber(count($details["dates"]))."]";
+	$tableResult.= toChartNumber(count($details["dates"])).",";
+
+	$tableResult.= toChartNumber($continuousUpdates).",";
+	$tableResult.= "'".$lastUpdateDate."']";
 ?>
 <!doctype html>
 <html>
@@ -96,7 +104,7 @@ function ratesForDatesWithShift($dates, $rates, $shift, $predictor) {
 	}
 
 	function drawTable(element, data) {
-		data.setProperty(0, 0, 'style', 'width:345px');
+		data.setProperty(0, 0, 'style', 'width:330px');
 		var table = new google.visualization.Table(document.getElementById(element));
 		table.draw(data, {showRowNumber: false, allowHtml: true});
 	}
@@ -107,7 +115,9 @@ function ratesForDatesWithShift($dates, $rates, $shift, $predictor) {
 		dataTable.addColumn('string', 'Asset 2');
 		dataTable.addColumn('number', 'Shift (days)');
 		dataTable.addColumn('number', 'Correlation');
-		dataTable.addColumn('number', 'No. Common Dates');
+		dataTable.addColumn('number', 'Cmn Dates');
+		dataTable.addColumn('number', 'Cont Updates');
+		dataTable.addColumn('string', 'Last Update');
 		return dataTable;
 	}
 

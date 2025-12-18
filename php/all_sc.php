@@ -11,7 +11,8 @@ function nextDateFromDetails($details) {
 }
 
 function get1DayShiftCorrelations($assetId, $link) {
-	$query = "SELECT fk_asset1ID, fk_asset2ID, int_shift, dbl_correlation, txt_json ";
+	$query = "SELECT fk_asset1ID, fk_asset2ID, int_shift, dbl_correlation, ";
+	$query.= "txt_json, int_continuous_updates, dtm_last_update_date ";
 	$query.= "FROM tbl_shift_correlations USE INDEX (PRIMARY,fk_asset2ID) ";
 	$query.= "WHERE ((fk_asset1ID=$assetId AND int_shift=-1) OR ";
 	$query.= "(fk_asset2ID=$assetId AND int_shift=1)) ";
@@ -39,6 +40,8 @@ function get1DayShiftCorrelations($assetId, $link) {
 			$oneDayShiftCorrelations[$pAssetId]["forecast_date"] = nextDateFromDetails($details);
 			$oneDayShiftCorrelations[$pAssetId]["rate1"] = $details["forecast"][0];
 			$oneDayShiftCorrelations[$pAssetId]["rate2"] = $details["forecast"][1];
+			$oneDayShiftCorrelations[$pAssetId]["continuousUpdates"] = $row[5];
+			$oneDayShiftCorrelations[$pAssetId]["lastUpdateDate"] = $row[6];
 		}
 	}
 	mysql_free_result($res);
@@ -82,12 +85,15 @@ function mergeDataToTableFormat($oneDayShiftCorrelations, $lastPriceInfo, $isFor
 
 		if (abs($rate1) <= abs($rate2)) {
 			$result .= rateAndPrice($lastPrice, $rate1, $isForex).",";
-			$result .= rateAndPrice($lastPrice, $rate2, $isForex)."]";
+			$result .= rateAndPrice($lastPrice, $rate2, $isForex).",";
 		} else {
 			$result .= rateAndPrice($lastPrice, $rate2, $isForex).",";
-			$result .= rateAndPrice($lastPrice, $rate1, $isForex)."]";
+			$result .= rateAndPrice($lastPrice, $rate1, $isForex).",";
 		}
-  
+
+		$result .= toChartNumber($value["continuousUpdates"]).",";
+		$result .= "'".$value["lastUpdateDate"]."']";
+
 		$i++;
 	}
 
@@ -207,6 +213,8 @@ function getEpsPredictions($assetId, $link) {
 	}
 ?>
 
+		dataTable.addColumn('number', 'Cnt.Upts');
+		dataTable.addColumn('string', 'Lst.Upt');
 		return dataTable;
 	}
 
