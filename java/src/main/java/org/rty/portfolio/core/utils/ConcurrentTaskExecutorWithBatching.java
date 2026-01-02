@@ -22,7 +22,7 @@ public class ConcurrentTaskExecutorWithBatching<T> implements AutoCloseable {
 
 		this.executor = ConcurrencyUtil.createExecutorService(numberOfThreads, taskQueuSize);
 		this.batchCompletionRoutine = batchCompletionRoutine;
-		tasksToExecute = new ArrayList<>(batchSize);
+		this.tasksToExecute = new ArrayList<>(batchSize);
 
 		this.batchSize = batchSize;
 	}

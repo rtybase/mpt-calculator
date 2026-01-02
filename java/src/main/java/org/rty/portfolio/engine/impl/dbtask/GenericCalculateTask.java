@@ -13,7 +13,7 @@ import com.mysql.jdbc.Statement;
 
 public abstract class GenericCalculateTask<T> extends AbstractDbTask {
 	private static final int NUMBER_OF_THREADS = computeNoOfThreads();
-	private static final int BATCH_SIZE = 4096;
+	private static final int BATCH_SIZE = 3072;
 
 	private final Object syncObject = new Object();
 
