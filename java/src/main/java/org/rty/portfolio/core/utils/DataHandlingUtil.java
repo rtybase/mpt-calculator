@@ -42,6 +42,15 @@ public final class DataHandlingUtil {
 		return true;
 	}
 
+	public static boolean allPositive(int... indexes) {
+		for (int index : indexes) {
+			if (index < 0) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	public static <T> T getCurrentEntry(Map<String, NavigableMap<Date, T>> map, String assetName, Date key) {
 		NavigableMap<Date, T> firstEntry = map.get(assetName);
 		if (firstEntry == null) {

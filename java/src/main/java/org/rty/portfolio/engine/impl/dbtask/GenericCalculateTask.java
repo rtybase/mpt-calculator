@@ -58,9 +58,9 @@ public abstract class GenericCalculateTask<T> extends AbstractDbTask {
 		try {
 			final int[] executionResults = saveResults(resultsToSave);
 
-			for (int result : executionResults) {
-				if (result == Statement.EXECUTE_FAILED) {
-					say("Failed: {}", resultsToSave.get(result));
+			for (int i = 0; i < executionResults.length; i++) {
+				if (executionResults[i] == Statement.EXECUTE_FAILED) {
+					say("Failed: {}", resultsToSave.get(i));
 					totalFail.incrementAndGet();
 				}
 			}

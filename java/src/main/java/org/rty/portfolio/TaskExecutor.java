@@ -16,6 +16,7 @@ import org.rty.portfolio.engine.impl.dbtask.CalculateAssetStatsTask;
 import org.rty.portfolio.engine.impl.dbtask.CalculateAssetsShiftCorrelationTask;
 import org.rty.portfolio.engine.impl.dbtask.CalculateMultiAssetsPortfolioStatsTask;
 import org.rty.portfolio.engine.impl.dbtask.OptimalPortfolioFinderTask;
+import org.rty.portfolio.engine.impl.dbtask.load.LoadAssetFinancialInfoToDbTask;
 import org.rty.portfolio.engine.impl.dbtask.load.LoadDividendsToDbTask;
 import org.rty.portfolio.engine.impl.dbtask.load.LoadEarningsToDbTask;
 import org.rty.portfolio.engine.impl.dbtask.load.LoadEpsToDbTask;
@@ -76,6 +77,7 @@ public class TaskExecutor {
 		registerTask(new LoadEarningsToDbTask(dbManager));
 		registerTask(new TransformEpsDataForTrainingTask(dbManager));
 		registerTask(new LoadNonGaapEpsToDbTask(dbManager));
+		registerTask(new LoadAssetFinancialInfoToDbTask(dbManager));
 	}
 
 	private static void registerTask(Task task) {

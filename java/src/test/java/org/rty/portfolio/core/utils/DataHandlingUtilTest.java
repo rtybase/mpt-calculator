@@ -47,6 +47,17 @@ class DataHandlingUtilTest extends CommonTestRoutines {
 	}
 
 	@Test
+	void testAllPositive() {
+		assertTrue(DataHandlingUtil.allPositive());
+		assertTrue(DataHandlingUtil.allPositive(1, 2));
+	}
+
+	@Test
+	void testAllPositiveReturnsFalse() {
+		assertFalse(DataHandlingUtil.allPositive(1, -1));
+	}
+
+	@Test
 	void testGetCurrentEntry() {
 		final Map<String, NavigableMap<Date, AssetPriceInfo>> store = newStoreWithContent();
 

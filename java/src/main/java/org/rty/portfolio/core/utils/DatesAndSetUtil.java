@@ -117,6 +117,14 @@ public final class DatesAndSetUtil {
 		return theOther;
 	}
 
+	public static Date toJavaDate(Date date) {
+		if (date instanceof java.sql.Date) {
+			return new Date(date.getTime());
+		}
+
+		return date;
+	}
+
 	private static long daysDiff(Date date1, Date date2) {
 		if (date2 != null) {
 			return Duration.between(date1.toInstant(), date2.toInstant()).abs().toDays();

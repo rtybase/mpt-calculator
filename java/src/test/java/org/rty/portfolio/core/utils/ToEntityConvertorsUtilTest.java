@@ -11,7 +11,7 @@ import org.rty.portfolio.core.AssetPriceInfo;
 
 class ToEntityConvertorsUtilTest extends CommonTestRoutines {
 	private static final String[] TEST_LINE_WITH_NA = new String[] { TEST_ASSET, "3.65", ToEntityConvertorsUtil.NA_VALUE, "07/17/2025" };
-	private static final String[] TEST_LINE_WITH_NO = new String[] { TEST_ASSET, "3.65", ToEntityConvertorsUtil.NO_VALUE, "07/17/2025" };
+	private static final String[] TEST_LINE_WITH_NO = new String[] { TEST_ASSET, "3.65", ToEntityConvertorsUtil.NO_VALUE_S, "07/17/2025" };
 
 	@Test
 	void testDefaultToDate() {
@@ -113,15 +113,24 @@ class ToEntityConvertorsUtilTest extends CommonTestRoutines {
 	}
 
 	@Test
-	void testdDoubleFromString() {
+	void testDoubleFromString() {
 		assertEquals(1000D, ToEntityConvertorsUtil.doubleFromString("1000"), ERROR_TOLERANCE);
 		assertEquals(1000D, ToEntityConvertorsUtil.doubleFromString("1,000"), ERROR_TOLERANCE);
+		assertEquals(1000D, ToEntityConvertorsUtil.doubleFromString("$1,000"), ERROR_TOLERANCE);
 
 		assertEquals(10_010_000D, ToEntityConvertorsUtil.doubleFromString("1,0.01M"), ERROR_TOLERANCE);
 		assertEquals(10_000_000D, ToEntityConvertorsUtil.doubleFromString("1,0m"), ERROR_TOLERANCE);
 
 		assertEquals(1_100_000_000D, ToEntityConvertorsUtil.doubleFromString("1.1B"), ERROR_TOLERANCE);
 		assertEquals(1_000_000_000D, ToEntityConvertorsUtil.doubleFromString("1b"), ERROR_TOLERANCE);
+	}
+
+	@Test
+	void testPossiblyDoubleFromStringReturnsNull() {
+		assertNull(ToEntityConvertorsUtil.possiblyDoubleFromString(""));
+		assertNull(ToEntityConvertorsUtil.possiblyDoubleFromString(ToEntityConvertorsUtil.NA_VALUE));
+		assertNull(ToEntityConvertorsUtil.possiblyDoubleFromString(ToEntityConvertorsUtil.NO_VALUE_S));
+		assertNull(ToEntityConvertorsUtil.possiblyDoubleFromString(ToEntityConvertorsUtil.NO_VALUE_D));
 	}
 
 	private static void verifyNameDateAndEps(final AssetEpsInfo result) {

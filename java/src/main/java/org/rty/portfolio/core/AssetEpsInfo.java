@@ -73,10 +73,6 @@ public class AssetEpsInfo implements CsvWritable, EntryWithAssetNameAndDate {
 
 	@Override
 	public Date getDate() {
-		if (date instanceof java.sql.Date) {
-			return new Date(date.getTime());
-		}
-
-		return date;
+		return DatesAndSetUtil.toJavaDate(date);
 	}
 }

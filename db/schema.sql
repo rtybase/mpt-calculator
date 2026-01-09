@@ -51,6 +51,20 @@ create table tbl_fscores (
 	foreign key(vchr_symbol) references tbl_stocks (vchr_symbol)
 ) ENGINE = InnoDB;
 
+create table tbl_finances_quarter (
+	vchr_symbol varchar(50) NOT NULL,
+	dtm_date DATE NOT NULL,
+	dbl_total_current_assets DOUBLE,
+	dbl_total_current_liabilities DOUBLE,
+	dbl_total_assets DOUBLE,
+	dbl_total_liabilities DOUBLE,
+	dbl_total_equity DOUBLE,
+	dbl_net_cash_flow_operating DOUBLE,
+	dbl_capital_expenditures DOUBLE,
+	primary key (vchr_symbol, dtm_date),
+	foreign key(vchr_symbol) references tbl_stocks (vchr_symbol)
+) ENGINE = InnoDB;
+
 create table tbl_prices (
 	fk_assetID int(10) unsigned NOT NULL,
 	dbl_price DOUBLE not null,

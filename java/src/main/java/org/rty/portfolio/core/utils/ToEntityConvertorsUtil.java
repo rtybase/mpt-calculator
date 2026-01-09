@@ -3,15 +3,19 @@ package org.rty.portfolio.core.utils;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Set;
 
 import org.rty.portfolio.core.AssetEpsInfo;
 import org.rty.portfolio.core.AssetPriceInfo;
 
 public final class ToEntityConvertorsUtil {
 	static final String NA_VALUE = "N/A";
-	static final String NO_VALUE = "-";
+	static final String NO_VALUE_S = "-";
+	static final String NO_VALUE_D = "--";
+
 	static final SimpleDateFormat EPS_DATE_FORMAT = new SimpleDateFormat("MM/dd/yyyy");
 
+	private static final Set<String> NO_VALUES = Set.of(NO_VALUE_S, NO_VALUE_D);
 	private static final int EPS_VALUE_COLUMN = 1;
 	private static final int EPS_PREDICTED_COLUMN = 2;
 	private static final int EPS_DATE_COLUMN = 3;
@@ -64,7 +68,7 @@ public final class ToEntityConvertorsUtil {
 	}
 
 	public static double doubleFromString(String value) {
-		final String adjustedValue = value.replace(",", "");
+		final String adjustedValue = value.replace(",", "").replace("$", "");
 
 		if (adjustedValue.toLowerCase().endsWith("b")) {
 			return Double.parseDouble(adjustedValue.replace("b", "").replace("B", "")) * 1_000_000_000.D;
@@ -76,7 +80,7 @@ public final class ToEntityConvertorsUtil {
 	}
 
 	public static Double possiblyDoubleFromString(String value) {
-		if (value.isEmpty() || NA_VALUE.equalsIgnoreCase(value) || NO_VALUE.equals(value)) {
+		if (value.isEmpty() || NA_VALUE.equalsIgnoreCase(value) || NO_VALUES.contains(value)) {
 			return null;
 		}
 		return doubleFromString(value);

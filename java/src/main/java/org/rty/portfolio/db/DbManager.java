@@ -20,6 +20,7 @@ import java.util.TreeMap;
 import org.apache.commons.math3.util.Pair;
 import org.rty.portfolio.core.AssetDividendInfo;
 import org.rty.portfolio.core.AssetEpsInfo;
+import org.rty.portfolio.core.AssetFinancialInfo;
 import org.rty.portfolio.core.AssetNonGaapEpsInfo;
 import org.rty.portfolio.core.AssetPriceInfo;
 import org.rty.portfolio.core.AssetsCorrelationInfo;
@@ -256,6 +257,52 @@ public class DbManager {
 					setDoubleValueOrNull(pStmt, 7, nonGappEps.revenuePredicted);
 					pStmt.addBatch();
 				}
+			}
+
+			executeAndProcessResult(pStmt, possiblyGoodResults, failedResults);
+		}
+
+		return failedResults;
+	}
+
+	/**
+	 * Adds financial data to DB.
+	 * 
+	 */
+	public 	List<String> addBulkFinancialInfo(List<AssetFinancialInfo> assetFinancialInfo) throws Exception {
+		final List<String> failedResults = new ArrayList<>(assetFinancialInfo.size());
+		final List<String> possiblyGoodResults = new ArrayList<>(assetFinancialInfo.size());
+
+		try (PreparedStatement pStmt = connection.prepareStatement(
+				"INSERT INTO tbl_finances_quarter (vchr_symbol, dtm_date,"
+				+ "dbl_total_current_assets, dbl_total_current_liabilities,"
+				+ "dbl_total_assets, dbl_total_liabilities,"
+				+ "dbl_total_equity,"
+				+ "dbl_net_cash_flow_operating, dbl_capital_expenditures)"
+						+ " VALUES (?,?,?,?,?,?,?,?,?)"
+						+ " ON DUPLICATE KEY UPDATE"
+						+ "	 dbl_total_current_assets=VALUES(dbl_total_current_assets),"
+						+ "	 dbl_total_current_liabilities=VALUES(dbl_total_current_liabilities),"
+						+ "	 dbl_total_assets=VALUES(dbl_total_assets),"
+						+ "	 dbl_total_liabilities=VALUES(dbl_total_liabilities),"
+						+ "	 dbl_total_equity=VALUES(dbl_total_equity),"
+						+ "	 dbl_net_cash_flow_operating=VALUES(dbl_net_cash_flow_operating),"
+						+ "	 dbl_capital_expenditures=VALUES(dbl_capital_expenditures)")) {
+
+			for (AssetFinancialInfo financialInfo : assetFinancialInfo) {
+				possiblyGoodResults.add(financialInfo.assetName);
+
+				pStmt.setString(1, financialInfo.assetName);
+				pStmt.setDate(2, new java.sql.Date(financialInfo.date.getTime()));
+				setDoubleValueOrNull(pStmt, 3, financialInfo.totalCurrentAssets);
+				setDoubleValueOrNull(pStmt, 4, financialInfo.totalCurrentLiabilities);
+				setDoubleValueOrNull(pStmt, 5, financialInfo.totalAssets);
+				setDoubleValueOrNull(pStmt, 6, financialInfo.totalLiabilities);
+				setDoubleValueOrNull(pStmt, 7, financialInfo.totalEquity);
+				setDoubleValueOrNull(pStmt, 8, financialInfo.netCashFlowOperating);
+				setDoubleValueOrNull(pStmt, 9, financialInfo.capitalExpenditures);
+
+				pStmt.addBatch();
 			}
 
 			executeAndProcessResult(pStmt, possiblyGoodResults, failedResults);
@@ -608,9 +655,9 @@ public class DbManager {
 		if (!possiblyGoodResults.isEmpty()) {
 			final int[] executionResults = pStmt.executeBatch();
 
-			for (int result : executionResults) {
-				if (result == Statement.EXECUTE_FAILED) {
-					failedResults.add(possiblyGoodResults.get(result));
+			for (int i = 0; i < executionResults.length; i++) {
+				if (executionResults[i] == Statement.EXECUTE_FAILED) {
+					failedResults.add(possiblyGoodResults.get(i));
 				}
 			}
 		}

@@ -61,7 +61,7 @@ public class ToAssetNonGaapEpsInfoEntityConvertor {
 		revenuePredictedColumnIndex = headers.indexOf(REVENUE_PREDICTED_COLUMN);
 		epsPredictedColumnIndex = headers.indexOf(EPS_PREDICTED_COLUMN);
 
-		if (!allPositive(assetNameColumnIndex, epsDateColumnIndex, epsColumnIndex, marketPhaseColumnIndex)) {
+		if (!DataHandlingUtil.allPositive(assetNameColumnIndex, epsDateColumnIndex, epsColumnIndex, marketPhaseColumnIndex)) {
 			throw new IllegalArgumentException(String.format("Not all the headers are defined in '%s'!", inputFile));
 		}
 
@@ -81,7 +81,8 @@ public class ToAssetNonGaapEpsInfoEntityConvertor {
 				ToEntityConvertorsUtil.valueOrDefaultFrom(line, epsPredictedColumnIndex, null),
 				AFTER_MARKEE_CLOSE_INDICATOR.equalsIgnoreCase(line[marketPhaseColumnIndex].trim()),
 				ToEntityConvertorsUtil.valueOrDefaultFrom(line, revenueColumnIndex, null),
-				ToEntityConvertorsUtil.valueOrDefaultFrom(line, revenuePredictedColumnIndex, null), epsDate);
+				ToEntityConvertorsUtil.valueOrDefaultFrom(line, revenuePredictedColumnIndex, null),
+				epsDate);
 	}
 
 	private void resetIndexes() {
@@ -92,15 +93,6 @@ public class ToAssetNonGaapEpsInfoEntityConvertor {
 		marketPhaseColumnIndex = -1;
 		revenueColumnIndex = -1;
 		revenuePredictedColumnIndex = -1;
-	}
-
-	private static boolean allPositive(int... indexes) {
-		for (int index : indexes) {
-			if (index < 0) {
-				return false;
-			}
-		}
-		return true;
 	}
 
 	private static void warnIfColumnNotDefined(int columnIndex, String columnName) {
