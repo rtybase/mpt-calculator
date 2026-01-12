@@ -19,21 +19,23 @@ LISTS = {
     "SCORE": """SELECT e.vchr_symbol, e.vchr_symbol
 		FROM tbl_fscores e
 		INNER JOIN (
-			SELECT vchr_symbol, max( dtm_date ) dtm_date
-			FROM tbl_fscores
-			GROUP BY vchr_symbol
-		)f ON e.vchr_symbol = f.vchr_symbol
+		    SELECT vchr_symbol, max( dtm_date ) dtm_date
+		    FROM tbl_fscores
+		    GROUP BY vchr_symbol
+		) f ON e.vchr_symbol = f.vchr_symbol
 		AND e.dtm_date = f.dtm_date
-		WHERE e.dtm_date <= ( NOW( ) - INTERVAL 90 DAY )""",
+		WHERE e.dtm_date < 
+		(STR_TO_DATE(CONCAT(YEAR(NOW()), '-', MONTH(NOW()), '-01'), '%Y-%m-%d') - INTERVAL 3 MONTH)""",
     "FIN-Q": """SELECT e.vchr_symbol, e.vchr_symbol
 		FROM tbl_finances_quarter e
 		INNER JOIN (
-			SELECT vchr_symbol, max( dtm_date ) dtm_date
-			FROM tbl_finances_quarter
-			GROUP BY vchr_symbol
+		    SELECT vchr_symbol, max( dtm_date ) dtm_date
+		    FROM tbl_finances_quarter
+		    GROUP BY vchr_symbol
 		)f ON e.vchr_symbol = f.vchr_symbol
 		AND e.dtm_date = f.dtm_date
-		WHERE e.dtm_date <= ( NOW( ) - INTERVAL 90 DAY )"""
+		WHERE e.dtm_date < 
+		(STR_TO_DATE(CONCAT(YEAR(NOW()), '-', MONTH(NOW()), '-01'), '%Y-%m-%d') - INTERVAL 3 MONTH)"""
 }
 
 if len(sys.argv) > 1:
