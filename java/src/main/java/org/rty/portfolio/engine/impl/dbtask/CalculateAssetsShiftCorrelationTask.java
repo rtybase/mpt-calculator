@@ -8,7 +8,7 @@ import org.rty.portfolio.core.AssetsCorrelationInfo;
 import org.rty.portfolio.db.DbManager;
 
 public class CalculateAssetsShiftCorrelationTask extends Generic2AssetsCalculateTask<AssetsCorrelationInfo> {
-	private static final int SHIFT_THRESHOLD = 30;
+	private static final int SHIFT_THRESHOLD = 10;
 	private static final int YEARS_BACK = 1;
 
 	public CalculateAssetsShiftCorrelationTask(DbManager dbManager) {
@@ -45,7 +45,7 @@ public class CalculateAssetsShiftCorrelationTask extends Generic2AssetsCalculate
 	@Override
 	protected Callable<AssetsCorrelationInfo> calculatorFrom(Map<Integer, Map<String, Double>> storage, int asset1Id,
 			int asset2Id) {
-		return new AssetsShiftCorrelationCalculator(storage, asset1Id, asset2Id);
+		return new AssetsShiftCorrelationCalculator(storage, asset1Id, asset2Id, SHIFT_THRESHOLD);
 	}
 
 	@Override

@@ -24,7 +24,7 @@ class AssetsShiftCorrelationCalculatorTest {
 		final AssetsShiftCorrelationCalculator task = new AssetsShiftCorrelationCalculator(
 				Map.of(1, Map.of("1", 1D, "2", 2D),
 						2, Map.of("1", 2D, "2", 4D)),
-				1, 2);
+				1, 2, Integer.MAX_VALUE);
 
 		final AssetsCorrelationInfo result = task.call();
 
@@ -44,7 +44,7 @@ class AssetsShiftCorrelationCalculatorTest {
 		final AssetsShiftCorrelationCalculator task = new AssetsShiftCorrelationCalculator(
 				Map.of(1, Map.of("1", 1D, "2", 2D, "3", 3D, "4", 4D, "5", 5D),
 						2, Map.of("1", 2D, "2", 4D, "3", 6D, "4", 8D, "5", 10D)),
-				1, 2);
+				1, 2, Integer.MAX_VALUE);
 
 		final AssetsCorrelationInfo result = task.call();
 
@@ -59,6 +59,32 @@ class AssetsShiftCorrelationCalculatorTest {
 				+ "\"dates\":[\"1\",\"2\",\"3\",\"4\",\"5\"],"
 				+ "\"asset1Rates\":[1.0,2.0,3.0,4.0,5.0],"
 				+ "\"asset2Rates\":[2.0,4.0,6.0,8.0,10.0]}", result.toString());
+	}
+
+
+	@Test
+	void testCalculateResultsWithThreshold() {
+		final Map<String, Double> map1 = Map.of("1", 1D, "2", 2D, "3", 3D, "4", 4D, "5", 5D);
+		final Map<String, Double> map2 = Map.of("1", 10D, "2", 10.1D, "3", 1D, "4", 1.1D, "5", 1.2D);
+
+		AssetsShiftCorrelationCalculator task = new AssetsShiftCorrelationCalculator(
+				Map.of(1, map1, 2, map2),
+				1, 2, Integer.MAX_VALUE);
+
+		AssetsCorrelationInfo result = task.call();
+
+		assertTrue(result.hasSufficientContent);
+		assertEquals(2, result.bestShift);
+
+		final int threshold = -2;
+		task = new AssetsShiftCorrelationCalculator(
+				Map.of(1, map1, 2, map2),
+				1, 2, threshold);
+
+		result = task.call();
+
+		assertTrue(result.hasSufficientContent);
+		assertEquals(-1, result.bestShift);
 	}
 
 	@Test

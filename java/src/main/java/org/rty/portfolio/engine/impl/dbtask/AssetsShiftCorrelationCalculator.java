@@ -19,12 +19,15 @@ import com.google.common.base.Preconditions;
 public class AssetsShiftCorrelationCalculator implements Callable<AssetsCorrelationInfo> {
 	private final int asset1Id;
 	private final int asset2Id;
+	private final int shiftThreshold;
 	private final Map<Integer, Map<String, Double>> storage;
 
-	AssetsShiftCorrelationCalculator(Map<Integer, Map<String, Double>> storage, int asset1Id, int asset2Id) {
+	AssetsShiftCorrelationCalculator(Map<Integer, Map<String, Double>> storage, int asset1Id, int asset2Id,
+			int shiftThreshold) {
 		this.storage = storage;
 		this.asset1Id = asset1Id;
 		this.asset2Id = asset2Id;
+		this.shiftThreshold = shiftThreshold;
 	}
 
 	@Override
@@ -46,7 +49,8 @@ public class AssetsShiftCorrelationCalculator implements Callable<AssetsCorrelat
 			asset2CommonRates = DatesAndSetUtil.getValuesByIndex(dates, asset2Rates);
 
 			final ShiftCorrelationComputationResult computationResult = computeBestCorrelation(asset1CommonRates,
-					asset2CommonRates);
+					asset2CommonRates,
+					shiftThreshold);
 			result = new Pair<>(computationResult.shift, computationResult.correlation);
 			hasSufficientContent = true;
 
@@ -64,18 +68,23 @@ public class AssetsShiftCorrelationCalculator implements Callable<AssetsCorrelat
 				forecast);
 	}
 
-	private static ShiftCorrelationComputationResult computeBestCorrelation(double[] asset1Values, double[] asset2Values) {
+	private static ShiftCorrelationComputationResult computeBestCorrelation(double[] asset1Values, double[] asset2Values, int shiftThreshold) {
 		final int shitRange = asset1Values.length / 2;
 
 		double maxAbsCorrelation = Double.MIN_VALUE;
 		ShiftCorrelationComputationResult bestResult = null;
 
 		for (int i = -shitRange; i <= shitRange; i++) {
-			final ShiftCorrelationComputationResult result = calculateCorrelationWithShift(asset1Values, asset2Values, i);
+			final ShiftCorrelationComputationResult result = calculateCorrelationWithShift(asset1Values,
+					asset2Values, i);
 
 			if (result.absCorrelation > maxAbsCorrelation) {
 				maxAbsCorrelation = result.absCorrelation;
 				bestResult = result;
+
+				if (bestResult.shift > shiftThreshold) {
+					break;
+				}
 			}
 		}
 
