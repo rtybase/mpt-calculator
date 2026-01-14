@@ -4,7 +4,7 @@ set -ue
 
 FOLDER_FOR_FINANCE_FILES=${FOLDER_FOR_FINANCE_FILES:-"./data_to_load_finance"}
 
-load_fscore () {
+load_finance () {
 	ticker=$1
 	echo "---------------------------------------------------"
 	echo "Finance data for: ${ticker}"
@@ -16,6 +16,7 @@ load_fscore () {
 		echo "${finance_out_file} already exists."
 	else
 		python more-fin-data.py ${ticker} 1>>${finance_out_file} 2>/dev/null
+#		python more-fin-data-yf.py ${ticker} 1>>${finance_out_file} 2>/dev/null
 	fi
 }
 
@@ -31,5 +32,5 @@ do
 #    echo "Key: [$key]"
 #    echo "Value: [$value]"
 	
-	load_fscore "$key" "$value" || true
+	load_finance "$key" "$value" || true
 done < "${input_file}"

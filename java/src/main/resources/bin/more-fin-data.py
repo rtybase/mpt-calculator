@@ -1,6 +1,5 @@
 import requests
 import sys
-import csv
 import pandas as pd
 import util.flow
 
