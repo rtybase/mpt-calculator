@@ -61,6 +61,7 @@ create table tbl_finances_quarter (
 	dbl_total_equity DOUBLE,
 	dbl_net_cash_flow_operating DOUBLE,
 	dbl_capital_expenditures DOUBLE,
+	dbl_share_issued DOUBLE,
 	primary key (vchr_symbol, dtm_date),
 	foreign key(vchr_symbol) references tbl_stocks (vchr_symbol)
 ) ENGINE = InnoDB;

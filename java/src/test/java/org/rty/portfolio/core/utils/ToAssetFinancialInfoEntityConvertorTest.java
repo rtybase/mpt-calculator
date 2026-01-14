@@ -31,6 +31,20 @@ public class ToAssetFinancialInfoEntityConvertorTest extends CommonTestRoutines 
 
 		final AssetFinancialInfo entity = convertor.toEntity(TEST_ASSET, TEST_LINE);
 		verifyEntityContent(entity);
+		assertNull(entity.shareIssued);
+	}
+
+	@Test
+	void testToEntityWithShareIssuedColumn() {
+		final String[] headerIssuedColumn = arrayWithOneMoreElement(HEADER_LINE, "Share Issued");
+		convertor.updateHeadersFrom("test_file.csv", headerIssuedColumn);
+
+		final String[] lineWithIssuedColumn = arrayWithOneMoreElement(TEST_LINE, "$8,000");
+		assertEquals(TEST_ASSET, convertor.assetNameFrom(lineWithIssuedColumn));
+
+		final AssetFinancialInfo entity = convertor.toEntity(TEST_ASSET, lineWithIssuedColumn);
+		verifyEntityContent(entity);
+		assertEquals(8000D, entity.shareIssued, ERROR_TOLERANCE);
 	}
 
 	@Test
@@ -50,7 +64,8 @@ public class ToAssetFinancialInfoEntityConvertorTest extends CommonTestRoutines 
 		final String[] lineWithEmptyDate = new String[] { TEST_ASSET, "", "$1,000", "$2,000", "$3,000", "-$4,000",
 				"$5,000", "$6,000", "--" };
 
-		assertThrows(IllegalArgumentException.class, () -> convertor.toEntity(TEST_ASSET, lineWithEmptyDate));
+		assertThrows(IllegalArgumentException.class,
+				() -> convertor.toEntity(TEST_ASSET, lineWithEmptyDate));
 	}
 
 	private void verifyEntityContent(final AssetFinancialInfo entity) {

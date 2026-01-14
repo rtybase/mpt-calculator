@@ -1,6 +1,9 @@
 package org.rty.portfolio.core.utils;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 import org.rty.portfolio.core.AssetEpsInfo;
 import org.rty.portfolio.core.AssetNonGaapEpsInfo;
@@ -48,5 +51,11 @@ public class CommonTestRoutines {
 	protected static AssetEpsInfo assetEpsFrom(String assetName, String date) {
 		final String[] line = new String[] { assetName, "3.65", "3.35", date };
 		return ToEntityConvertorsUtil.toAssetEpsInfoEntity(assetName, line);
+	}
+
+	protected static String[] arrayWithOneMoreElement(String[] array, String extraElement) {
+		List<String> list = new ArrayList<>(Arrays.asList(array));
+		list.add(extraElement);
+		return list.toArray(new String[0]);
 	}
 }

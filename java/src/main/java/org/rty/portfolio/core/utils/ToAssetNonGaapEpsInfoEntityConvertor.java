@@ -97,7 +97,7 @@ public class ToAssetNonGaapEpsInfoEntityConvertor {
 
 	private static void warnIfColumnNotDefined(int columnIndex, String columnName) {
 		if (columnIndex < 0) {
-			LOGGER.warn("{} column is not defined!", columnName);
+			LOGGER.warn("'{}' column is not defined!", columnName);
 		}
 	}
 

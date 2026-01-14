@@ -21,10 +21,11 @@ public class AssetFinancialInfo implements CsvWritable, EntryWithAssetNameAndDat
 	public final Double totalEquity;
 	public final Double netCashFlowOperating;
 	public final Double capitalExpenditures;
+	public final Double shareIssued;
 
 	public AssetFinancialInfo(String assetName, Date date, Double totalCurrentAssets, Double totalCurrentLiabilities,
 			Double totalAssets, Double totalLiabilities, Double totalEquity, Double netCashFlowOperating,
-			Double capitalExpenditures) {
+			Double capitalExpenditures, Double shareIssued) {
 		this.assetName = assetName;
 		this.date = date;
 		this.totalCurrentAssets = totalCurrentAssets;
@@ -34,6 +35,7 @@ public class AssetFinancialInfo implements CsvWritable, EntryWithAssetNameAndDat
 		this.totalEquity = totalEquity;
 		this.netCashFlowOperating = netCashFlowOperating;
 		this.capitalExpenditures = capitalExpenditures;
+		this.shareIssued = shareIssued;
 	}
 
 	@Override
@@ -56,7 +58,8 @@ public class AssetFinancialInfo implements CsvWritable, EntryWithAssetNameAndDat
 				emptyIfNull(totalLiabilities),
 				emptyIfNull(totalEquity),
 				emptyIfNull(netCashFlowOperating),
-				emptyIfNull(capitalExpenditures)
+				emptyIfNull(capitalExpenditures),
+				emptyIfNull(shareIssued)
 			};
 	}
 

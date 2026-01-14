@@ -278,16 +278,18 @@ public class DbManager {
 				+ "dbl_total_current_assets, dbl_total_current_liabilities,"
 				+ "dbl_total_assets, dbl_total_liabilities,"
 				+ "dbl_total_equity,"
-				+ "dbl_net_cash_flow_operating, dbl_capital_expenditures)"
-						+ " VALUES (?,?,?,?,?,?,?,?,?)"
-						+ " ON DUPLICATE KEY UPDATE"
-						+ "	 dbl_total_current_assets=VALUES(dbl_total_current_assets),"
-						+ "	 dbl_total_current_liabilities=VALUES(dbl_total_current_liabilities),"
-						+ "	 dbl_total_assets=VALUES(dbl_total_assets),"
-						+ "	 dbl_total_liabilities=VALUES(dbl_total_liabilities),"
-						+ "	 dbl_total_equity=VALUES(dbl_total_equity),"
-						+ "	 dbl_net_cash_flow_operating=VALUES(dbl_net_cash_flow_operating),"
-						+ "	 dbl_capital_expenditures=VALUES(dbl_capital_expenditures)")) {
+				+ "dbl_net_cash_flow_operating, dbl_capital_expenditures,"
+				+ "dbl_share_issued)"
+				+ " VALUES (?,?,?,?,?,?,?,?,?,?)"
+				+ " ON DUPLICATE KEY UPDATE"
+				+ "	dbl_total_current_assets=COALESCE(VALUES(dbl_total_current_assets), dbl_total_current_assets),"
+				+ "	dbl_total_current_liabilities=COALESCE(VALUES(dbl_total_current_liabilities), dbl_total_current_liabilities),"
+				+ "	dbl_total_assets=COALESCE(VALUES(dbl_total_assets), dbl_total_assets),"
+				+ "	dbl_total_liabilities=COALESCE(VALUES(dbl_total_liabilities), dbl_total_liabilities),"
+				+ "	dbl_total_equity=COALESCE(VALUES(dbl_total_equity), dbl_total_equity),"
+				+ "	dbl_net_cash_flow_operating=COALESCE(VALUES(dbl_net_cash_flow_operating), dbl_net_cash_flow_operating),"
+				+ "	dbl_capital_expenditures=COALESCE(VALUES(dbl_capital_expenditures), dbl_capital_expenditures),"
+				+ "	dbl_share_issued=COALESCE(VALUES(dbl_share_issued), dbl_share_issued)")) {
 
 			for (AssetFinancialInfo financialInfo : assetFinancialInfo) {
 				possiblyGoodResults.add(financialInfo.assetName);
@@ -301,6 +303,7 @@ public class DbManager {
 				setDoubleValueOrNull(pStmt, 7, financialInfo.totalEquity);
 				setDoubleValueOrNull(pStmt, 8, financialInfo.netCashFlowOperating);
 				setDoubleValueOrNull(pStmt, 9, financialInfo.capitalExpenditures);
+				setDoubleValueOrNull(pStmt, 10, financialInfo.shareIssued);
 
 				pStmt.addBatch();
 			}

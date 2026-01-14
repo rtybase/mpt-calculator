@@ -5,8 +5,13 @@ import java.util.Date;
 import java.util.List;
 
 import org.rty.portfolio.core.AssetFinancialInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ToAssetFinancialInfoEntityConvertor {
+	private static final Logger LOGGER = LoggerFactory
+			.getLogger(ToAssetFinancialInfoEntityConvertor.class.getSimpleName());
+
 	private static final String ASSET_NAME_COLUMN = "Symbol";
 	private static final String DATE_COLUMN = "Quarterly Ending:";
 	private static final String TOTAL_CURRENT_ASSETS_COLUMN = "Total Current Assets";
@@ -16,6 +21,7 @@ public class ToAssetFinancialInfoEntityConvertor {
 	private static final String TOTAL_EQUITY_COLUMN = "Total Equity";
 	private static final String NET_CASH_FLOW_OPERATING_COLUMN = "Net Cash Flow-Operating";
 	private static final String CAPITAL_EXPENDITURES_COLUMN = "Capital Expenditures";
+	private static final String SHARE_ISSUED_COLUMN = "Share Issued";
 
 	private int assetNameColumnIndex;
 	private int dateColumnIndex;
@@ -26,6 +32,7 @@ public class ToAssetFinancialInfoEntityConvertor {
 	private int totalEquityColumnIndex;
 	private int netCashFlowOperatingColumnIndex;
 	private int capitalExpendituresColumnIndex;
+	private int shareIssuedColumnIndex;
 
 	public ToAssetFinancialInfoEntityConvertor() {
 		resetIndexes();
@@ -35,6 +42,7 @@ public class ToAssetFinancialInfoEntityConvertor {
 		resetIndexes();
 		final List<String> headers = Arrays.asList(headerLine);
 
+		// mandatory
 		assetNameColumnIndex = headers.indexOf(ASSET_NAME_COLUMN);
 		dateColumnIndex = headers.indexOf(DATE_COLUMN);
 		totalCurrentAssetsColumnIndex = headers.indexOf(TOTAL_CURRENT_ASSETS_COLUMN);
@@ -45,11 +53,16 @@ public class ToAssetFinancialInfoEntityConvertor {
 		netCashFlowOperatingColumnIndex = headers.indexOf(NET_CASH_FLOW_OPERATING_COLUMN);
 		capitalExpendituresColumnIndex = headers.indexOf(CAPITAL_EXPENDITURES_COLUMN);
 
+		// optional
+		shareIssuedColumnIndex = headers.indexOf(SHARE_ISSUED_COLUMN);
+
 		if (!DataHandlingUtil.allPositive(assetNameColumnIndex, dateColumnIndex, totalCurrentAssetsColumnIndex,
 				totalCurrentLiabilitiesColumnIndex, totalAssetsColumnIndex, totalLiabilitiesColumnIndex,
 				totalEquityColumnIndex, netCashFlowOperatingColumnIndex, capitalExpendituresColumnIndex)) {
 			throw new IllegalArgumentException(String.format("Not all the headers are defined in '%s'!", inputFile));
 		}
+
+		warnIfColumnNotDefined(shareIssuedColumnIndex, SHARE_ISSUED_COLUMN);
 	}
 
 	public String assetNameFrom(String[] line) {
@@ -66,7 +79,8 @@ public class ToAssetFinancialInfoEntityConvertor {
 				ToEntityConvertorsUtil.valueOrDefaultFrom(line, totalLiabilitiesColumnIndex, null),
 				ToEntityConvertorsUtil.valueOrDefaultFrom(line, totalEquityColumnIndex, null),
 				ToEntityConvertorsUtil.valueOrDefaultFrom(line, netCashFlowOperatingColumnIndex, null),
-				ToEntityConvertorsUtil.valueOrDefaultFrom(line, capitalExpendituresColumnIndex, null)) ;
+				ToEntityConvertorsUtil.valueOrDefaultFrom(line, capitalExpendituresColumnIndex, null),
+				ToEntityConvertorsUtil.valueOrDefaultFrom(line, shareIssuedColumnIndex, null)) ;
 	}
 
 	private Date toDate(String[] line) {
@@ -89,5 +103,12 @@ public class ToAssetFinancialInfoEntityConvertor {
 		totalEquityColumnIndex = -1;
 		netCashFlowOperatingColumnIndex = -1;
 		capitalExpendituresColumnIndex = -1;
+		shareIssuedColumnIndex = -1;
+	}
+
+	private static void warnIfColumnNotDefined(int columnIndex, String columnName) {
+		if (columnIndex < 0) {
+			LOGGER.warn("'{}' column is not defined!", columnName);
+		}
 	}
 }
