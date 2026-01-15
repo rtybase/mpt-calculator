@@ -5,8 +5,6 @@
 	include_once("./funcs.php");
 	header("Content-Type:text/html; charset=UTF-8");
 
-	$period = periodTableFrom($_GET["period"]);
-
 	$link = connect("portfolio");
 
 	$query = "SELECT a.int_assetID, a.vchr_name, a.vchr_symbol, ";
