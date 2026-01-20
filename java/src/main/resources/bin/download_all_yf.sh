@@ -25,7 +25,9 @@ load_yf () {
 		java -jar portfolio-0.0.1-SNAPSHOT.jar TransformSeriesDataTask "-file=out.csv" "-out_symbol=$2" \
 			"-outfile=${price_out_file}" "-date_value_index=0" "-price_value_index=4" \
 			"-volume_value_index=6" "-date_format=MMM d, yyyy"
-		java -jar portfolio-0.0.1-SNAPSHOT.jar TransformDividendsDataTask "-file=out.csv" "-out_symbol=$2" "-outfile=${dividend_out_file}" "-date_value_index=0" "-price_value_index=1" "-date_format=MMM d, yyyy"
+		java -jar portfolio-0.0.1-SNAPSHOT.jar TransformDividendsDataTask "-file=out.csv" "-out_symbol=$2" \
+			"-outfile=${dividend_out_file}" "-date_value_index=0" "-price_value_index=1" \
+			"-date_format=MMM d, yyyy"
 
 		rm -rf out.html
 		rm -rf out.csv

@@ -15,8 +15,8 @@ load_finance () {
 	if [ -f $finance_out_file ]; then
 		echo "${finance_out_file} already exists."
 	else
-		python more-fin-data.py ${ticker} 1>>${finance_out_file} 2>/dev/null
-#		python more-fin-data-yf.py ${ticker} 1>>${finance_out_file} 2>/dev/null
+#		python more-fin-data.py ${ticker} 1>>${finance_out_file} 2>/dev/null
+		python more-fin-data-yf.py ${ticker} 1>>${finance_out_file} 2>/dev/null
 	fi
 }
 
