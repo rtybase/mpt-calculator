@@ -46,7 +46,8 @@
 		$tableResult.= toChartNumber(roundOrNull($row[5], $roundPrecision)).",";
 		$tableResult.= toChartNumber(roundOrNull($row[6], $roundPrecision)).",";
 		$tableResult.= toChartNumber(roundOrNull($row[7], $roundPrecision)).",";
-		$tableResult.= toChartNumber(roundOrNull($row[8], $roundPrecision))."]";
+		$tableResult.= toChartNumber(roundOrNull($row[8], $roundPrecision)).",";
+		$tableResult.= "'<a href=\"./show_fin.php?id=".$row[0]."\">details...</a>']";
 
 		$i++;
 	}
@@ -82,12 +83,13 @@
 		var dataTable = new google.visualization.DataTable();
 		dataTable.addColumn('string', 'Asset');
 		dataTable.addColumn('string', 'Symbol');
-		dataTable.addColumn('string', 'Date Reported');
+		dataTable.addColumn('string', 'Reported Date');
 		dataTable.addColumn('number', 'Current Ratio');
 		dataTable.addColumn('number', 'Total Ratio');
 		dataTable.addColumn('number', 'Debt/Eq. Calculated');
 		dataTable.addColumn('number', 'Debt/Eq. Reported');
 		dataTable.addColumn('number', 'Free-Cash-Flow/Shares');
+		dataTable.addColumn('string', 'More');
 		return dataTable;
 	}
     </script>

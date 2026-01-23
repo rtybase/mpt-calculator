@@ -2,6 +2,7 @@ import sys
 import yfinance as yf
 import pandas as pd
 import util.flow
+import time
 
 def val_if_aval(obj, what):
     result = None
@@ -81,10 +82,14 @@ def print_list_as_csv(lst):
     df = pd.DataFrame(lst)
     df.transpose().to_csv(sys.stdout, index=False, encoding='utf-8')
 
+yf.config.network.retries = 2
+yf.config.network.timeout = 10
+
 if len(sys.argv) > 1:
     symbol = sys.argv[1]
 
     data = load_fin_data(symbol)
     print_list_as_csv(data)
+    time.sleep(0.5)
 else:
     util.flow.error("Specify the symbol!")
