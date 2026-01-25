@@ -339,22 +339,16 @@ function getFScore($assetSymbol, $link) {
     <table align="center" border="0"><tr>
       <td valign="top"><?php showMenu(); ?></td>
       <td><table align="center" border="0">
+<?php showSubMenu($id); ?>
 	<tr><td  align="left">
 		<font face="verdana">EPS, dividends and prices: <?php 
 			echo linkToAsset($id, $assetName, false);
-			if (!empty($assetRecord["vchr_price_symbol"])) {
-				echo " or <a href=\"https://finance.yahoo.com/quote/".$assetRecord["vchr_price_symbol"]."/\">YF=".$assetRecord["vchr_price_symbol"]."</a>"; 
-			}
+			linkToYF($assetRecord);
 		?></font>
 	</td></tr>
-<?php
-	if (!empty($stockDetails)) {
-			echo "<tr><td align=\"left\"><font face=\"verdana\">Sector: <i>".$stockDetails[1]."</i></font></td></tr>";
-			echo "<tr><td align=\"left\"><font face=\"verdana\">Industry: <i>".$stockDetails[2]."</i></font></td></tr>";
-	}
-?>
+<?php showStockDetails($stockDetails); ?>
 	<tr><td><hr/></td></tr>
-	<tr><td><font face="verdana">EPS (more <a href="./all_sc.php?id=<?php echo $id; ?>">here...</a>):</font><div id="table_div" style="width: 1044px;"></div></td></tr>
+	<tr><td><font face="verdana">EPS:</font><div id="table_div" style="width: 1044px;"></div></td></tr>
 	<tr><td><font face="verdana">GAAP EPS:</font><div id="chart1_div" style="width: 1044px; height: 350px;"></div></td></tr>
 	<tr><td><font face="verdana">Prices:</font><div id="chart2_div" style="width: 1044px; height: 350px;"></div></td></tr>
 	<tr><td><font face="verdana">Returns:</font><div id="chart4_div" style="width: 1044px; height: 350px;"></div></td></tr>

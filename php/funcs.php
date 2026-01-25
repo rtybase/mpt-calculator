@@ -216,6 +216,17 @@
 	<a href="./stale_d.php">Stale data</a>
 <?php	}
 
+        function showSubMenu($assetId) {
+ ?>
+        <tr><td align="right">
+		<a href="./index.php?id=<?php echo $assetId; ?>"><i>Main view |</i></a>
+		<a href="./all_p.php?id=<?php echo $assetId; ?>"><i>All correlations |</i></a>
+		<a href="./show_eps.php?id=<?php echo $assetId; ?>"><i>EPS Details |</i></a>
+		<a href="./show_fin.php?id=<?php echo $assetId; ?>"><i>Financial scores |</i></a>
+		<a href="./all_sc.php?id=<?php echo $assetId; ?>"><i>Predictions</i></a>
+	</td></tr>
+<?php   }
+
 	function linkToAsset($id, $name, $escape = true) {
                 if ($escape) {
 			return "<a href=\"./?id=".$id."\">".addslashes($name)."</a>";
@@ -345,5 +356,19 @@
 			return 0.0;
 		}
 		return $price / $eps;
+	}
+
+	function linkToYF($assetRecord) {
+		$priceSymbol = $assetRecord["vchr_price_symbol"];
+		if (!empty($priceSymbol)) {
+			echo " or <a href=\"https://finance.yahoo.com/quote/".$assetRecord["vchr_price_symbol"]."/\">YF=".$priceSymbol."</a>"; 
+		}
+	}
+
+	function showStockDetails($stockDetails) {
+		if (!empty($stockDetails)) {
+			echo "<tr><td align=\"left\"><font face=\"verdana\">Sector: <i>".$stockDetails[1]."</i></font></td></tr>";
+			echo "<tr><td align=\"left\"><font face=\"verdana\">Industry: <i>".$stockDetails[2]."</i></font></td></tr>";
+		}
 	}
 ?>

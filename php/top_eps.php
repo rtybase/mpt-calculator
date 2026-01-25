@@ -140,7 +140,7 @@ function addLatestPrices($link, $epsData) {
       <td valign="top"><?php showMenu(); ?></td>
       <td><table align="center" border="0">
 	<tr><td align="left">
-		<font face="verdana">EPS details on <?php echo count($epsData) ?> assets:</font>
+		<font face="verdana">EPS details for <?php echo count($epsData) ?> assets:</font>
 	</td></tr>
 	<tr><td><hr/></td></tr>
 	<tr><td><div id='table_div' style="width: 1044px;"></div></td></tr>

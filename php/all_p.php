@@ -77,7 +77,11 @@ function getAllPredictedByShiftCorrelations($assetId, $assetName, $link) {
 	if ($id < 1) $id = 1;
 
 	$link = connect("portfolio");
-	$mainAsset = getName($id, $link);
+
+	$assetRecord = getSingleValyeByPK("tbl_assets", "int_assetID", $id, $link);
+	$mainAsset = $assetRecord["vchr_name"];
+	$assetSymbol = $assetRecord["vchr_symbol"];
+	$stockDetails = getStockDetails($assetSymbol, $link);
 
 	$allCorrelations = getAllCorrelations($id, $mainAsset, $link);
 	$allPredictingShiftCorrelations = getAllPredictingShiftCorrelations($id, $mainAsset, $link);
@@ -147,11 +151,14 @@ function getAllPredictedByShiftCorrelations($assetId, $assetName, $link) {
   </head>
   <body>
     <table align="center" border="0"><tr>
-      <td valign="top"><a href="./?id=<?php echo $id; ?>"><i>Back</i></a><br/>
-		<?php showMenu(); ?>
-      </td>
+      <td valign="top"><?php showMenu(); ?></td>
       <td><table align="center" border="0">
-	<tr><td><font face="verdana">All <?php echo count($allCorrelations); ?> correlations for : <?php echo $mainAsset; ?></font></td></tr>
+<?php showSubMenu($id); ?>
+	<tr><td><font face="verdana">All <?php echo count($allCorrelations); ?> correlations for: <?php
+	echo linkToAsset($id, $mainAsset, false);
+	linkToYF($assetRecord);
+?></font></td></tr>
+<?php showStockDetails($stockDetails); ?>
 	<tr><td><hr/></td></tr>
 	<tr><td><font face="verdana">Predicting:</font> <div id="chart1_div" style="width: 1044px;"></div></td></tr>
 	<tr><td><font face="verdana">Predicted by (more <a href="./all_sc.php?id=<?php echo $id; ?>">here...</a>):</font> <div id="chart2_div" style="width: 1044px;"></div></td></tr>

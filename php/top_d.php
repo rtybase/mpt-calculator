@@ -113,7 +113,7 @@ function addLatestPrices($link, $dividendsData) {
       <td valign="top"><?php showMenu(); ?></td>
       <td><table align="center" border="0">
 	<tr><td align="left">
-		<font face="verdana">Dividends details:</font>
+		<font face="verdana">Dividends details for <?php echo $i; ?> assets:</font>
 	</td></tr>
 	<tr><td><hr/></td></tr>
 	<tr><td><div id='table_div' style="width: 1044px;"></div></td></tr>

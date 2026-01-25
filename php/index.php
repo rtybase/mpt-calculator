@@ -51,7 +51,11 @@ function loadDividendsAndEpsFor($assetId, $link) {
 
 	$link = connect("portfolio");
 
-	$mainAsset = getName($id, $link);
+	$assetRecord = getSingleValyeByPK("tbl_assets", "int_assetID", $id, $link);
+	$mainAsset = $assetRecord["vchr_name"];
+	$assetSymbol = $assetRecord["vchr_symbol"];
+	$stockDetails = getStockDetails($assetSymbol, $link);
+
 	$lastPriceInfo = getLastPriceInfo($id, $link);
 
 	$constraint = "ABS(C.dbl_correlation) >= 0.75";
@@ -285,6 +289,13 @@ function loadDividendsAndEpsFor($assetId, $link) {
     <table align="center" border="0"><tr>
       <td valign="top"><?php showMenu(); ?></td>
       <td><table align="center" border="0">
+<?php showSubMenu($id); ?>
+	<tr><td><font face="verdana">Main view for: <?php
+	echo linkToAsset($id, $mainAsset, false);
+	linkToYF($assetRecord);
+?></font></td></tr>
+<?php showStockDetails($stockDetails); ?>
+	<tr><td><hr/></td></tr>
 	<tr><td align="right">
 		<form name="main" method="GET" action="./<?php echo basename($_SERVER['PHP_SELF']);?>">
 		<font face="verdana">Asset:</font>
@@ -301,7 +312,6 @@ function loadDividendsAndEpsFor($assetId, $link) {
 	<tr><td><font face="verdana">Betas:</font><div id="table_betas_div" style="width: 1044px;"></div></td></tr>
 	<tr><td><div id="prices_chart_div" style="width: 1044px; height: 350px;"></div></td></tr>
 <?php if (!empty($dividendsAndEpsDetails)) { ?>
-	<tr><td align="right"><a href="./show_eps.php?id=<?php echo $id?>"><i>More EPS details &gt;&gt;</i></a></td></tr>
 	<tr><td><div id="div_eps_chart_div" style="width: 1044px; height: 350px;"></div></td></tr>
 <?php } ?>
 	<tr><td><font face="verdana">Rates:</font><div id="table_rates_data_div" style="width: 1044px;"></div></td></tr>

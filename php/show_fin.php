@@ -140,7 +140,7 @@ function extractFCFPSRatiosFrom($financialData) {
 	$assetRecord = getSingleValyeByPK("tbl_assets", "int_assetID", $id, $link);
 	$assetName = $assetRecord["vchr_name"];
 	$assetSymbol = $assetRecord["vchr_symbol"];
-        $stockDetails = getStockDetails($assetSymbol, $link);
+	$stockDetails = getStockDetails($assetSymbol, $link);
 
 	$financialData = loadFinancialData($assetSymbol, $link);
 
@@ -283,20 +283,14 @@ function extractFCFPSRatiosFrom($financialData) {
     <table align="center" border="0"><tr>
       <td valign="top"><?php showMenu(); ?></td>
       <td><table align="center" border="0">
+<?php showSubMenu($id); ?>
 	<tr><td  align="left">
-		<font face="verdana">Financial scores (predictions <a href="./all_sc.php?id=<?php echo $id; ?>">here...</a>): <?php 
+		<font face="verdana">Financial scores: <?php 
 			echo linkToAsset($id, $assetName, false);
-			if (!empty($assetRecord["vchr_price_symbol"])) {
-				echo " or <a href=\"https://finance.yahoo.com/quote/".$assetRecord["vchr_price_symbol"]."/\">YF=".$assetRecord["vchr_price_symbol"]."</a>"; 
-			}
+			linkToYF($assetRecord);
 		?></font>
 	</td></tr>
-<?php
-	if (!empty($stockDetails)) {
-			echo "<tr><td align=\"left\"><font face=\"verdana\">Sector: <i>".$stockDetails[1]."</i></font></td></tr>";
-			echo "<tr><td align=\"left\"><font face=\"verdana\">Industry: <i>".$stockDetails[2]."</i></font></td></tr>";
-	}
-?>
+<?php showStockDetails($stockDetails); ?>
 	<tr><td><hr/></td></tr>
 	<tr><td><font face="verdana">Data from financial reports:</font><div id="table1_div" style="width: 1044px;"></div></td></tr>
 	<tr><td><font face="verdana">Financial ratios:</font><div id="table2_div" style="width: 1044px;"></div></td></tr>
