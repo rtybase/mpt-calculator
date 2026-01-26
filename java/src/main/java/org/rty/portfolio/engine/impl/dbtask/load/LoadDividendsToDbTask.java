@@ -14,7 +14,7 @@ import org.rty.portfolio.db.DbManager;
  *
  */
 public class LoadDividendsToDbTask extends GenericLoadToDbTask<AssetDividendInfo> {
-	private static final int NO_OF_COLUMNS = 3;
+	public static final int NO_OF_COLUMNS = 3;
 
 	public LoadDividendsToDbTask(DbManager dbManager) {
 		super(dbManager, NO_OF_COLUMNS, false);

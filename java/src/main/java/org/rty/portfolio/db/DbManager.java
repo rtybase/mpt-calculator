@@ -505,6 +505,36 @@ public class DbManager {
 	}
 
 	/**
+	 * Returns all the dividends for the stocks (only!) for a given period.
+	 */
+	public List<AssetDividendInfo> getAllStocksDividendInfo(int yearsBack) throws Exception {
+		Preconditions.checkArgument(yearsBack > 0, "yearsBack must be > 0!");
+
+		final List<AssetDividendInfo> result = new ArrayList<>(2048);
+
+		try (PreparedStatement pStmt = connection.prepareStatement("select a.vchr_symbol, d.dbl_pay, d.dtm_date"
+				+ "	from tbl_dividends d, tbl_assets a"
+				+ "	where d.fk_assetID = a.int_assetID"
+				+ "	 and a.vchr_symbol is not null"
+				+ "	 and a.vchr_symbol in (select vchr_symbol from tbl_stocks)"
+				+ "	 and d.dtm_date between (NOW() - INTERVAL ? YEAR) and NOW()")) {
+			pStmt.setInt(1, yearsBack);
+
+			try (ResultSet rs = pStmt.executeQuery()) {
+
+				while (rs.next()) {
+					result.add(new AssetDividendInfo(rs.getString(1),
+							rs.getDouble(2),
+							rs.getDate(3)
+						));
+				}
+			}
+		}
+
+		return Collections.unmodifiableList(result);
+	}
+
+	/**
 	 * Returns all the EPS data for the stocks (only!) for a given period. If
 	 * 'useSymbol' is true, AssetEpsInfo::assetName is set to the symbol (e.g.
 	 * 'MSFT'), otherwise to the assetName (aka human readable name of the asset,

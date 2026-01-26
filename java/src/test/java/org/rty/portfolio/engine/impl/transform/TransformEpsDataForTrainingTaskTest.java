@@ -8,6 +8,7 @@ import static org.rty.portfolio.core.utils.CommonTestRoutines.D_2025_07_17;
 import static org.rty.portfolio.core.utils.CommonTestRoutines.ERROR_TOLERANCE;
 import static org.rty.portfolio.core.utils.CommonTestRoutines.TEST_ASSET;
 import static org.rty.portfolio.core.utils.CommonTestRoutines.dateFrom;
+import static org.rty.portfolio.core.utils.CommonTestRoutines.newDividendInfo;
 import static org.rty.portfolio.core.utils.CommonTestRoutines.newEpsInfo;
 import static org.rty.portfolio.core.utils.CommonTestRoutines.newNonGaapEpsInfo;
 import static org.rty.portfolio.core.utils.CommonTestRoutines.newPriceInfo;
@@ -26,6 +27,7 @@ import java.util.TreeMap;
 import org.apache.commons.math3.util.Pair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.rty.portfolio.core.AssetDividendInfo;
 import org.rty.portfolio.core.AssetEpsHistoricalInfo;
 import org.rty.portfolio.core.AssetEpsInfo;
 import org.rty.portfolio.core.AssetNonGaapEpsInfo;
@@ -36,6 +38,7 @@ class TransformEpsDataForTrainingTaskTest {
 	private Map<String, NavigableMap<Date, AssetNonGaapEpsInfo>> nonGaapEpsStore;
 	private Map<String, Pair<Integer, Integer>> stocksAndsectorsStore;
 	private Map<String, NavigableMap<Date, Double>> stocksAndFScoreStore;
+	private Map<String, NavigableMap<Date, AssetDividendInfo>> dividendStore;
 	private NavigableMap<Date, AssetEpsInfo> epsData;
 
 	private List<AssetEpsHistoricalInfo> dataForTraining;
@@ -45,11 +48,13 @@ class TransformEpsDataForTrainingTaskTest {
 
 	private AssetEpsInfo previousEps;
 	private AssetNonGaapEpsInfo previousNonGaapEps;
+	AssetDividendInfo dividendAtPreviousEps;
 	private AssetPriceInfo priceAtPreviousEps;
 	private AssetPriceInfo priceBeforePreviousEps;
 
 	private AssetEpsInfo currentEps;
 	private AssetNonGaapEpsInfo currentNonGaapEps;
+	private AssetDividendInfo dividendAtCurrentEps;
 	private AssetPriceInfo price2DaysBeforeCurrentEps;
 	private AssetPriceInfo priceBeforeCurrentEps;
 	private AssetPriceInfo priceAtCurrentEps;
@@ -62,6 +67,7 @@ class TransformEpsDataForTrainingTaskTest {
 		nonGaapEpsStore = new HashMap<>();
 		stocksAndsectorsStore = new HashMap<>();
 		stocksAndFScoreStore = new HashMap<>();
+		dividendStore =  new HashMap<>();
 		epsData = new TreeMap<>();
 
 		dataForTraining = new ArrayList<>();
@@ -164,6 +170,7 @@ class TransformEpsDataForTrainingTaskTest {
 	private void setCurrentEpsBasicData() {
 		currentEps = addEpsDataToStore(D_2025_07_17);
 		currentNonGaapEps = addNonGaapEpsDataToStore(D_2025_07_17);
+		dividendAtCurrentEps = addDividendDataToStore(D_2025_07_17);
 		price2DaysBeforeCurrentEps = addPriceDataToStore(dateFrom(15));
 		priceBeforeCurrentEps = addPriceDataToStore(dateFrom(16));
 	}
@@ -171,6 +178,7 @@ class TransformEpsDataForTrainingTaskTest {
 	private void verifyCurrentEpsBasicData(final AssetEpsHistoricalInfo result) {
 		assertSame(currentEps, result.currentEps);
 		assertSame(currentNonGaapEps, result.currentNonGaapEps);
+		assertSame(dividendAtCurrentEps, result.currentDividend);
 		assertSame(price2DaysBeforeCurrentEps, result.price2DaysBeforeCurrentEps);
 		assertSame(priceBeforeCurrentEps, result.priceBeforeCurrentEps);
 	}
@@ -180,6 +188,7 @@ class TransformEpsDataForTrainingTaskTest {
 
 		previousEps = addEpsDataToStore(previousEpsDate);
 		previousNonGaapEps = addNonGaapEpsDataToStore(previousEpsDate);
+		dividendAtPreviousEps = addDividendDataToStore(previousEpsDate);
 		priceAtPreviousEps = addPriceDataToStore(previousEpsDate);
 		priceBeforePreviousEps = addPriceDataToStore(dateFrom(12));
 	}
@@ -187,6 +196,7 @@ class TransformEpsDataForTrainingTaskTest {
 	private void verifyPreviousEpsData(final AssetEpsHistoricalInfo result) {
 		assertSame(previousEps, result.previousEps);
 		assertSame(previousNonGaapEps, result.previousNonGaapEps);
+		assertSame(dividendAtPreviousEps, result.previousDividend);
 		assertSame(priceAtPreviousEps, result.priceAtPreviousEps);
 		assertSame(priceBeforePreviousEps, result.priceBeforePreviousEps);
 	}
@@ -200,26 +210,30 @@ class TransformEpsDataForTrainingTaskTest {
 	private void collectDataFor(AssetEpsInfo epsInfo) {
 		final Map.Entry<Date, AssetEpsInfo> entry = new AbstractMap.SimpleEntry<>(epsInfo.date, epsInfo);
 
-		TransformEpsDataForTrainingTask.collectHistoricalData(priceStore, nonGaapEpsStore, stocksAndsectorsStore,
-				stocksAndFScoreStore, dataForTraining, dataFor2DPrediction, dataFor1DPrediction, TEST_ASSET, epsData,
-				entry, alreadyReportedAssets);
+		TransformEpsDataForTrainingTask.collectHistoricalData(priceStore,
+				nonGaapEpsStore,
+				stocksAndsectorsStore,
+				stocksAndFScoreStore,
+				dividendStore,
+				dataForTraining,
+				dataFor2DPrediction,
+				dataFor1DPrediction,
+				TEST_ASSET,
+				epsData,
+				entry,
+				alreadyReportedAssets);
 	}
 
 	private AssetNonGaapEpsInfo addNonGaapEpsDataToStore(Date date) {
 		final AssetNonGaapEpsInfo info = newNonGaapEpsInfo(1D, null, false, date);
 
-		final NavigableMap<Date, AssetNonGaapEpsInfo> details = nonGaapEpsStore.computeIfAbsent(TEST_ASSET,
-				k -> new TreeMap<>());
-		details.put(date, info);
-		return info;
+		return addToStore(nonGaapEpsStore, info, date);
 	}
 
 	private AssetPriceInfo addPriceDataToStore(Date date) {
 		final AssetPriceInfo info = newPriceInfo(1D, date);
 
-		final NavigableMap<Date, AssetPriceInfo> details = priceStore.computeIfAbsent(TEST_ASSET, k -> new TreeMap<>());
-		details.put(date, info);
-		return info;
+		return addToStore(priceStore, info, date);
 	}
 
 	private AssetEpsInfo addEpsDataToStore(Date date) {
@@ -228,13 +242,23 @@ class TransformEpsDataForTrainingTaskTest {
 		return info;
 	}
 
+	private AssetDividendInfo addDividendDataToStore(Date date) {
+		final AssetDividendInfo info = newDividendInfo(1D, date);
+
+		return addToStore(dividendStore, info, date);
+	}
+
+	private static <T> T addToStore(Map<String, NavigableMap<Date, T>> store, T obj, Date date) {
+		final NavigableMap<Date, T> details = store.computeIfAbsent(TEST_ASSET, k -> new TreeMap<>());
+		details.put(date, obj);
+		return obj;
+	}
+
 	private void setSectorDetails() {
 		stocksAndsectorsStore.put(TEST_ASSET, new Pair<>(1, 1));
 	}
 
 	private void addFScoreToStore(double fscore, Date date) {
-		final NavigableMap<Date, Double> details = stocksAndFScoreStore.computeIfAbsent(TEST_ASSET,
-				k -> new TreeMap<>());
-		details.put(date, fscore);
+		addToStore(stocksAndFScoreStore, fscore, date);
 	}
 }

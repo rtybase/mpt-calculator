@@ -12,6 +12,7 @@ import java.util.NavigableMap;
 import java.util.Set;
 
 import org.apache.commons.math3.util.Pair;
+import org.rty.portfolio.core.AssetDividendInfo;
 import org.rty.portfolio.core.AssetEpsHistoricalInfo;
 import org.rty.portfolio.core.AssetEpsInfo;
 import org.rty.portfolio.core.AssetNonGaapEpsInfo;
@@ -24,6 +25,7 @@ import org.rty.portfolio.core.utils.ToEntityConvertorsUtil;
 import org.rty.portfolio.db.DbManager;
 import org.rty.portfolio.engine.AbstractDbTask;
 import org.rty.portfolio.engine.impl.dbtask.load.GenericLoadToDbTask;
+import org.rty.portfolio.engine.impl.dbtask.load.LoadDividendsToDbTask;
 import org.rty.portfolio.engine.impl.dbtask.load.LoadEpsToDbTask;
 import org.rty.portfolio.engine.impl.dbtask.load.LoadNonGaapEpsToDbTask;
 import org.rty.portfolio.engine.impl.dbtask.load.LoadPricesToDbTask;
@@ -45,6 +47,7 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 	public static final String INPUT_FILE_WITH_EPS_PARAM = "-eps";
 	public static final String INPUT_FILE_WITH_EPS_WITH_ANALYSTS_PARAM = "-eps-with-analysts";
 	public static final String INPUT_FILE_WITH_NON_GAAP_EPS_PARAM = "-n-gaap-eps";
+	public static final String INPUT_FILE_WITH_DIVIDENDS_PARAM = "-dividends";
 
 	private static final int YEARS_BACK = 5;
 
@@ -59,15 +62,24 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 		final String epsWithNoOfAnalystsInputFile = getValidParameterValue(parameters, INPUT_FILE_WITH_EPS_WITH_ANALYSTS_PARAM);
 		final String outputFile = getValidParameterValue(parameters, OUTPUT_FILE_PARAM);
 		final String nonGaapEpsInputFile = getValidParameterValue(parameters, INPUT_FILE_WITH_NON_GAAP_EPS_PARAM);
+		final String dividendsInputFile = getValidParameterValue(parameters, INPUT_FILE_WITH_DIVIDENDS_PARAM);
 
 		final Map<String, NavigableMap<Date, AssetEpsInfo>> epsStore = new HashMap<>();
 		final Map<String, NavigableMap<Date, AssetPriceInfo>> priceStore = new HashMap<>();
 		final Map<String, NavigableMap<Date, AssetNonGaapEpsInfo>> nonGaapEpsStore = new HashMap<>();
+		final Map<String, NavigableMap<Date, AssetDividendInfo>> dividendStore = new HashMap<>();
 		final Map<String, Pair<Integer, Integer>> stocksAndsectorsStore = new HashMap<>();
 		final Map<String, NavigableMap<Date, Double>> stocksAndFScoreStore = new HashMap<>();
 
-		loadEpsAndPricesFromFiles(epsInputFile, epsWithNoOfAnalystsInputFile, epsStore, pricesInputFile, priceStore);
-		loadEpsAndPricesFromDb(epsStore, priceStore, stocksAndsectorsStore, stocksAndFScoreStore);
+		loadEpsAndPricesFromFiles(epsInputFile,
+				epsWithNoOfAnalystsInputFile, epsStore,
+				pricesInputFile, priceStore,
+				dividendsInputFile, dividendStore);
+		loadEpsAndPricesFromDb(epsStore,
+				priceStore,
+				stocksAndsectorsStore,
+				stocksAndFScoreStore,
+				dividendStore);
 		loadNonGaapEpsFromFilesAndDb(nonGaapEpsInputFile, epsStore, nonGaapEpsStore);
 
 		final List<AssetEpsHistoricalInfo> dataForTraining = new ArrayList<>(1024);
@@ -83,6 +95,7 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 					nonGaapEpsStore,
 					stocksAndsectorsStore,
 					stocksAndFScoreStore,
+					dividendStore,
 					dataForTraining,
 					dataFor2DPrediction,
 					dataFor1DPrediction,
@@ -105,6 +118,7 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 			Map<String, NavigableMap<Date, AssetNonGaapEpsInfo>> nonGaapEpsStore,
 			Map<String, Pair<Integer, Integer>> stocksAndsectorsStore,
 			Map<String, NavigableMap<Date, Double>> stocksAndFScoreStore,
+			Map<String, NavigableMap<Date, AssetDividendInfo>> dividendStore,
 			List<AssetEpsHistoricalInfo> dataForTraining,
 			List<AssetEpsHistoricalInfo> dataFor2DPrediction,
 			List<AssetEpsHistoricalInfo> dataFor1DPrediction,
@@ -113,9 +127,15 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 		final Date currentDate = epsEntry.getKey();
 
 		final AssetEpsInfo currentEps = epsEntry.getValue();
-		final AssetNonGaapEpsInfo currentNonGaapEps = DataHandlingUtil.getCurrentEntry(nonGaapEpsStore, assetName,
+		final AssetNonGaapEpsInfo currentNonGaapEps = DataHandlingUtil.getCurrentEntry(nonGaapEpsStore,
+				assetName,
 				currentDate);
-		final Double currentFScore = getClosestFScore(stocksAndFScoreStore, assetName, currentDate, alreadyReportedAssets);
+		final Double currentFScore = getClosestFScore(stocksAndFScoreStore, assetName,
+				currentDate,
+				alreadyReportedAssets);
+		final AssetDividendInfo dividendAtCurrentEps = DataHandlingUtil.getCurrentEntryOrPrevious(dividendStore,
+				assetName,
+				currentDate);
 
 		final AssetEpsInfo previousEps = DataHandlingUtil.getPreviousEntry(epsData, currentDate);
 		final AssetNonGaapEpsInfo previousNonGaapEps = DataHandlingUtil.getPreviousEntry(nonGaapEpsStore, assetName,
@@ -140,7 +160,11 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 		}
 
 		if (DataHandlingUtil.allNotNull(currentEps, previousEps)) {
-			final AssetPriceInfo priceAtPreviousEps = DataHandlingUtil.getCurrentEntryOrNext(priceStore, assetName,
+			final AssetPriceInfo priceAtPreviousEps = DataHandlingUtil.getCurrentEntryOrNext(priceStore,
+					assetName,
+					previousEps.date);
+			final AssetDividendInfo dividendAtPreviousEps = DataHandlingUtil.getCurrentEntryOrPrevious(dividendStore,
+					assetName,
 					previousEps.date);
 
 			if (priceAtPreviousEps == null) {
@@ -168,11 +192,11 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 					currentEps,
 					currentNonGaapEps,
 					currentFScore,
-					null, // TODO:
+					dividendAtCurrentEps,
 					previousEps,
 					previousNonGaapEps,
 					previousFScore,
-					null, // TODO:
+					dividendAtPreviousEps,
 					priceAtPreviousEps,
 					priceBeforePreviousEps,
 					price2DaysBeforeCurrentEps,
@@ -215,7 +239,8 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 	private void loadEpsAndPricesFromDb(Map<String, NavigableMap<Date, AssetEpsInfo>> epsStore,
 			Map<String, NavigableMap<Date, AssetPriceInfo>> priceStore,
 			Map<String, Pair<Integer, Integer>> stocksAndsectorsStore,
-			Map<String, NavigableMap<Date, Double>> stocksAndFScoreStore) throws Exception {
+			Map<String, NavigableMap<Date, Double>> stocksAndFScoreStore,
+			Map<String, NavigableMap<Date, AssetDividendInfo>> dividendStore) throws Exception {
 		say("Loading Stocks and Sectors data from DB ...");
 		addStocksSectors(stocksAndsectorsStore, dbManager.getAllStocks());
 
@@ -227,6 +252,9 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 
 		say("Loading prices data from DB ...");
 		DataHandlingUtil.addDataToMapByNameAndDate(dbManager.getAllStocksPriceInfo(YEARS_BACK), priceStore);
+
+		say("Loading dividends data from DB ...");
+		DataHandlingUtil.addDataToMapByNameAndDate(dbManager.getAllStocksDividendInfo(YEARS_BACK), dividendStore);
 	}
 
 	private static void writeData(String outputFile, List<AssetEpsHistoricalInfo> data) throws Exception {
@@ -249,11 +277,13 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 	}
 
 	private void loadEpsAndPricesFromFiles(String epsInputFile, String epsWithNoOfAnalystsInputFile,
-			Map<String, NavigableMap<Date, AssetEpsInfo>> epsStore, String pricesInputFile,
-			Map<String, NavigableMap<Date, AssetPriceInfo>> priceStore) throws Exception {
+			Map<String, NavigableMap<Date, AssetEpsInfo>> epsStore,
+			String pricesInputFile, Map<String, NavigableMap<Date, AssetPriceInfo>> priceStore,
+			String dividendsInputFile, Map<String, NavigableMap<Date, AssetDividendInfo>> dividendStore) throws Exception {
 		final BulkCsvLoader<AssetEpsInfo> epsLoader = epsLoader(epsStore);
 		final BulkCsvLoader<AssetEpsInfo> epsWithNoOfAnalystsLoader = epsWithNoOfAnalystsLoader(epsStore);
 		final BulkCsvLoader<AssetPriceInfo> priceLoader = priceLoader(priceStore);
+		final BulkCsvLoader<AssetDividendInfo> dividendLoader = dividendLoader(dividendStore);
 
 		say("Loading EPS data from '{}' ...", epsInputFile);
 		epsLoader.load(epsInputFile);
@@ -263,6 +293,9 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 
 		say("Loading prices data from '{}' ...", pricesInputFile);
 		priceLoader.load(pricesInputFile);
+
+		say("Loading dividends data from '{}' ...", dividendsInputFile);
+		dividendLoader.load(dividendsInputFile);
 	}
 
 	private static BulkCsvLoader<AssetPriceInfo> priceLoader(
@@ -373,6 +406,33 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 			@Override
 			protected String assetNameFrom(String[] line) {
 				return convertor.assetNameFrom(line);
+			}
+		};
+	}
+
+	private static BulkCsvLoader<AssetDividendInfo> dividendLoader(
+			Map<String, NavigableMap<Date, AssetDividendInfo>> dividendStore) {
+		return new BulkCsvLoader<>(LoadDividendsToDbTask.NO_OF_COLUMNS, false) {
+
+			@Override
+			protected List<String> saveResults(List<AssetDividendInfo> dataToAdd) throws Exception {
+				DataHandlingUtil.addDataToMapByNameAndDate(dataToAdd, dividendStore);
+				return Collections.emptyList();
+			}
+
+			@Override
+			protected AssetDividendInfo toEntity(String assetName, String[] line) {
+				return ToEntityConvertorsUtil.toAssetDividendInfo(assetName, line);
+			}
+
+			@Override
+			protected void announceHeaders(String inputFile, String[] headerLine) {
+				// nothing to do
+			}
+
+			@Override
+			protected String assetNameFrom(String[] line) {
+				return line[GenericLoadToDbTask.NAME_COLUMN].trim();
 			}
 		};
 	}
