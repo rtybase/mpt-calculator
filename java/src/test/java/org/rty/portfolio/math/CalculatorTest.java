@@ -86,4 +86,13 @@ class CalculatorTest {
 		pe = Calculator.calculatePriceOverEps(1D, 0D);
 		assertEquals(0D, pe, ERROR_TOLERANCE);
 	}
+
+	@Test
+	void testCalculateDividendYield() {
+		double yield = Calculator.calculateDividendYield(1D, 2D);
+		assertEquals(50D, yield, ERROR_TOLERANCE);
+
+		yield = Calculator.calculateDividendYield(1D, 0D);
+		assertEquals(0D, yield, ERROR_TOLERANCE);
+	}
 }

@@ -106,6 +106,15 @@ public class Calculator {
 		return round(pe, CORRECTION);
 	}
 
+	public static double calculateDividendYield(double dividend, double sharePrice) {
+		if (sharePrice <= 0D) {
+			return 0D;
+		}
+
+		double yield = (dividend * 100.0D) / sharePrice;
+		return round(yield, CORRECTION);
+	}
+
 	public static double round(double value, double correction) {
 		return Math.round(value * correction) / correction;
 	}

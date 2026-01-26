@@ -30,6 +30,7 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 			"prev_revenue_spr",
 			"prev_p_e",
 			"prev_f_score",
+			"prev_div_yld",
 
 			"after_market_close",
 			"pred_eps",
@@ -42,6 +43,7 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 			"revenue_spr",
 			"p_e",
 			"f_score",
+			"div_yld",
 
 			"spr_pred_eps_prev_pred_eps", "spr_eps_prev_eps",
 			"spr_ngaap_pred_eps_prev_ngaap_pred_eps", "spr_ngaap_eps_prev_ngaap_eps",
@@ -71,10 +73,12 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 	public final AssetEpsInfo currentEps;
 	public final AssetNonGaapEpsInfo currentNonGaapEps;
 	public final double currentFScore;
+	public final AssetDividendInfo currentDividend;
 
 	public final AssetEpsInfo previousEps;
 	public final AssetNonGaapEpsInfo previousNonGaapEps;
 	public final double previousFScore;
+	public final AssetDividendInfo previousDividend;
 
 	public final AssetPriceInfo priceAtCurrentEps;
 	public final AssetPriceInfo priceAtPreviousEps;
@@ -86,8 +90,8 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 	public final AssetPriceInfo price2DaysAfterCurrentEps;
 
 	public AssetEpsHistoricalInfo(String assetName, int sectorIndex, int industryIndex,
-			AssetEpsInfo currentEps, AssetNonGaapEpsInfo currentNonGaapEps, double currentFScore,
-			AssetEpsInfo previousEps, AssetNonGaapEpsInfo previousNonGaapEps,  double previousFScore,
+			AssetEpsInfo currentEps, AssetNonGaapEpsInfo currentNonGaapEps, double currentFScore, AssetDividendInfo currentDividend,
+			AssetEpsInfo previousEps, AssetNonGaapEpsInfo previousNonGaapEps,  double previousFScore, AssetDividendInfo previousDividend,
 			AssetPriceInfo priceAtPreviousEps,
 			AssetPriceInfo priceBeforePreviousEps,
 			AssetPriceInfo price2DaysBeforeCurrentEps,
@@ -102,10 +106,12 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 		this.currentEps = currentEps;
 		this.currentNonGaapEps = currentNonGaapEps;
 		this.currentFScore = currentFScore;
+		this.currentDividend = currentDividend;
 
 		this.previousEps = previousEps;
 		this.previousNonGaapEps = previousNonGaapEps;
 		this.previousFScore = previousFScore;
+		this.previousDividend = previousDividend;
 
 		this.priceAtCurrentEps = priceAtCurrentEps;
 		this.priceAtPreviousEps = priceAtPreviousEps;
@@ -148,15 +154,17 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 	}
 
 	public double getPreviousPOverE() {
-		AssetPriceInfo info = DatesAndSetUtil.oneOrTheOther(getPreviousAfterMarketClose() == 1,
-				priceAtPreviousEps,
-				priceBeforePreviousEps);
+		return Calculator.calculatePriceOverEps(getInfoBeforePreviousEpsAnnouncement().price,
+				previousEps.eps);
+	}
 
-		if (info == null) {
-			info = priceAtPreviousEps;
+	public double getPreviousDividendYield() {
+		if (previousDividend == null) {
+			return 0D;
 		}
 
-		return Calculator.calculatePriceOverEps(info.price, previousEps.eps);
+		return Calculator.calculateDividendYield(previousDividend.pay,
+				getInfoBeforePreviousEpsAnnouncement().price);
 	}
 
 	public int getCurrentAfterMarketClose() {
@@ -180,6 +188,15 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 				currentEps.eps);
 	}
 
+	public double getCurrentDividendYield() {
+		if (currentDividend == null) {
+			return 0D;
+		}
+
+		return Calculator.calculateDividendYield(currentDividend.pay,
+				getInfoBeforeEpsAnnouncement().price);
+	}
+
 	public AssetPriceInfo getInfoBeforeMinusOneDayEpsAnnouncement() {
 		return DatesAndSetUtil.oneOrTheOther(getCurrentAfterMarketClose() == 1,
 				priceBeforeCurrentEps,
@@ -190,6 +207,18 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 		return DatesAndSetUtil.oneOrTheOther(getCurrentAfterMarketClose() == 1,
 				priceAtCurrentEps,
 				priceBeforeCurrentEps);
+	}
+
+	public AssetPriceInfo getInfoBeforePreviousEpsAnnouncement() {
+		AssetPriceInfo info = DatesAndSetUtil.oneOrTheOther(getPreviousAfterMarketClose() == 1,
+				priceAtPreviousEps,
+				priceBeforePreviousEps);
+
+		if (info == null) {
+			return priceAtPreviousEps;
+		}
+
+		return info;
 	}
 
 	public AssetPriceInfo getInfoAfterEpsAnnouncement() {
@@ -252,6 +281,7 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 				"" + revenueSurprise(previousNonGaapEps, previousEpsSurprise),
 				"" + round(getPreviousPOverE()),
 				"" + previousFScore,
+				"" + round(getPreviousDividendYield()),
 
 				"" + getCurrentAfterMarketClose(),
 				"" + round(currentPredictedEpsValue),
@@ -264,6 +294,7 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 				"" + revenueSurprise(currentNonGaapEps, currentEpsSurprise),
 				"" + round(getCurrentPOverE()),
 				"" + currentFScore,
+				"" + round(getCurrentDividendYield()),
 
 				"" + surprise(currentPredictedEpsValue, previousPredictedEpsValue),
 				"" + surprise(currentEps.eps, previousEps.eps),

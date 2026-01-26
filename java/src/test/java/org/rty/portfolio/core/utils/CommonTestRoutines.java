@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import org.rty.portfolio.core.AssetDividendInfo;
 import org.rty.portfolio.core.AssetEpsInfo;
 import org.rty.portfolio.core.AssetNonGaapEpsInfo;
 import org.rty.portfolio.core.AssetPriceInfo;
@@ -41,6 +42,10 @@ public class CommonTestRoutines {
 	public static AssetNonGaapEpsInfo newNonGaapEpsInfo(double eps, Double predictedEps, boolean afterMarketClose,
 			Date date) {
 		return new AssetNonGaapEpsInfo(TEST_ASSET, eps, predictedEps, afterMarketClose, 1D, 1D, date);
+	}
+
+	public static AssetDividendInfo newDividendInfo(double pay, Date date) {
+		return new AssetDividendInfo(TEST_ASSET, pay, date);
 	}
 
 	protected static AssetPriceInfo assetPriceFrom(String assetName, String date) {

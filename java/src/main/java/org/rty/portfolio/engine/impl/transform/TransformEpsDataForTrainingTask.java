@@ -168,9 +168,11 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 					currentEps,
 					currentNonGaapEps,
 					currentFScore,
+					null, // TODO:
 					previousEps,
 					previousNonGaapEps,
 					previousFScore,
+					null, // TODO:
 					priceAtPreviousEps,
 					priceBeforePreviousEps,
 					price2DaysBeforeCurrentEps,
