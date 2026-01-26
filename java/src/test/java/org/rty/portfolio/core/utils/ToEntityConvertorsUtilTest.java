@@ -6,12 +6,15 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import java.util.Date;
 
 import org.junit.jupiter.api.Test;
+import org.rty.portfolio.core.AssetDividendInfo;
 import org.rty.portfolio.core.AssetEpsInfo;
 import org.rty.portfolio.core.AssetPriceInfo;
 
 class ToEntityConvertorsUtilTest extends CommonTestRoutines {
 	private static final String[] TEST_LINE_WITH_NA = new String[] { TEST_ASSET, "3.65", ToEntityConvertorsUtil.NA_VALUE, "07/17/2025" };
 	private static final String[] TEST_LINE_WITH_NO = new String[] { TEST_ASSET, "3.65", ToEntityConvertorsUtil.NO_VALUE_S, "07/17/2025" };
+
+	private static final String[] TEST_DIVIDEND_LINE = new String[] { TEST_ASSET, "3.65", "2025-07-17" };
 
 	@Test
 	void testDefaultToDate() {
@@ -67,6 +70,15 @@ class ToEntityConvertorsUtilTest extends CommonTestRoutines {
 
 		verifyNameDateAndEps(result);
 		assertNull(result.epsPredicted);
+	}
+
+	@Test
+	void testToAssetDividendInfo() {
+		final AssetDividendInfo result = ToEntityConvertorsUtil.toAssetDividendInfo(TEST_ASSET, TEST_DIVIDEND_LINE);
+
+		assertEquals(TEST_ASSET, result.assetName);
+		assertEquals(D_2025_07_17, result.date);
+		assertEquals(3.65D, result.pay, ERROR_TOLERANCE);
 	}
 
 	@Test

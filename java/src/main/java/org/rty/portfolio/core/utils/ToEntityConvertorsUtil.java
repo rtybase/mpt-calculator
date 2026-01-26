@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Set;
 
+import org.rty.portfolio.core.AssetDividendInfo;
 import org.rty.portfolio.core.AssetEpsInfo;
 import org.rty.portfolio.core.AssetPriceInfo;
 
@@ -26,6 +27,9 @@ public final class ToEntityConvertorsUtil {
 	private static final int PRICE_DATE_COLUMN = 4;
 	private static final int PRICE_VOLUME_COLUMN = 5;
 	private static final int PRICE_VOLUME_CHANGE_RATE_COLUMN = 6;
+
+	private static final int DIVIDEND_PAY_COLUMN = 1;
+	private static final int DIVIDEND_DATE_COLUMN = 2;
 
 	private ToEntityConvertorsUtil() {}
 
@@ -52,6 +56,12 @@ public final class ToEntityConvertorsUtil {
 				Double.parseDouble(line[EPS_VALUE_COLUMN].trim()),
 				possiblyDoubleFromString(line[EPS_PREDICTED_COLUMN].trim()),
 				toDate(line[EPS_DATE_COLUMN].trim(), EPS_DATE_FORMAT));
+	}
+
+	public static AssetDividendInfo toAssetDividendInfo(String assetName, String[] line) {
+		return new AssetDividendInfo(assetName,
+				Double.parseDouble(line[DIVIDEND_PAY_COLUMN].trim()),
+				ToEntityConvertorsUtil.toDate(line[DIVIDEND_DATE_COLUMN].trim()));
 	}
 
 	public static Double valueOrDefaultFrom(String[] line, int valueIndex, Double defaultValue) {
