@@ -56,7 +56,8 @@ def load_stocks_from(path):
     with open(path, mode ='r') as file:
         content = csv.reader(file)
         for line in content:
-            process_data(line[0], line[1], line[2])
+            if line:
+                process_data(line[0], line[1], line[2])
 
 
 if len(sys.argv) > 1:
