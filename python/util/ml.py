@@ -54,11 +54,11 @@ XGB_DS1_ARGS = {'booster': 'gbtree', 'eval_metric': 'rmse',\
 CORE_COLUMNS_FOR_TRAINING = ['sector','industry','month',\
     'prev_after_market_close', 'prev_pred_eps', 'prev_eps',\
     'prev_eps_spr', 'prev_no_analysts', 'prev_p_e', 'prev_f_score',\
-    'prev_ngaap_pred_eps', 'prev_ngaap_eps',\
+    'prev_ngaap_pred_eps', 'prev_ngaap_eps', "prev_div_yld",\
     'prev_ngaap_eps_spr', 'prev_revenue_spr',\
     'after_market_close', 'pred_eps', 'eps',\
     'eps_spr', 'no_analysts', 'p_e', 'f_score',\
-    'ngaap_pred_eps', 'ngaap_eps',\
+    'ngaap_pred_eps', 'ngaap_eps', "div_yld",\
     'ngaap_eps_spr', 'revenue_spr',\
     'spr_pred_eps_prev_pred_eps', 'spr_eps_prev_eps',\
     'spr_ngaap_pred_eps_prev_ngaap_pred_eps', 'spr_ngaap_eps_prev_ngaap_eps',\
