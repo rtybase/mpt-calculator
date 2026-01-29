@@ -59,6 +59,10 @@ elif [ "${period}" == "5y" ]; then
 	end=`date +%s`
 	start=`date --date='5 years ago' +%s`
 	extra="?period1=${start}&period2=${end}"
+elif [ "${period}" == "6y" ]; then
+	end=`date +%s`
+	start=`date --date='6 years ago' +%s`
+	extra="?period1=${start}&period2=${end}"
 fi
 
 while IFS='=' read -r key value

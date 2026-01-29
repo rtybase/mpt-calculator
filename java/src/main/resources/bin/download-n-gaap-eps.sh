@@ -33,7 +33,7 @@ load_n_gaap_eps () {
 			-outfile=s-id.json -headers=headers/investing-sess.prop
 
 		if [ -s s-id.json ]; then
-			symbol_id=`python to_csv_ngaap_eps.py s-id.json`
+			symbol_id=`python to_csv_ngaap_eps.py s-id.json ${ticker}`
 
 			java -Duse-http2=true -jar portfolio-0.0.1-SNAPSHOT.jar DownloadTask \
 				"-url=https://endpoints.investing.com/earnings/v1/instruments/$symbol_id/earnings?limit=10" \
