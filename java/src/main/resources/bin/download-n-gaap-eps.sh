@@ -36,10 +36,10 @@ update_id_if_required() {
 		file_age_is_seconds=$(($(date +%s) - $(date -r "${out_file}" +%s)))
 
 		if [[ $file_age_is_seconds -gt MAX_AGE_SECONDS ]]; then
-			update_id $ticker ${id_file}
+			update_id $ticker "${out_file}"
 		fi
 	else
-		update_id $ticker ${id_file}
+		update_id $ticker "${out_file}"
 	fi
 }
 
@@ -56,7 +56,7 @@ load_n_gaap_eps () {
 	if [ -f $eps_out_file ]; then
 		echo "${eps_out_file} already exists."
 	else
-		update_id_if_required $ticker ${id_file}
+		update_id_if_required $ticker "${id_file}"
 
 		if [ -s "${id_file}" ]; then
 			symbol_id=`python to_csv_ngaap_eps.py ${id_file} ${ticker}`
