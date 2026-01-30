@@ -49,6 +49,7 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 	public static final String INPUT_FILE_WITH_NON_GAAP_EPS_PARAM = "-n-gaap-eps";
 	public static final String INPUT_FILE_WITH_DIVIDENDS_PARAM = "-dividends";
 
+	static final long DIVIDENDS_AGE_THRESHOLD = 30 * 4; // ~4 months
 	private static final int YEARS_BACK = 5;
 
 	public TransformEpsDataForTrainingTask(DbManager dbManager) {
@@ -133,9 +134,9 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 		final Double currentFScore = getClosestFScore(stocksAndFScoreStore, assetName,
 				currentDate,
 				alreadyReportedAssets);
-		final AssetDividendInfo dividendAtCurrentEps = DataHandlingUtil.getCurrentEntryOrPrevious(dividendStore,
+		final AssetDividendInfo dividendAtCurrentEps = getClosestDividend(dividendStore,
 				assetName,
-				currentDate);
+				epsEntry.getValue().getDate());
 
 		final AssetEpsInfo previousEps = DataHandlingUtil.getPreviousEntry(epsData, currentDate);
 		final AssetNonGaapEpsInfo previousNonGaapEps = DataHandlingUtil.getPreviousEntry(nonGaapEpsStore, assetName,
@@ -163,9 +164,9 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 			final AssetPriceInfo priceAtPreviousEps = DataHandlingUtil.getCurrentEntryOrNext(priceStore,
 					assetName,
 					previousEps.date);
-			final AssetDividendInfo dividendAtPreviousEps = DataHandlingUtil.getCurrentEntryOrPrevious(dividendStore,
+			final AssetDividendInfo dividendAtPreviousEps = getClosestDividend(dividendStore,
 					assetName,
-					previousEps.date);
+					previousEps.getDate());
 
 			if (priceAtPreviousEps == null) {
 				LOGGER.warn("Can't get previous price details for '{}' for EPS on '{}'.",
@@ -222,6 +223,19 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 						DatesAndSetUtil.dateToStr(currentDate));
 			}
 		}
+	}
+
+	@VisibleForTesting
+	static AssetDividendInfo getClosestDividend(Map<String, NavigableMap<Date, AssetDividendInfo>> dividendStore,
+			String assetName, Date date) {
+		final AssetDividendInfo dividendInfo = DataHandlingUtil.getCurrentEntryOrPrevious(dividendStore, assetName,
+				date);
+
+		if (dividendInfo != null && DatesAndSetUtil.daysDiff(date, dividendInfo.getDate()) > DIVIDENDS_AGE_THRESHOLD) {
+			return null;
+		}
+
+		return dividendInfo;
 	}
 
 	private void loadNonGaapEpsFromFilesAndDb(String nonGaapEpsInputFile,

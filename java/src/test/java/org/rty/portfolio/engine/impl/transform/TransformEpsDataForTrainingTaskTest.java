@@ -167,6 +167,20 @@ class TransformEpsDataForTrainingTaskTest {
 		assertSame(price2DaysAfterCurrentEps, result.price2DaysAfterCurrentEps);
 	}
 
+	@Test
+	void testGetClosestDividend() {
+		// "fresh" dividend
+		dividendAtCurrentEps = addDividendDataToStore(D_2025_07_17);
+		AssetDividendInfo result = TransformEpsDataForTrainingTask.getClosestDividend(dividendStore, TEST_ASSET,
+				D_2025_07_17);
+		assertSame(dividendAtCurrentEps, result);
+
+		// dividend too old
+		result = TransformEpsDataForTrainingTask.getClosestDividend(dividendStore, TEST_ASSET,
+				dateFrom(18 + (int) TransformEpsDataForTrainingTask.DIVIDENDS_AGE_THRESHOLD));
+		assertNull(result);
+	}
+
 	private void setCurrentEpsBasicData() {
 		currentEps = addEpsDataToStore(D_2025_07_17);
 		currentNonGaapEps = addNonGaapEpsDataToStore(D_2025_07_17);

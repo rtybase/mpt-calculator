@@ -125,8 +125,8 @@ public final class DatesAndSetUtil {
 		return date;
 	}
 
-	private static long daysDiff(Date date1, Date date2) {
-		if (date2 != null) {
+	public static long daysDiff(Date date1, Date date2) {
+		if (date1 != null && date2 != null) {
 			return Duration.between(date1.toInstant(), date2.toInstant()).abs().toDays();
 		}
 

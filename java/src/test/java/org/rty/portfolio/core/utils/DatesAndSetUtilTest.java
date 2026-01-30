@@ -191,4 +191,15 @@ class DatesAndSetUtilTest extends CommonTestRoutines {
 		result = DatesAndSetUtil.oneOrTheOther(false, 1, 2);
 		assertEquals(2, result);
 	}
+
+	@Test
+	void testDaysDiff() {
+		assertEquals(Long.MAX_VALUE, DatesAndSetUtil.daysDiff(null, null));
+		assertEquals(Long.MAX_VALUE, DatesAndSetUtil.daysDiff(D_2025_07_17, null));
+		assertEquals(Long.MAX_VALUE, DatesAndSetUtil.daysDiff(null, D_2025_07_17));
+
+		assertEquals(0L, DatesAndSetUtil.daysDiff(D_2025_07_17, D_2025_07_17));
+		assertEquals(1L, DatesAndSetUtil.daysDiff(dateFrom(17), dateFrom(16)));
+		assertEquals(1L, DatesAndSetUtil.daysDiff(dateFrom(16), dateFrom(17)));
+	}
 }
