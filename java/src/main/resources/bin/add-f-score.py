@@ -28,11 +28,15 @@ def load_f_score_from(path):
         content = csv.reader(file)
 
         symbol = next(content)
-        dates = next(content)
-        scores = next(content)
-        for date, score in zip(dates, scores):
-            if (len(date) > 0) and (score not in BAD_VALUES):
-                save_to_db(symbol[0], score, convert_to_db_date(date))
+        dates = next(content, [])
+        scores = next(content, [])
+
+        if len(dates) > 0:
+            for date, score in zip(dates, scores):
+                if (len(date) > 0) and (score not in BAD_VALUES):
+                    save_to_db(symbol[0], score, convert_to_db_date(date))
+        else:
+            print("-- Nothing to load!!!", flush=True)
 
 
 if len(sys.argv) > 1:
