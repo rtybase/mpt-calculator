@@ -39,6 +39,13 @@ public class CalculateAssetsShiftCorrelationTask extends Generic2AssetsCalculate
 			return false;
 		}
 
+		if (result.bestShift == 0) {
+			say("Skipping assetId1/assetId2 {}/{} - shift is {}.", result.asset1Id,
+					result.asset2Id,
+					result.bestShift);
+			return false;
+		}
+
 		return true;
 	}
 

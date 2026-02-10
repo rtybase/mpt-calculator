@@ -70,5 +70,5 @@ do
 #    echo "Key: [$key]"
 #    echo "Value: [$value]"
 	
-	load_yf "$key" "$value" "$extra"
+	load_yf "$key" "$value" "$extra" || true
 done < "${input_file}"
