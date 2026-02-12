@@ -61,6 +61,11 @@ load_n_gaap_eps () {
 		if [ -s "${id_file}" ]; then
 			symbol_id=`python to_csv_ngaap_eps.py ${id_file} ${ticker}`
 
+			if [ -z "${symbol_id}" ]; then
+				echo "No ID for ${asset_name}"
+				return
+			fi
+
 			java -Duse-http2=true -jar portfolio-0.0.1-SNAPSHOT.jar DownloadTask \
 				"-url=https://endpoints.investing.com/earnings/v1/instruments/$symbol_id/earnings?limit=10" \
 				-outfile=n-gaap-eps.json -headers=headers/investing-sess.prop

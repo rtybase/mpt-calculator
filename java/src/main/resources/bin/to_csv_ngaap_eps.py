@@ -24,7 +24,9 @@ if len(sys.argv) > 2:
         result = find_id_with(data["quotes"], symbol, "NASDAQ")
 
 #    print(result)
-    print(result["id"])
+    if result is not None:
+        if "id" in result:
+            print(result["id"])
 
 else:
     print("Specify the file with data!")
