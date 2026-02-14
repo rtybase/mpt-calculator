@@ -22,7 +22,9 @@ mkdir -p ${FOLDER_FOR_FINANCE_FILES}
 python add-assets.py inputs/new-assets.txt
 python add-stocks.py ${FOLDER_FOR_SECTOR_FILES}
 python add-f-score.py ${FOLDER_FOR_FSCORE_FILES}
+
 java -jar portfolio-0.0.1-SNAPSHOT.jar LoadAssetFinancialInfoToDbTask "-file=${FOLDER_FOR_FINANCE_FILES}"
+python clean.py FIN-ONLY
 
 ./all_loads.sh
 

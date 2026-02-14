@@ -26,7 +26,9 @@ if [ -s "${file_pattern}.txt" ]; then
 	python add-stocks.py ${FOLDER_FOR_SECTOR_FILES}
 	python add-f-score.py ${FOLDER_FOR_FSCORE_FILES}
 	java -jar portfolio-0.0.1-SNAPSHOT.jar LoadNonGaapEpsToDbTask "-file=${FOLDER_FOR_N_GAAP_EPS_FILES}"
+
 	java -jar portfolio-0.0.1-SNAPSHOT.jar LoadAssetFinancialInfoToDbTask "-file=${FOLDER_FOR_FINANCE_FILES}"
+	python clean.py FIN-ONLY
 
 	rm -rf ${FOLDER_FOR_SECTOR_FILES}
 	rm -rf ${FOLDER_FOR_FSCORE_FILES}
