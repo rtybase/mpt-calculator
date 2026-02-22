@@ -3,11 +3,13 @@ set -o pipefail
 set -ue
 
 FOLDER_FOR_N_GAAP_EPS_FILES=${FOLDER_FOR_N_GAAP_EPS_FILES:-"./data_to_load_n_gaap_eps"}
+JCACHE_FOLDER=${JCACHE_FOLDER:-"./jcache"}
 CACHE_FOLDER="/d/cache"
 MAX_AGE_SECONDS=$((5*24*60*60))
 
 extract_session() {
-	java -Duse-http2=true -jar portfolio-0.0.1-SNAPSHOT.jar DownloadTask \
+	java -XX:+AutoCreateSharedArchive -XX:SharedArchiveFile=${JCACHE_FOLDER}/j-client.jsa \
+		-Duse-http2=true -jar portfolio-0.0.1-SNAPSHOT.jar DownloadTask \
 		"-url=https://uk.investing.com/equities/microsoft-corp-earnings" \
 		-outfile=msft-ss-tt-yy.html -headers=headers/investing.prop
 
@@ -22,7 +24,8 @@ update_id() {
 	ticker=$1
 	out_file=$2
 
-	java -Duse-http2=true -jar portfolio-0.0.1-SNAPSHOT.jar DownloadTask \
+	java -XX:+AutoCreateSharedArchive -XX:SharedArchiveFile=${JCACHE_FOLDER}/j-client.jsa \
+		-Duse-http2=true -jar portfolio-0.0.1-SNAPSHOT.jar DownloadTask \
 		"-url=https://api.investing.com/api/search/v2/search?q=$ticker" \
 		-outfile=$out_file -headers=headers/investing-sess.prop
 
@@ -66,7 +69,8 @@ load_n_gaap_eps () {
 				return
 			fi
 
-			java -Duse-http2=true -jar portfolio-0.0.1-SNAPSHOT.jar DownloadTask \
+			java -XX:+AutoCreateSharedArchive -XX:SharedArchiveFile=${JCACHE_FOLDER}/j-client.jsa \
+				-Duse-http2=true -jar portfolio-0.0.1-SNAPSHOT.jar DownloadTask \
 				"-url=https://endpoints.investing.com/earnings/v1/instruments/$symbol_id/earnings?limit=10" \
 				-outfile=n-gaap-eps.json -headers=headers/investing-sess.prop
 
@@ -89,6 +93,7 @@ input_file=$1
 echo "Loading definitions from ${input_file}"
 
 mkdir -p ${FOLDER_FOR_N_GAAP_EPS_FILES}
+mkdir -p ${JCACHE_FOLDER}
 mkdir -p ${CACHE_FOLDER}
 
 dos2unix ${input_file}

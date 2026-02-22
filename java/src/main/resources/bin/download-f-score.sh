@@ -3,6 +3,7 @@ set -o pipefail
 set -ue
 
 FOLDER_FOR_FSCORE_FILES=${FOLDER_FOR_FSCORE_FILES:-"./data_to_load_fscore"}
+JCACHE_FOLDER=${JCACHE_FOLDER:-"./jcache"}
 
 load_fscore () {
 	ticker=$1
@@ -15,7 +16,8 @@ load_fscore () {
 	if [ -f $fscore_out_file ]; then
 		echo "${fscore_out_file} already exists."
 	else 
-		java -Duse-http2=true -jar portfolio-0.0.1-SNAPSHOT.jar DownloadTask \
+		java -XX:+AutoCreateSharedArchive -XX:SharedArchiveFile=${JCACHE_FOLDER}/j-client.jsa \
+			-Duse-http2=true -jar portfolio-0.0.1-SNAPSHOT.jar DownloadTask \
 			"-url=https://www.gurufocus.com/term/fscore/$1" \
 			-outfile=fscore.html -headers=headers/gurufocus.prop
 
@@ -39,6 +41,7 @@ input_file=$1
 echo "Loading definitions from ${input_file}"
 
 mkdir -p ${FOLDER_FOR_FSCORE_FILES}
+mkdir -p ${JCACHE_FOLDER}
 
 dos2unix ${input_file}
 

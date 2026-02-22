@@ -3,6 +3,7 @@ set -o pipefail
 set -ue
 
 FOLDER_FOR_SECTOR_FILES=${FOLDER_FOR_SECTOR_FILES:-"./data_to_load_sectors"}
+JCACHE_FOLDER=${JCACHE_FOLDER:-"./jcache"}
 
 load_sector () {
 	ticker=$1
@@ -15,7 +16,8 @@ load_sector () {
 	if [ -f $sector_out_file ]; then
 		echo "${sector_out_file} already exists."
 	else 
-		java -Duse-http2=true -jar portfolio-0.0.1-SNAPSHOT.jar DownloadTask \
+		java -XX:+AutoCreateSharedArchive -XX:SharedArchiveFile=${JCACHE_FOLDER}/j-client.jsa \
+			-Duse-http2=true -jar portfolio-0.0.1-SNAPSHOT.jar DownloadTask \
 			"-url=https://api.nasdaq.com/api/quote/$1/summary?assetclass=stocks" \
 			-outfile=sector.json
 
@@ -33,6 +35,7 @@ input_file=$1
 echo "Loading definitions from ${input_file}"
 
 mkdir -p ${FOLDER_FOR_SECTOR_FILES}
+mkdir -p ${JCACHE_FOLDER}
 
 dos2unix ${input_file}
 

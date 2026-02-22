@@ -3,6 +3,7 @@ set -o pipefail
 set -ue
 
 FOLDER_FOR_EARNINGS_FILES=${FOLDER_FOR_EARNINGS_FILES:-"./data_to_load_earnings"}
+JCACHE_FOLDER=${JCACHE_FOLDER:-"./jcache"}
 
 load_earnings () {
 	ticker=$2
@@ -15,7 +16,11 @@ load_earnings () {
 	if [ -f $eps_out_file ]; then
 		echo "${eps_out_file} already exists."
 	else 
-		java -Duse-http2=true -jar portfolio-0.0.1-SNAPSHOT.jar DownloadTask "-url=https://api.nasdaq.com/api/company/$1/revenue?limit=1" -outfile=earnings.json
+		java -XX:+AutoCreateSharedArchive -XX:SharedArchiveFile=${JCACHE_FOLDER}/j-client.jsa \
+			-Duse-http2=true -jar portfolio-0.0.1-SNAPSHOT.jar DownloadTask \
+			"-url=https://api.nasdaq.com/api/company/$1/revenue?limit=1" \
+			-outfile=earnings.json
+
 		if [ -s earnings.json ]; then
 			cat earnings.json | python -m json.tool | grep -iE "value.*EPS" -A 3 | \
 				grep -iE "value[2-4].*\([0-9]{2}" | sed -e 's/[(]\$/\-/g' | sed -e 's/[\",\$\(\)\:]//g' | \
@@ -32,6 +37,7 @@ input_file=$1
 echo "Loading definitions from ${input_file}"
 
 mkdir -p ${FOLDER_FOR_EARNINGS_FILES}
+mkdir -p ${JCACHE_FOLDER}
 
 dos2unix ${input_file}
 
