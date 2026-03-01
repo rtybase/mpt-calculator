@@ -22,9 +22,7 @@ load_earnings () {
 			-outfile=earnings.json
 
 		if [ -s earnings.json ]; then
-			cat earnings.json | python -m json.tool | grep -iE "value.*EPS" -A 3 | \
-				grep -iE "value[2-4].*\([0-9]{2}" | sed -e 's/[(]\$/\-/g' | sed -e 's/[\",\$\(\)\:]//g' | \
-				awk -F ' ' -v 'OFS=,' -v TICKER="${ticker}" '{ print "\"" TICKER "\"", $2, $3}' 1>${eps_out_file} 2>/dev/null
+			python to_csv_earnings.py earnings.json "${ticker}" 1>${eps_out_file} 2>/dev/null
 		else
 			echo "No data for ${ticker}"
 		fi
