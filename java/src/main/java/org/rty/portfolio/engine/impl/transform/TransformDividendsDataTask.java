@@ -80,9 +80,19 @@ public class TransformDividendsDataTask extends AbstractTask {
 	private AssetDividendInfo toDividendInfo(String assetName, int payValueIndex, int dateColumn,
 			DateTimeFormatter dateFormatter, String[] line) {
 		final Date date = DatesAndSetUtil.strToDate(dateFormatter, line[dateColumn]);
-		final double price = ToEntityConvertorsUtil.doubleFromString(line[payValueIndex].replace(DIVIDEND_SIGN, ""));
+		final double price = ToEntityConvertorsUtil.doubleFromString(removeDividendTextFrom(line[payValueIndex]));
 
 		return new AssetDividendInfo(assetName, price, date);
+	}
+
+	private static String removeDividendTextFrom(String value) {
+		final int start = value.indexOf(DIVIDEND_SIGN);
+
+		if (start != -1) {
+			return value.substring(0, start);
+		}
+
+		return value;
 	}
 
 	private static boolean isDividendLine(int minimumColumnsToHave, String[] line) {
@@ -91,7 +101,7 @@ public class TransformDividendsDataTask extends AbstractTask {
 
 	private static boolean hasDividendText(String[] line) {
 		for (String value : line) {
-			if (value != null && value.endsWith(DIVIDEND_SIGN)) {
+			if (value != null && value.contains(DIVIDEND_SIGN)) {
 				return true;
 			}
 		}

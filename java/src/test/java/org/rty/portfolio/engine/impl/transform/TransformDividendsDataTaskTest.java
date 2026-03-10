@@ -49,8 +49,9 @@ public class TransformDividendsDataTaskTest {
 	private static void verifyFileContent() throws Exception {
 		List<String> content = Files.readAllLines(Paths.get(OUTPUT_FILE));
 
-		assertEquals(1, content.size());
+		assertEquals(2, content.size());
 		assertEquals("\"asset\",\"0.83\",\"2025-05-15\"", content.get(0));
+		assertEquals("\"asset\",\"0.91\",\"2025-05-16\"", content.get(1));
 	}
 
 }
