@@ -6,14 +6,20 @@
 	header("Content-Type:text/html; charset=UTF-8");
 
 	$period = periodTableFrom($_GET["period"]);
+	$type = productTypeFrom($_GET["type"]);
 
 	$link = connect("portfolio");
 
-	$query = "SELECT a.fk_assetID, b.vchr_name, a.dbl_avgreturn, a.dbl_varience ";
+	$query = "SELECT a.fk_assetID, b.vchr_name, a.dbl_avgreturn, a.dbl_varience, b.vchr_type ";
 	$query.= "FROM tbl_avgreturns".$period." a, tbl_assets b ";
 	$query.= "WHERE a.fk_assetID = b.int_assetID ";
+
+	if (!empty($type)) {
+		$query.= "AND b.vchr_type = '".$type."' ";
+	}
+
 	$query.= "ORDER BY a.dbl_avgreturn DESC ";
-	$query.= "LIMIT 0, 60";
+	$query.= "LIMIT 0, 100";
 
 	$tableResult = "";
 	$res = mysql_query($query, $link);
@@ -25,6 +31,7 @@
 		else $tableResult.= ",[";
 
 		$tableResult.= "'".linkToAsset($row[0], $row[1])."',";
+		$tableResult.= "'".$row[4]."',";
 		$tableResult.= toChartNumber(round($row[2], $RETURN_ROUND_PRECISION)).",";
 		$tableResult.= toChartNumber(volatilityFrom($row[3]))."]";
 		$i++;
@@ -52,7 +59,7 @@
 	}
 
 	function drawTable(element, data) {
-		data.setProperty(0, 0, 'style', 'width:1000px');
+		data.setProperty(0, 0, 'style', 'width:750px');
 		var table = new google.visualization.Table(document.getElementById(element));
 		table.draw(data, {showRowNumber: false, allowHtml: true});
 	}
@@ -60,6 +67,7 @@
 	function generateData() {
 		var dataTable = new google.visualization.DataTable();
 		dataTable.addColumn('string', 'Asset');
+		dataTable.addColumn('string', 'Type');
 		dataTable.addColumn('number', 'Average Return');
 		dataTable.addColumn('number', 'Volatility');
 		return dataTable;
@@ -69,20 +77,23 @@
   <body>
     <table align="center" border="0"><tr>
       <td valign="top"><?php showMenu(); ?></td>
-      <td><table align="center" border="0">
+      <td valign="top"><table align="center" border="0">
 	<tr><td align="left">
 		<form name="main" method="GET" action="./<?php echo basename($_SERVER['PHP_SELF']);?>">
 		<font face="verdana">High returns for
 			<select name="period" onchange="document.forms['main'].submit();">
 				<option value="">Overall</option>
-				<option value="1w"<?php if ($period === "_1w") echo " selected";?>>1 Week</option>
-				<option value="1m"<?php if ($period === "_1m") echo " selected";?>>1 Month</option>
-				<option value="6m"<?php if ($period === "_6m") echo " selected";?>>6 Months</option>
-				<option value="1y"<?php if ($period === "_1y") echo " selected";?>>1 Year</option>
-				<option value="2y"<?php if ($period === "_2y") echo " selected";?>>2 Years</option>
-				<option value="5y"<?php if ($period === "_5y") echo " selected";?>>5 Years</option>
+<?php
+	printOptions($PERIODS, str_replace("_", "", $period));
+?>
 			</select>
-		period:</font>
+		period and type
+			<select name="type" onchange="document.forms['main'].submit();">
+				<option value="">All</option>
+<?php
+	printOptions($PRODUCT_TYPE, $_GET["type"]);
+?>
+			</select></font>
 		</form>
 	</td></tr>
 	<tr><td><hr/></td></tr>

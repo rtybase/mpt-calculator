@@ -3,15 +3,46 @@
 	$VOLATILITY_ROUND_PRECISION = 4;
 	$ASSET_NAMES_CACHE = array();
 
-	$PERIODS = array("1w", "1m", "6m", "1y", "2y", "5y");
+	$PERIODS = array("1w" => "1 Week",
+				"1m" => "1 Month",
+				"6m" => "6 Months",
+				"1y" => "1 Year",
+				"2y" => "2 Years",
+				"5y" => "5 Years");
+	$PRODUCT_TYPE = array("1" => "Bond",
+				"2" => "Commodity Futures",
+				"3" => "Crypto",
+				"4" => "ETF",
+				"5" => "Forex",
+				"6" => "Fund",
+				"7" => "Index",
+				"8" => "Index Fund",
+				"9" => "Pension Fund",
+				"10" => "Stock");
 
 	function periodTableFrom($period) {
 		global $PERIODS;
 
-		if (in_array($period, $PERIODS)) {
+		if (array_key_exists($period, $PERIODS)) {
 			return "_".$period;
 		}
 		return "";
+	}
+
+	function productTypeFrom($productType) {
+		global $PRODUCT_TYPE;
+
+		if (array_key_exists($productType, $PRODUCT_TYPE)) {
+			return $PRODUCT_TYPE[$productType];
+		}
+		return "";
+	}
+
+	function printOptions($arr, $sel) {
+		foreach ($arr as $key => $val) {
+			if ($key == $sel) echo "<option value=\"$key\" selected>$val</option>\n";
+			else echo "<option value=\"$key\">$val</option>\n";
+		}
 	}
 
 	function indicatorText($text, $indicator) {
