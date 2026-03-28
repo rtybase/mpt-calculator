@@ -315,6 +315,42 @@ public class DbManager {
 	}
 
 	/**
+	 * Returns all the financials for the stocks (only!) for a given period.
+	 */
+	public List<AssetFinancialInfo> getAllStocksFinancialInfo(int yearsBack) throws Exception {
+		Preconditions.checkArgument(yearsBack > 0, "yearsBack must be > 0!");
+
+		final List<AssetFinancialInfo> result = new ArrayList<>(2048);
+
+		try (PreparedStatement pStmt = connection.prepareStatement("SELECT vchr_symbol, dtm_date,"
+				+ " dbl_total_current_assets, dbl_total_current_liabilities,"
+				+ " dbl_total_assets, dbl_total_liabilities,"
+				+ " dbl_total_equity, dbl_net_cash_flow_operating,"
+				+ " dbl_capital_expenditures, dbl_share_issued"
+				+ " from tbl_finances_quarter"
+				+ " where dtm_date between (NOW() - INTERVAL ? YEAR) and NOW()")) {
+			pStmt.setInt(1, yearsBack);
+
+			try (ResultSet rs = pStmt.executeQuery()) {
+				while (rs.next()) {
+					result.add(new AssetFinancialInfo(rs.getString(1),
+							rs.getDate(2),
+							getDoubleOrNull(rs, 3),
+							getDoubleOrNull(rs, 4),
+							getDoubleOrNull(rs, 5),
+							getDoubleOrNull(rs, 6),
+							getDoubleOrNull(rs, 7),
+							getDoubleOrNull(rs, 8),
+							getDoubleOrNull(rs, 9),
+							getDoubleOrNull(rs, 10)));
+				}
+			}
+		}
+
+		return Collections.unmodifiableList(result);
+	}
+
+	/**
 	 * Adds time shift correlation records to DB.
 	 * 
 	 */
@@ -418,7 +454,6 @@ public class DbManager {
 			pStmt.setInt(1, yearsBack);
 
 			try (ResultSet rs = pStmt.executeQuery()) {
-
 				while (rs.next()) {
 					addResultToStorage(storage, rs);
 				}
@@ -487,7 +522,6 @@ public class DbManager {
 			pStmt.setInt(1, yearsBack);
 
 			try (ResultSet rs = pStmt.executeQuery()) {
-
 				while (rs.next()) {
 					result.add(new AssetPriceInfo(rs.getString(1),
 							rs.getDouble(2),
@@ -521,7 +555,6 @@ public class DbManager {
 			pStmt.setInt(1, yearsBack);
 
 			try (ResultSet rs = pStmt.executeQuery()) {
-
 				while (rs.next()) {
 					result.add(new AssetDividendInfo(rs.getString(1),
 							rs.getDouble(2),
@@ -558,7 +591,6 @@ public class DbManager {
 			pStmt.setInt(1, yearsBack);
 
 			try (ResultSet rs = pStmt.executeQuery()) {
-
 				while (rs.next()) {
 					result.add(new AssetEpsInfo(
 							rs.getString(1),
@@ -592,7 +624,6 @@ public class DbManager {
 			pStmt.setInt(1, yearsBack);
 
 			try (ResultSet rs = pStmt.executeQuery()) {
-
 				while (rs.next()) {
 					result.add(new 	AssetNonGaapEpsInfo(rs.getString(1),
 							rs.getDouble(2),

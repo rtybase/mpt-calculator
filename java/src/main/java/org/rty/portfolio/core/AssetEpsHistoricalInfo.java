@@ -1,5 +1,7 @@
 package org.rty.portfolio.core;
 
+import java.util.Optional;
+
 import org.rty.portfolio.core.utils.DataHandlingUtil;
 import org.rty.portfolio.core.utils.DatesAndSetUtil;
 import org.rty.portfolio.math.Calculator;
@@ -32,6 +34,13 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 			"prev_f_score",
 			"prev_div_yld",
 
+			"prev_cu_ratio",
+			"prev_to_ratio",
+			"prev_d_e_calc",
+			"prev_d_e_rep",
+			"prev_fcf_ps",
+			"prev_p_b",
+
 			"after_market_close",
 			"pred_eps",
 			"eps",
@@ -44,6 +53,13 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 			"p_e",
 			"f_score",
 			"div_yld",
+
+			"cu_ratio",
+			"to_ratio",
+			"d_e_calc",
+			"d_e_rep",
+			"fcf_ps",
+			"p_b",
 
 			"spr_pred_eps_prev_pred_eps", "spr_eps_prev_eps",
 			"spr_ngaap_pred_eps_prev_ngaap_pred_eps", "spr_ngaap_eps_prev_ngaap_eps",
@@ -74,11 +90,13 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 	public final AssetNonGaapEpsInfo currentNonGaapEps;
 	public final double currentFScore;
 	public final AssetDividendInfo currentDividend;
+	public final AssetFinancialInfo currentFinancialInfo;
 
 	public final AssetEpsInfo previousEps;
 	public final AssetNonGaapEpsInfo previousNonGaapEps;
 	public final double previousFScore;
 	public final AssetDividendInfo previousDividend;
+	public final AssetFinancialInfo previousFinancialInfo;
 
 	public final AssetPriceInfo priceAtCurrentEps;
 	public final AssetPriceInfo priceAtPreviousEps;
@@ -90,8 +108,10 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 	public final AssetPriceInfo price2DaysAfterCurrentEps;
 
 	public AssetEpsHistoricalInfo(String assetName, int sectorIndex, int industryIndex,
-			AssetEpsInfo currentEps, AssetNonGaapEpsInfo currentNonGaapEps, double currentFScore, AssetDividendInfo currentDividend,
-			AssetEpsInfo previousEps, AssetNonGaapEpsInfo previousNonGaapEps,  double previousFScore, AssetDividendInfo previousDividend,
+			AssetEpsInfo currentEps, AssetNonGaapEpsInfo currentNonGaapEps, double currentFScore,
+			AssetDividendInfo currentDividend, AssetFinancialInfo currentFinancialInfo,
+			AssetEpsInfo previousEps, AssetNonGaapEpsInfo previousNonGaapEps,  double previousFScore,
+			AssetDividendInfo previousDividend, AssetFinancialInfo previousFinancialInfo,
 			AssetPriceInfo priceAtPreviousEps,
 			AssetPriceInfo priceBeforePreviousEps,
 			AssetPriceInfo price2DaysBeforeCurrentEps,
@@ -107,11 +127,13 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 		this.currentNonGaapEps = currentNonGaapEps;
 		this.currentFScore = currentFScore;
 		this.currentDividend = currentDividend;
+		this.currentFinancialInfo = currentFinancialInfo;
 
 		this.previousEps = previousEps;
 		this.previousNonGaapEps = previousNonGaapEps;
 		this.previousFScore = previousFScore;
 		this.previousDividend = previousDividend;
+		this.previousFinancialInfo = previousFinancialInfo;
 
 		this.priceAtCurrentEps = priceAtCurrentEps;
 		this.priceAtPreviousEps = priceAtPreviousEps;
@@ -167,6 +189,36 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 				getInfoBeforePreviousEpsAnnouncement().price);
 	}
 
+	public double getPreviousCurrentRatio() {
+		return Optional.ofNullable(previousFinancialInfo).map(AssetFinancialInfo::currentRatio).orElse(0D);
+	}
+
+	public double getPreviousTotalRatio() {
+		return Optional.ofNullable(previousFinancialInfo).map(AssetFinancialInfo::totalRatio).orElse(0D);
+	}
+
+	public double getPreviousDebtOverEquityCalculated() {
+		return Optional.ofNullable(previousFinancialInfo).map(AssetFinancialInfo::debtOverEquityCalculated).orElse(0D);
+	}
+
+	public double getPreviousDebtOverEquityReported() {
+		return Optional.ofNullable(previousFinancialInfo).map(AssetFinancialInfo::debtOverEquityReported).orElse(0D);
+	}
+
+	public double getPreviousFreeCashFlowPerShare() {
+		return Optional.ofNullable(previousFinancialInfo).map(AssetFinancialInfo::freeCashFlowPerShare).orElse(0D);
+	}
+
+	public double getPreviousPOverB() {
+		final double bookValuePerShare = Optional.ofNullable(previousFinancialInfo)
+				.map(AssetFinancialInfo::bookValuePerShare).orElse(0D);
+		if (Calculator.almostZero(bookValuePerShare)) {
+			return 0D;
+		}
+
+		return getInfoBeforePreviousEpsAnnouncement().price / bookValuePerShare;
+	}
+
 	public int getCurrentAfterMarketClose() {
 		return afterMarketClose(currentNonGaapEps);
 	}
@@ -195,6 +247,36 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 
 		return Calculator.calculateDividendYield(currentDividend.pay,
 				getInfoBeforeEpsAnnouncement().price);
+	}
+
+	public double getCurrentCurrentRatio() {
+		return Optional.ofNullable(currentFinancialInfo).map(AssetFinancialInfo::currentRatio).orElse(0D);
+	}
+
+	public double getCurrentTotalRatio() {
+		return Optional.ofNullable(currentFinancialInfo).map(AssetFinancialInfo::totalRatio).orElse(0D);
+	}
+
+	public double getCurrentDebtOverEquityCalculated() {
+		return Optional.ofNullable(currentFinancialInfo).map(AssetFinancialInfo::debtOverEquityCalculated).orElse(0D);
+	}
+
+	public double getCurrentDebtOverEquityReported() {
+		return Optional.ofNullable(currentFinancialInfo).map(AssetFinancialInfo::debtOverEquityReported).orElse(0D);
+	}
+
+	public double getCurrentFreeCashFlowPerShare() {
+		return Optional.ofNullable(currentFinancialInfo).map(AssetFinancialInfo::freeCashFlowPerShare).orElse(0D);
+	}
+
+	public double getCurrentPOverB() {
+		final double bookValuePerShare = Optional.ofNullable(currentFinancialInfo)
+				.map(AssetFinancialInfo::bookValuePerShare).orElse(0D);
+		if (Calculator.almostZero(bookValuePerShare)) {
+			return 0D;
+		}
+
+		return getInfoBeforeEpsAnnouncement().price / bookValuePerShare;
 	}
 
 	public AssetPriceInfo getInfoBeforeMinusOneDayEpsAnnouncement() {
@@ -283,6 +365,13 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 				"" + previousFScore,
 				"" + round(getPreviousDividendYield()),
 
+				"" + round(getPreviousCurrentRatio()),
+				"" + round(getPreviousTotalRatio()),
+				"" + round(getPreviousDebtOverEquityCalculated()),
+				"" + round(getPreviousDebtOverEquityReported()),
+				"" + round(getPreviousFreeCashFlowPerShare()),
+				"" + round(getPreviousPOverB()),
+
 				"" + getCurrentAfterMarketClose(),
 				"" + round(currentPredictedEpsValue),
 				"" + round(currentEps.eps),
@@ -295,6 +384,13 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 				"" + round(getCurrentPOverE()),
 				"" + currentFScore,
 				"" + round(getCurrentDividendYield()),
+
+				"" + round(getCurrentCurrentRatio()),
+				"" + round(getCurrentTotalRatio()),
+				"" + round(getCurrentDebtOverEquityCalculated()),
+				"" + round(getCurrentDebtOverEquityReported()),
+				"" + round(getCurrentFreeCashFlowPerShare()),
+				"" + round(getCurrentPOverB()),
 
 				"" + surprise(currentPredictedEpsValue, previousPredictedEpsValue),
 				"" + surprise(currentEps.eps, previousEps.eps),

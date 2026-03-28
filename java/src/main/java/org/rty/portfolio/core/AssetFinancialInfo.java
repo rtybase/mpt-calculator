@@ -4,7 +4,9 @@ import static org.rty.portfolio.core.CsvWritable.emptyIfNull;
 
 import java.util.Date;
 
+import org.rty.portfolio.core.utils.DataHandlingUtil;
 import org.rty.portfolio.core.utils.DatesAndSetUtil;
+import org.rty.portfolio.math.Calculator;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,7 +26,8 @@ public class AssetFinancialInfo implements CsvWritable, EntryWithAssetNameAndDat
 	public final Double shareIssued;
 
 	public AssetFinancialInfo(String assetName, Date date, Double totalCurrentAssets, Double totalCurrentLiabilities,
-			Double totalAssets, Double totalLiabilities, Double totalEquity, Double netCashFlowOperating,
+			Double totalAssets, Double totalLiabilities,
+			Double totalEquity, Double netCashFlowOperating,
 			Double capitalExpenditures, Double shareIssued) {
 		this.assetName = assetName;
 		this.date = date;
@@ -71,5 +74,69 @@ public class AssetFinancialInfo implements CsvWritable, EntryWithAssetNameAndDat
 	@Override
 	public Date getDate() {
 		return DatesAndSetUtil.toJavaDate(date);
+	}
+
+	public double currentRatio() {
+		return result(div(totalCurrentAssets, totalCurrentLiabilities));
+	}
+
+	public double totalRatio() {
+		return result(div(totalAssets, totalLiabilities));
+	}
+
+	public double debtOverEquityCalculated() {
+		return result(div(totalLiabilities, diff(totalAssets, totalLiabilities)));
+	}
+
+	public double debtOverEquityReported() {
+		if (totalEquity == null) {
+			return debtOverEquityCalculated();
+		} else {
+			return result(div(totalLiabilities, totalEquity));
+		}
+	}
+
+	public double freeCashFlowPerShare() {
+		if (capitalExpenditures == null) {
+			return result(div(mul(netCashFlowOperating, 1000D), shareIssued));
+		} else {
+			return result(div(mul(diff(netCashFlowOperating, Math.abs(capitalExpenditures)), 1000D), shareIssued));
+		}
+	}
+
+	public double bookValuePerShare() {
+		return result(div(diff(totalAssets, totalLiabilities), shareIssued));
+	}
+
+	private static Double mul(Double v1, double v2) {
+		if (DataHandlingUtil.allNotNull(v1)) {
+			return v1 * v2;
+		}
+
+		return null;
+	}
+
+	private static Double div(Double v1, Double v2) {
+		if (DataHandlingUtil.allNotNull(v1, v2) && !Calculator.almostZero(v2)) {
+			return v1 / v2;
+		}
+
+		return null;
+	}
+
+	private static Double diff(Double v1, Double v2) {
+		if (DataHandlingUtil.allNotNull(v1, v2)) {
+			return v1 - v2;
+		}
+
+		return null;
+	}
+
+	private static double result(Double v) {
+		if (v != null) {
+			return v;
+		}
+
+		return 0D;
 	}
 }

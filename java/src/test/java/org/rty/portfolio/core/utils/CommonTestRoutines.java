@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.rty.portfolio.core.AssetDividendInfo;
 import org.rty.portfolio.core.AssetEpsInfo;
+import org.rty.portfolio.core.AssetFinancialInfo;
 import org.rty.portfolio.core.AssetNonGaapEpsInfo;
 import org.rty.portfolio.core.AssetPriceInfo;
 
@@ -46,6 +47,10 @@ public class CommonTestRoutines {
 
 	public static AssetDividendInfo newDividendInfo(double pay, Date date) {
 		return new AssetDividendInfo(TEST_ASSET, pay, date);
+	}
+
+	public static AssetFinancialInfo newFinancialInfo(Date date) {
+		return new AssetFinancialInfo(TEST_ASSET, date, 1D, 2D, 1D, 2D, 4D, 2D, 1D, 2D);
 	}
 
 	protected static AssetPriceInfo assetPriceFrom(String assetName, String date) {

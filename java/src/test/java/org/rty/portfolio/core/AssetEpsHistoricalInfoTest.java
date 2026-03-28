@@ -4,11 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import static org.rty.portfolio.core.utils.CommonTestRoutines.ERROR_TOLERANCE;
 import static org.rty.portfolio.core.utils.CommonTestRoutines.TEST_ASSET;
 import static org.rty.portfolio.core.utils.CommonTestRoutines.newDividendInfo;
 import static org.rty.portfolio.core.utils.CommonTestRoutines.newEpsInfo;
+import static org.rty.portfolio.core.utils.CommonTestRoutines.newFinancialInfo;
 import static org.rty.portfolio.core.utils.CommonTestRoutines.newNonGaapEpsInfo;
 import static org.rty.portfolio.core.utils.CommonTestRoutines.newPriceInfo;
 
@@ -22,8 +22,8 @@ class AssetEpsHistoricalInfoTest {
 	@Test
 	void testGetMonthIndex() {
 		final AssetEpsHistoricalInfo info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				newEpsInfo(0D, 0D), null, F_SCORE, null,
-				null, null, F_SCORE, null,
+				newEpsInfo(0D, 0D), null, F_SCORE, null, null,
+				null, null, F_SCORE, null, null,
 				null, null, null, null, null, null, null);
 
 		assertEquals(6, info.getMonthIndex());
@@ -32,8 +32,8 @@ class AssetEpsHistoricalInfoTest {
 	@Test
 	void testGetAfterMarketCloseWithNullData() {
 		final AssetEpsHistoricalInfo info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				null, null, F_SCORE, null,
-				null, null, F_SCORE, null,
+				null, null, F_SCORE, null, null,
+				null, null, F_SCORE, null, null,
 				null, null, null, null, null, null, null);
 
 		assertEquals(0, info.getPreviousAfterMarketClose());
@@ -43,8 +43,8 @@ class AssetEpsHistoricalInfoTest {
 	@Test
 	void testGetPreviousAfterMarketClose() {
 		final AssetEpsHistoricalInfo info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				null, null, F_SCORE, null, null,
-				newNonGaapEpsInfo(0D, 0D, false), F_SCORE, null,
+				null, null, F_SCORE, null, null, null,
+				newNonGaapEpsInfo(0D, 0D, false), F_SCORE, null, null,
 				null, null, null, null, null, null, null);
 
 		assertEquals(0, info.getPreviousAfterMarketClose());
@@ -54,8 +54,8 @@ class AssetEpsHistoricalInfoTest {
 	@Test
 	void testGetCurrentAfterMarketClose() {
 		final AssetEpsHistoricalInfo info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				null, newNonGaapEpsInfo(0D, 0D, false), F_SCORE, null,
-				null, null, F_SCORE, null,
+				null, newNonGaapEpsInfo(0D, 0D, false), F_SCORE, null, null,
+				null, null, F_SCORE, null, null,
 				null, null, null, null, null, null, null);
 
 		assertEquals(0, info.getPreviousAfterMarketClose());
@@ -65,29 +65,29 @@ class AssetEpsHistoricalInfoTest {
 	@Test
 	void tesGetPreviousPredictedEps() {
 		AssetEpsHistoricalInfo info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				null, null, F_SCORE, null,
-				newEpsInfo(0D, 1D), newNonGaapEpsInfo(0D, 2D, false), F_SCORE, null,
+				null, null, F_SCORE, null, null,
+				newEpsInfo(0D, 1D), newNonGaapEpsInfo(0D, 2D, false), F_SCORE, null, null,
 				null, null, null, null, null, null, null);
 
 		assertEquals(1D, info.getPreviousPredictedEps(), ERROR_TOLERANCE);
 
 		info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				null, null, F_SCORE, null,
-				newEpsInfo(0D, null), newNonGaapEpsInfo(0D, 2D, false), F_SCORE, null,
+				null, null, F_SCORE, null, null,
+				newEpsInfo(0D, null), newNonGaapEpsInfo(0D, 2D, false), F_SCORE, null, null,
 				null, null, null, null, null, null, null);
 
 		assertEquals(2D, info.getPreviousPredictedEps(), ERROR_TOLERANCE);
 
 		info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				null, null, F_SCORE, null,
-				newEpsInfo(0.5D, null), WITH_BMO, F_SCORE, null,
+				null, null, F_SCORE, null, null,
+				newEpsInfo(0.5D, null), WITH_BMO, F_SCORE, null, null,
 				null, null, null, null, null, null, null);
 
 		assertEquals(0.5D, info.getPreviousPredictedEps(), ERROR_TOLERANCE);
 
 		info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				null, null, F_SCORE, null,
-				newEpsInfo(0.5D, null), null, F_SCORE, null,
+				null, null, F_SCORE, null, null,
+				newEpsInfo(0.5D, null), null, F_SCORE, null, null,
 				null, null, null, null, null, null, null);
 
 		assertEquals(0.5D, info.getPreviousPredictedEps(), ERROR_TOLERANCE);
@@ -96,29 +96,29 @@ class AssetEpsHistoricalInfoTest {
 	@Test
 	void tesGetCurrentPredictedEps() {
 		AssetEpsHistoricalInfo info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				newEpsInfo(0D, 1D), newNonGaapEpsInfo(0D, 2D, false), F_SCORE, null,
-				null, null, F_SCORE, null,
+				newEpsInfo(0D, 1D), newNonGaapEpsInfo(0D, 2D, false), F_SCORE, null, null,
+				null, null, F_SCORE, null, null,
 				null, null, null, null, null, null, null);
 
 		assertEquals(1D, info.getCurrentPredictedEps(), ERROR_TOLERANCE);
 
 		info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				newEpsInfo(0D, null), newNonGaapEpsInfo(0D, 2D, false), F_SCORE, null,
-				null, null, F_SCORE, null,
+				newEpsInfo(0D, null), newNonGaapEpsInfo(0D, 2D, false), F_SCORE, null, null,
+				null, null, F_SCORE, null, null,
 				null, null, null, null, null, null, null);
 
 		assertEquals(2D, info.getCurrentPredictedEps(), ERROR_TOLERANCE);
 
 		info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				newEpsInfo(0.5D, null), WITH_BMO, F_SCORE, null,
-				null, null, F_SCORE, null,
+				newEpsInfo(0.5D, null), WITH_BMO, F_SCORE, null, null,
+				null, null, F_SCORE, null, null,
 				null, null, null, null, null, null, null);
 
 		assertEquals(0.5D, info.getCurrentPredictedEps(), ERROR_TOLERANCE);
 
 		info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				newEpsInfo(0.5D, null), null, F_SCORE, null,
-				null, null, F_SCORE, null,
+				newEpsInfo(0.5D, null), null, F_SCORE, null, null,
+				null, null, F_SCORE, null, null,
 				null, null, null, null, null, null, null);
 
 		assertEquals(0.5D, info.getCurrentPredictedEps(), ERROR_TOLERANCE);
@@ -127,29 +127,29 @@ class AssetEpsHistoricalInfoTest {
 	@Test
 	void testGetPreviousNonGaapPredictedEps() {
 		AssetEpsHistoricalInfo info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				null, null, F_SCORE, null,
-				newEpsInfo(0D, 1D), newNonGaapEpsInfo(0D, 2D, false), F_SCORE, null,
+				null, null, F_SCORE, null, null,
+				newEpsInfo(0D, 1D), newNonGaapEpsInfo(0D, 2D, false), F_SCORE, null, null,
 				null, null, null, null, null, null, null);
 
 		assertEquals(2D, info.getPreviousNonGaapPredictedEps(), ERROR_TOLERANCE);
 
 		info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				null, null, F_SCORE, null,
-				newEpsInfo(0D, 1D), WITH_BMO, F_SCORE, null,
+				null, null, F_SCORE, null, null,
+				newEpsInfo(0D, 1D), WITH_BMO, F_SCORE, null, null,
 				null, null, null, null, null, null, null);
 
 		assertEquals(1D, info.getPreviousNonGaapPredictedEps(), ERROR_TOLERANCE);
 
 		info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				null, null, F_SCORE, null,
-				newEpsInfo(0D, null), newNonGaapEpsInfo(0.5D, null, false), F_SCORE, null,
+				null, null, F_SCORE, null, null,
+				newEpsInfo(0D, null), newNonGaapEpsInfo(0.5D, null, false), F_SCORE, null, null,
 				null, null, null, null, null, null, null);
 
 		assertEquals(0.5D, info.getPreviousNonGaapPredictedEps(), ERROR_TOLERANCE);
 
 		info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				null, null, F_SCORE, null,
-				newEpsInfo(0.5D, null), null, F_SCORE, null,
+				null, null, F_SCORE, null, null,
+				newEpsInfo(0.5D, null), null, F_SCORE, null, null,
 				null, null, null, null, null, null, null);
 
 		assertEquals(0.5D, info.getPreviousNonGaapPredictedEps(), ERROR_TOLERANCE);
@@ -158,29 +158,29 @@ class AssetEpsHistoricalInfoTest {
 	@Test
 	void testGetCurrentNonGaapPredictedEps() {
 		AssetEpsHistoricalInfo info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				newEpsInfo(0D, 1D), newNonGaapEpsInfo(0D, 2D, false), F_SCORE, null,
-				null, null, F_SCORE, null,
+				newEpsInfo(0D, 1D), newNonGaapEpsInfo(0D, 2D, false), F_SCORE, null, null,
+				null, null, F_SCORE, null, null,
 				null, null, null, null, null, null, null);
 
 		assertEquals(2D, info.getCurrentNonGaapPredictedEps(), ERROR_TOLERANCE);
 
 		info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				newEpsInfo(0D, 1D), WITH_BMO, F_SCORE, null,
-				null, null, F_SCORE, null,
+				newEpsInfo(0D, 1D), WITH_BMO, F_SCORE, null, null,
+				null, null, F_SCORE, null, null,
 				null, null, null, null, null, null, null);
 
 		assertEquals(1D, info.getCurrentNonGaapPredictedEps(), ERROR_TOLERANCE);
 
 		info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				newEpsInfo(0D, null), newNonGaapEpsInfo(0.5D, null, false), F_SCORE, null,
-				null, null, F_SCORE, null,
+				newEpsInfo(0D, null), newNonGaapEpsInfo(0.5D, null, false), F_SCORE, null, null,
+				null, null, F_SCORE, null, null,
 				null, null, null, null, null, null, null);
 
 		assertEquals(0.5D, info.getCurrentNonGaapPredictedEps(), ERROR_TOLERANCE);
 
 		info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				newEpsInfo(0.5D, null), null, F_SCORE, null,
-				null, null, F_SCORE, null,
+				newEpsInfo(0.5D, null), null, F_SCORE, null, null,
+				null, null, F_SCORE, null, null,
 				null, null, null, null, null, null, null);
 
 		assertEquals(0.5D, info.getCurrentNonGaapPredictedEps(), ERROR_TOLERANCE);
@@ -189,15 +189,15 @@ class AssetEpsHistoricalInfoTest {
 	@Test
 	void testGetPreviousNonGaapEps() {
 		AssetEpsHistoricalInfo info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				null, null, F_SCORE, null,
-				newEpsInfo(1D, null), newNonGaapEpsInfo(2D, null, false), F_SCORE, null,
+				null, null, F_SCORE, null, null,
+				newEpsInfo(1D, null), newNonGaapEpsInfo(2D, null, false), F_SCORE, null, null,
 				null, null, null, null, null, null, null);
 
 		assertEquals(2D, info.getPreviousNonGaapEps(), ERROR_TOLERANCE);
 
 		info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				null, null, F_SCORE, null,
-				newEpsInfo(1D, null), null, F_SCORE, null,
+				null, null, F_SCORE, null, null,
+				newEpsInfo(1D, null), null, F_SCORE, null, null,
 				null, null, null, null, null, null, null);
 
 		assertEquals(1D, info.getPreviousNonGaapEps(), ERROR_TOLERANCE);
@@ -206,15 +206,15 @@ class AssetEpsHistoricalInfoTest {
 	@Test
 	void testGetCurrentNonGaapEps() {
 		AssetEpsHistoricalInfo info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				newEpsInfo(1D, null), newNonGaapEpsInfo(2D, null, false), F_SCORE, null,
-				null, null, F_SCORE, null,
+				newEpsInfo(1D, null), newNonGaapEpsInfo(2D, null, false), F_SCORE, null, null,
+				null, null, F_SCORE, null, null,
 				null, null, null, null, null, null, null);
 
 		assertEquals(2D, info.getCurrentNonGaapEps(), ERROR_TOLERANCE);
 
 		info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				newEpsInfo(1D, null), null, F_SCORE, null,
-				null, null, F_SCORE, null,
+				newEpsInfo(1D, null), null, F_SCORE, null, null,
+				null, null, F_SCORE, null, null,
 				null, null, null, null, null, null, null);
 
 		assertEquals(1D, info.getCurrentNonGaapEps(), ERROR_TOLERANCE);
@@ -227,22 +227,22 @@ class AssetEpsHistoricalInfoTest {
 		final AssetEpsInfo previousEps = newEpsInfo(1D, null);
 
 		AssetEpsHistoricalInfo info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				null, null, F_SCORE, null,
-				previousEps, WITH_BMO, F_SCORE, null,
+				null, null, F_SCORE, null, null,
+				previousEps, WITH_BMO, F_SCORE, null, null,
 				previous, beforePrevious, null, null, null, null, null);
 
 		assertEquals(2D, info.getPreviousPOverE(), ERROR_TOLERANCE);
 
 		info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				null, null, F_SCORE, null,
-				previousEps, WITH_AMC, F_SCORE, null,
+				null, null, F_SCORE, null, null,
+				previousEps, WITH_AMC, F_SCORE, null, null,
 				previous, beforePrevious, null, null, null, null, null);
 
 		assertEquals(1D, info.getPreviousPOverE(), ERROR_TOLERANCE);
 
 		info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				null, null, F_SCORE, null,
-				previousEps, WITH_BMO, F_SCORE, null,
+				null, null, F_SCORE, null, null,
+				previousEps, WITH_BMO, F_SCORE, null, null,
 				previous, null, null, null, null, null, null);
 
 		assertEquals(1D, info.getPreviousPOverE(), ERROR_TOLERANCE);
@@ -255,15 +255,15 @@ class AssetEpsHistoricalInfoTest {
 		final AssetEpsInfo currentEps = newEpsInfo(1D, null);
 
 		AssetEpsHistoricalInfo info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				currentEps, WITH_BMO, F_SCORE, null,
-				null, null, F_SCORE, null,
+				currentEps, WITH_BMO, F_SCORE, null, null,
+				null, null, F_SCORE, null, null,
 				null, null, null, beforeCurrent, current, null, null);
 
 		assertEquals(2D, info.getCurrentPOverE(), ERROR_TOLERANCE);
 
 		info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				currentEps, WITH_AMC, F_SCORE, null,
-				null, null, F_SCORE, null,
+				currentEps, WITH_AMC, F_SCORE, null, null,
+				null, null, F_SCORE, null, null,
 				null, null, null, beforeCurrent, current, null, null);
 
 		assertEquals(1D, info.getCurrentPOverE(), ERROR_TOLERANCE);
@@ -275,15 +275,15 @@ class AssetEpsHistoricalInfoTest {
 		final AssetPriceInfo forAmc = newPriceInfo(1D);
 
 		AssetEpsHistoricalInfo info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				null, WITH_BMO, F_SCORE, null,
-				null, null, F_SCORE, null,
+				null, WITH_BMO, F_SCORE, null, null,
+				null, null, F_SCORE, null, null,
 				null, null, forBmo, forAmc, null, null, null);
 
 		assertSame(forBmo, info.getInfoBeforeMinusOneDayEpsAnnouncement());
 
 		info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				null, WITH_AMC, F_SCORE, null,
-				null, null, F_SCORE, null,
+				null, WITH_AMC, F_SCORE, null, null,
+				null, null, F_SCORE, null, null,
 				null, null, forBmo, forAmc, null, null, null);
 
 		assertSame(forAmc, info.getInfoBeforeMinusOneDayEpsAnnouncement());
@@ -295,15 +295,15 @@ class AssetEpsHistoricalInfoTest {
 		final AssetPriceInfo forAmc = newPriceInfo(1D);
 
 		AssetEpsHistoricalInfo info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				null, WITH_BMO, F_SCORE, null,
-				null, null, F_SCORE, null,
+				null, WITH_BMO, F_SCORE, null, null,
+				null, null, F_SCORE, null, null,
 				null, null, null, forBmo, forAmc, null, null);
 
 		assertSame(forBmo, info.getInfoBeforeEpsAnnouncement());
 
 		info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				null, WITH_AMC, F_SCORE, null,
-				null, null, F_SCORE, null,
+				null, WITH_AMC, F_SCORE, null, null,
+				null, null, F_SCORE, null, null,
 				null, null, null, forBmo, forAmc, null, null);
 
 		assertSame(forAmc, info.getInfoBeforeEpsAnnouncement());
@@ -315,15 +315,15 @@ class AssetEpsHistoricalInfoTest {
 		final AssetPriceInfo forAmc = newPriceInfo(1D);
 
 		AssetEpsHistoricalInfo info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				null, WITH_BMO, F_SCORE, null,
-				null, null, F_SCORE, null,
+				null, WITH_BMO, F_SCORE, null, null,
+				null, null, F_SCORE, null, null,
 				null, null, null, null, forBmo, forAmc, null);
 
 		assertSame(forBmo, info.getInfoAfterEpsAnnouncement());
 
 		info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				null, WITH_AMC, F_SCORE, null,
-				null, null, F_SCORE, null,
+				null, WITH_AMC, F_SCORE, null, null,
+				null, null, F_SCORE, null, null,
 				null, null, null, null, forBmo, forAmc, null);
 
 		assertSame(forAmc, info.getInfoAfterEpsAnnouncement());
@@ -335,15 +335,15 @@ class AssetEpsHistoricalInfoTest {
 		final AssetPriceInfo forAmc = newPriceInfo(1D);
 
 		AssetEpsHistoricalInfo info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				null, WITH_BMO, F_SCORE, null,
-				null, null, F_SCORE, null,
+				null, WITH_BMO, F_SCORE, null, null,
+				null, null, F_SCORE, null, null,
 				null, null, null, null, null, forBmo, forAmc);
 
 		assertSame(forBmo, info.getInfoAfterPlusOneDayEpsAnnouncement());
 
 		info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				null, WITH_AMC, F_SCORE, null,
-				null, null, F_SCORE, null,
+				null, WITH_AMC, F_SCORE, null, null,
+				null, null, F_SCORE, null, null,
 				null, null, null, null, null, forBmo, forAmc);
 
 		assertSame(forAmc, info.getInfoAfterPlusOneDayEpsAnnouncement());
@@ -352,8 +352,8 @@ class AssetEpsHistoricalInfoTest {
 	@Test
 	void testIsGoodForNothing() {
 		final AssetEpsHistoricalInfo info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				null, null, F_SCORE, null,
-				null, null, F_SCORE, null,
+				null, null, F_SCORE, null, null,
+				null, null, F_SCORE, null, null,
 				null, null, null, null, null, null, null);
 
 		assertFalse(info.isGoodForAfterPlusOneDayEpsTraining());
@@ -367,8 +367,8 @@ class AssetEpsHistoricalInfoTest {
 		final AssetPriceInfo forAmc = newPriceInfo(1D);
 
 		AssetEpsHistoricalInfo info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				null, WITH_BMO, F_SCORE, null,
-				null, null, F_SCORE, null,
+				null, WITH_BMO, F_SCORE, null, null,
+				null, null, F_SCORE, null, null,
 				null, null, forBmo, forBmo, forBmo, forBmo, null);
 
 		assertTrue(info.isGoodForAfterPlusOneDayEpsTraining());
@@ -376,8 +376,8 @@ class AssetEpsHistoricalInfoTest {
 		assertTrue(info.isGoodForAfterEpsPrediction());
 
 		info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				null, WITH_AMC, F_SCORE, null,
-				null, null, F_SCORE, null,
+				null, WITH_AMC, F_SCORE, null, null,
+				null, null, F_SCORE, null, null,
 				null, null, null, forAmc, forAmc, forAmc, forAmc);
 
 		assertTrue(info.isGoodForAfterPlusOneDayEpsTraining());
@@ -391,8 +391,8 @@ class AssetEpsHistoricalInfoTest {
 		final AssetPriceInfo forAmc = newPriceInfo(1D);
 
 		AssetEpsHistoricalInfo info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				null, WITH_BMO, F_SCORE, null,
-				null, null, F_SCORE, null,
+				null, WITH_BMO, F_SCORE, null, null,
+				null, null, F_SCORE, null, null,
 				null, null, forBmo, forBmo, forBmo, null, null);
 
 		assertFalse(info.isGoodForAfterPlusOneDayEpsTraining());
@@ -400,8 +400,8 @@ class AssetEpsHistoricalInfoTest {
 		assertTrue(info.isGoodForAfterEpsPrediction());
 
 		info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				null, WITH_AMC, F_SCORE, null,
-				null, null, F_SCORE, null,
+				null, WITH_AMC, F_SCORE, null, null,
+				null, null, F_SCORE, null, null,
 				null, null, null, forAmc, forAmc, forAmc, null);
 
 		assertFalse(info.isGoodForAfterPlusOneDayEpsTraining());
@@ -415,8 +415,8 @@ class AssetEpsHistoricalInfoTest {
 		final AssetPriceInfo forAmc = newPriceInfo(1D);
 
 		AssetEpsHistoricalInfo info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				null, WITH_BMO, F_SCORE, null,
-				null, null, F_SCORE, null,
+				null, WITH_BMO, F_SCORE, null, null,
+				null, null, F_SCORE, null, null,
 				null, null, forBmo, forBmo, null, null, null);
 
 		assertFalse(info.isGoodForAfterPlusOneDayEpsTraining());
@@ -424,8 +424,8 @@ class AssetEpsHistoricalInfoTest {
 		assertTrue(info.isGoodForAfterEpsPrediction());
 
 		info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				null, WITH_AMC, F_SCORE, null,
-				null, null, F_SCORE, null,
+				null, WITH_AMC, F_SCORE, null, null,
+				null, null, F_SCORE, null, null,
 				null, null, null, forAmc, forAmc, null, null);
 
 		assertFalse(info.isGoodForAfterPlusOneDayEpsTraining());
@@ -441,29 +441,29 @@ class AssetEpsHistoricalInfoTest {
 
 
 		AssetEpsHistoricalInfo info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				null, null, F_SCORE, null,
-				null, WITH_BMO, F_SCORE, null,
+				null, null, F_SCORE, null, null,
+				null, WITH_BMO, F_SCORE, null, null,
 				previous, beforePrevious, null, null, null, null, null);
 
 		assertEquals(0D, info.getPreviousDividendYield(), ERROR_TOLERANCE);
 
 		info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				null, null, F_SCORE, null,
-				null, WITH_BMO, F_SCORE, previousDividends,
+				null, null, F_SCORE, null, null,
+				null, WITH_BMO, F_SCORE, previousDividends, null,
 				previous, beforePrevious, null, null, null, null, null);
 
 		assertEquals(50D, info.getPreviousDividendYield(), ERROR_TOLERANCE);
 
 		info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				null, null, F_SCORE, null,
-				null, WITH_AMC, F_SCORE, previousDividends,
+				null, null, F_SCORE, null, null,
+				null, WITH_AMC, F_SCORE, previousDividends, null,
 				previous, beforePrevious, null, null, null, null, null);
 
 		assertEquals(100D, info.getPreviousDividendYield(), ERROR_TOLERANCE);
 
 		info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				null, null, F_SCORE, null,
-				null, WITH_BMO, F_SCORE, previousDividends,
+				null, null, F_SCORE, null, null,
+				null, WITH_BMO, F_SCORE, previousDividends, null,
 				previous, null, null, null, null, null, null);
 
 		assertEquals(100D, info.getPreviousDividendYield(), ERROR_TOLERANCE);
@@ -476,24 +476,98 @@ class AssetEpsHistoricalInfoTest {
 		final AssetDividendInfo currentDividends = newDividendInfo(1D, null);
 
 		AssetEpsHistoricalInfo info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				newEpsInfo(1D, null), WITH_BMO, F_SCORE, null,
-				null, null, F_SCORE, null,
+				newEpsInfo(1D, null), WITH_BMO, F_SCORE, null, null,
+				null, null, F_SCORE, null, null,
 				null, null, null, beforeCurrent, current, null, null);
 
 		assertEquals(0D, info.getCurrentDividendYield(), ERROR_TOLERANCE);
 
 		info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				newEpsInfo(1D, null), WITH_BMO, F_SCORE, currentDividends,
-				null, null, F_SCORE, null,
+				newEpsInfo(1D, null), WITH_BMO, F_SCORE, currentDividends, null,
+				null, null, F_SCORE, null, null,
 				null, null, null, beforeCurrent, current, null, null);
 
 		assertEquals(50D, info.getCurrentDividendYield(), ERROR_TOLERANCE);
 
 		info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
-				newEpsInfo(1D, null), WITH_AMC, F_SCORE, currentDividends,
-				null, null, F_SCORE, null,
+				newEpsInfo(1D, null), WITH_AMC, F_SCORE, currentDividends, null,
+				null, null, F_SCORE, null, null,
 				null, null, null, beforeCurrent, current, null, null);
 
 		assertEquals(100D, info.getCurrentDividendYield(), ERROR_TOLERANCE);
+	}
+
+	@Test
+	void testPreviousFinancials() {
+		final AssetPriceInfo beforePrevious = newPriceInfo(2D);
+		final AssetPriceInfo previous = newPriceInfo(1D);
+		final AssetFinancialInfo previousFinancialInfo = newFinancialInfo(null);
+
+		AssetEpsHistoricalInfo info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
+				null, null, F_SCORE, null, null,
+				null, WITH_BMO, F_SCORE, null, null,
+				previous, beforePrevious, null, null, null, null, null);
+
+		verifyPreviousEmpty(info);
+		verifyCurrentEmpty(info);
+
+		info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
+				null, null, F_SCORE, null, null,
+				null, WITH_BMO, F_SCORE, null, previousFinancialInfo,
+				previous, beforePrevious, null, null, null, null, null);
+
+		verifyCurrentEmpty(info);
+		assertEquals(0.5D, info.getPreviousCurrentRatio(), ERROR_TOLERANCE);
+		assertEquals(0.5D, info.getPreviousTotalRatio(), ERROR_TOLERANCE);
+		assertEquals(-2D, info.getPreviousDebtOverEquityCalculated(), ERROR_TOLERANCE);
+		assertEquals(0.5D, info.getPreviousDebtOverEquityReported(), ERROR_TOLERANCE);
+		assertEquals(500D, info.getPreviousFreeCashFlowPerShare(), ERROR_TOLERANCE);
+		assertEquals(-4D, info.getPreviousPOverB(), ERROR_TOLERANCE);
+	}
+
+	@Test
+	void testCurrentFinancials() {
+		final AssetPriceInfo beforeCurrent = newPriceInfo(2D);
+		final AssetPriceInfo current = newPriceInfo(1D);
+		final AssetFinancialInfo currentFinancialInfo = newFinancialInfo(null);
+
+		AssetEpsHistoricalInfo info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
+				newEpsInfo(1D, null), WITH_BMO, F_SCORE, null, null,
+				null, null, F_SCORE, null, null,
+				null, null, null, beforeCurrent, current, null, null);
+
+		verifyPreviousEmpty(info);
+		verifyCurrentEmpty(info);
+
+		info = new AssetEpsHistoricalInfo(TEST_ASSET, 1, 1,
+				newEpsInfo(1D, null), WITH_BMO, F_SCORE, null, currentFinancialInfo,
+				null, null, F_SCORE, null, null,
+				null, null, null, beforeCurrent, current, null, null);
+
+		verifyPreviousEmpty(info);
+		assertEquals(0.5D, info.getCurrentCurrentRatio(), ERROR_TOLERANCE);
+		assertEquals(0.5D, info.getCurrentTotalRatio(), ERROR_TOLERANCE);
+		assertEquals(-2D, info.getCurrentDebtOverEquityCalculated(), ERROR_TOLERANCE);
+		assertEquals(0.5D, info.getCurrentDebtOverEquityReported(), ERROR_TOLERANCE);
+		assertEquals(500D, info.getCurrentFreeCashFlowPerShare(), ERROR_TOLERANCE);
+		assertEquals(-4D, info.getCurrentPOverB(), ERROR_TOLERANCE);
+	}
+
+	private static void verifyCurrentEmpty(AssetEpsHistoricalInfo info) {
+		assertEquals(0D, info.getCurrentCurrentRatio(), ERROR_TOLERANCE);
+		assertEquals(0D, info.getCurrentTotalRatio(), ERROR_TOLERANCE);
+		assertEquals(0D, info.getCurrentDebtOverEquityCalculated(), ERROR_TOLERANCE);
+		assertEquals(0D, info.getCurrentDebtOverEquityReported(), ERROR_TOLERANCE);
+		assertEquals(0D, info.getCurrentFreeCashFlowPerShare(), ERROR_TOLERANCE);
+		assertEquals(0D, info.getCurrentPOverB(), ERROR_TOLERANCE);
+	}
+
+	private static void verifyPreviousEmpty(AssetEpsHistoricalInfo info) {
+		assertEquals(0D, info.getPreviousCurrentRatio(), ERROR_TOLERANCE);
+		assertEquals(0D, info.getPreviousTotalRatio(), ERROR_TOLERANCE);
+		assertEquals(0D, info.getPreviousDebtOverEquityCalculated(), ERROR_TOLERANCE);
+		assertEquals(0D, info.getPreviousDebtOverEquityReported(), ERROR_TOLERANCE);
+		assertEquals(0D, info.getPreviousFreeCashFlowPerShare(), ERROR_TOLERANCE);
+		assertEquals(0D, info.getPreviousPOverB(), ERROR_TOLERANCE);
 	}
 }
