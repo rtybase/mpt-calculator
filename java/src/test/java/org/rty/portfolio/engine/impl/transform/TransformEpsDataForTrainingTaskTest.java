@@ -10,6 +10,7 @@ import static org.rty.portfolio.core.utils.CommonTestRoutines.TEST_ASSET;
 import static org.rty.portfolio.core.utils.CommonTestRoutines.dateFrom;
 import static org.rty.portfolio.core.utils.CommonTestRoutines.newDividendInfo;
 import static org.rty.portfolio.core.utils.CommonTestRoutines.newEpsInfo;
+import static org.rty.portfolio.core.utils.CommonTestRoutines.newFinancialInfo;
 import static org.rty.portfolio.core.utils.CommonTestRoutines.newNonGaapEpsInfo;
 import static org.rty.portfolio.core.utils.CommonTestRoutines.newPriceInfo;
 
@@ -30,6 +31,7 @@ import org.junit.jupiter.api.Test;
 import org.rty.portfolio.core.AssetDividendInfo;
 import org.rty.portfolio.core.AssetEpsHistoricalInfo;
 import org.rty.portfolio.core.AssetEpsInfo;
+import org.rty.portfolio.core.AssetFinancialInfo;
 import org.rty.portfolio.core.AssetNonGaapEpsInfo;
 import org.rty.portfolio.core.AssetPriceInfo;
 
@@ -39,6 +41,7 @@ class TransformEpsDataForTrainingTaskTest {
 	private Map<String, Pair<Integer, Integer>> stocksAndsectorsStore;
 	private Map<String, NavigableMap<Date, Double>> stocksAndFScoreStore;
 	private Map<String, NavigableMap<Date, AssetDividendInfo>> dividendStore;
+	private Map<String, NavigableMap<Date, AssetFinancialInfo>> financialsStore;
 	private NavigableMap<Date, AssetEpsInfo> epsData;
 
 	private List<AssetEpsHistoricalInfo> dataForTraining;
@@ -48,13 +51,15 @@ class TransformEpsDataForTrainingTaskTest {
 
 	private AssetEpsInfo previousEps;
 	private AssetNonGaapEpsInfo previousNonGaapEps;
-	AssetDividendInfo dividendAtPreviousEps;
+	private AssetDividendInfo dividendAtPreviousEps;
+	private AssetFinancialInfo financialsAtPreviousEps;
 	private AssetPriceInfo priceAtPreviousEps;
 	private AssetPriceInfo priceBeforePreviousEps;
 
 	private AssetEpsInfo currentEps;
 	private AssetNonGaapEpsInfo currentNonGaapEps;
 	private AssetDividendInfo dividendAtCurrentEps;
+	private AssetFinancialInfo financialsAtCurrentEps;
 	private AssetPriceInfo price2DaysBeforeCurrentEps;
 	private AssetPriceInfo priceBeforeCurrentEps;
 	private AssetPriceInfo priceAtCurrentEps;
@@ -68,6 +73,7 @@ class TransformEpsDataForTrainingTaskTest {
 		stocksAndsectorsStore = new HashMap<>();
 		stocksAndFScoreStore = new HashMap<>();
 		dividendStore =  new HashMap<>();
+		financialsStore = new HashMap<>();
 		epsData = new TreeMap<>();
 
 		dataForTraining = new ArrayList<>();
@@ -171,13 +177,17 @@ class TransformEpsDataForTrainingTaskTest {
 	void testGetClosestDividend() {
 		// "fresh" dividend
 		dividendAtCurrentEps = addDividendDataToStore(D_2025_07_17);
-		AssetDividendInfo result = TransformEpsDataForTrainingTask.getClosestDividend(dividendStore, TEST_ASSET,
-				D_2025_07_17);
+		AssetDividendInfo result = TransformEpsDataForTrainingTask.getClosestValueFrom(dividendStore,
+				TEST_ASSET,
+				D_2025_07_17,
+				TransformEpsDataForTrainingTask.DIVIDENDS_AGE_THRESHOLD);
 		assertSame(dividendAtCurrentEps, result);
 
 		// dividend too old
-		result = TransformEpsDataForTrainingTask.getClosestDividend(dividendStore, TEST_ASSET,
-				dateFrom(18 + (int) TransformEpsDataForTrainingTask.DIVIDENDS_AGE_THRESHOLD));
+		result = TransformEpsDataForTrainingTask.getClosestValueFrom(dividendStore,
+				TEST_ASSET,
+				dateFrom(18 + (int) TransformEpsDataForTrainingTask.DIVIDENDS_AGE_THRESHOLD),
+				TransformEpsDataForTrainingTask.DIVIDENDS_AGE_THRESHOLD);
 		assertNull(result);
 	}
 
@@ -185,6 +195,7 @@ class TransformEpsDataForTrainingTaskTest {
 		currentEps = addEpsDataToStore(D_2025_07_17);
 		currentNonGaapEps = addNonGaapEpsDataToStore(D_2025_07_17);
 		dividendAtCurrentEps = addDividendDataToStore(D_2025_07_17);
+		financialsAtCurrentEps = addFinancialDataToStore(D_2025_07_17);
 		price2DaysBeforeCurrentEps = addPriceDataToStore(dateFrom(15));
 		priceBeforeCurrentEps = addPriceDataToStore(dateFrom(16));
 	}
@@ -193,6 +204,7 @@ class TransformEpsDataForTrainingTaskTest {
 		assertSame(currentEps, result.currentEps);
 		assertSame(currentNonGaapEps, result.currentNonGaapEps);
 		assertSame(dividendAtCurrentEps, result.currentDividend);
+		assertSame(financialsAtCurrentEps, result.currentFinancialInfo);
 		assertSame(price2DaysBeforeCurrentEps, result.price2DaysBeforeCurrentEps);
 		assertSame(priceBeforeCurrentEps, result.priceBeforeCurrentEps);
 	}
@@ -203,6 +215,7 @@ class TransformEpsDataForTrainingTaskTest {
 		previousEps = addEpsDataToStore(previousEpsDate);
 		previousNonGaapEps = addNonGaapEpsDataToStore(previousEpsDate);
 		dividendAtPreviousEps = addDividendDataToStore(previousEpsDate);
+		financialsAtPreviousEps = addFinancialDataToStore(previousEpsDate);
 		priceAtPreviousEps = addPriceDataToStore(previousEpsDate);
 		priceBeforePreviousEps = addPriceDataToStore(dateFrom(12));
 	}
@@ -211,6 +224,7 @@ class TransformEpsDataForTrainingTaskTest {
 		assertSame(previousEps, result.previousEps);
 		assertSame(previousNonGaapEps, result.previousNonGaapEps);
 		assertSame(dividendAtPreviousEps, result.previousDividend);
+		assertSame(financialsAtPreviousEps, result.previousFinancialInfo);
 		assertSame(priceAtPreviousEps, result.priceAtPreviousEps);
 		assertSame(priceBeforePreviousEps, result.priceBeforePreviousEps);
 	}
@@ -229,6 +243,7 @@ class TransformEpsDataForTrainingTaskTest {
 				stocksAndsectorsStore,
 				stocksAndFScoreStore,
 				dividendStore,
+				financialsStore,
 				dataForTraining,
 				dataFor2DPrediction,
 				dataFor1DPrediction,
@@ -260,6 +275,12 @@ class TransformEpsDataForTrainingTaskTest {
 		final AssetDividendInfo info = newDividendInfo(1D, date);
 
 		return addToStore(dividendStore, info, date);
+	}
+
+	private AssetFinancialInfo addFinancialDataToStore(Date date) {
+		final AssetFinancialInfo info = newFinancialInfo(date);
+
+		return addToStore(financialsStore, info, date);
 	}
 
 	private static <T> T addToStore(Map<String, NavigableMap<Date, T>> store, T obj, Date date) {

@@ -522,7 +522,7 @@ class AssetEpsHistoricalInfoTest {
 		assertEquals(-2D, info.getPreviousDebtOverEquityCalculated(), ERROR_TOLERANCE);
 		assertEquals(0.5D, info.getPreviousDebtOverEquityReported(), ERROR_TOLERANCE);
 		assertEquals(500D, info.getPreviousFreeCashFlowPerShare(), ERROR_TOLERANCE);
-		assertEquals(-4D, info.getPreviousPOverB(), ERROR_TOLERANCE);
+		assertEquals(-0.004D, info.getPreviousPOverB(), ERROR_TOLERANCE);
 	}
 
 	@Test
@@ -550,7 +550,7 @@ class AssetEpsHistoricalInfoTest {
 		assertEquals(-2D, info.getCurrentDebtOverEquityCalculated(), ERROR_TOLERANCE);
 		assertEquals(0.5D, info.getCurrentDebtOverEquityReported(), ERROR_TOLERANCE);
 		assertEquals(500D, info.getCurrentFreeCashFlowPerShare(), ERROR_TOLERANCE);
-		assertEquals(-4D, info.getCurrentPOverB(), ERROR_TOLERANCE);
+		assertEquals(-0.004D, info.getCurrentPOverB(), ERROR_TOLERANCE);
 	}
 
 	private static void verifyCurrentEmpty(AssetEpsHistoricalInfo info) {

@@ -12,6 +12,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class AssetFinancialInfo implements CsvWritable, EntryWithAssetNameAndDate {
+	private static final double ONE_K = 1000D;
 	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
 	public final String assetName;
@@ -98,14 +99,14 @@ public class AssetFinancialInfo implements CsvWritable, EntryWithAssetNameAndDat
 
 	public double freeCashFlowPerShare() {
 		if (capitalExpenditures == null) {
-			return result(div(mul(netCashFlowOperating, 1000D), shareIssued));
+			return result(div(mul(netCashFlowOperating, ONE_K), shareIssued));
 		} else {
-			return result(div(mul(diff(netCashFlowOperating, Math.abs(capitalExpenditures)), 1000D), shareIssued));
+			return result(div(mul(diff(netCashFlowOperating, Math.abs(capitalExpenditures)), ONE_K), shareIssued));
 		}
 	}
 
 	public double bookValuePerShare() {
-		return result(div(diff(totalAssets, totalLiabilities), shareIssued));
+		return result(div(mul(diff(totalAssets, totalLiabilities), ONE_K), shareIssued));
 	}
 
 	private static Double mul(Double v1, double v2) {

@@ -4,7 +4,7 @@ set -ue
 
 rm -rf inputs-ml/*
 
-"/c/Program Files/Java/graalvm-jdk-21.0.9+7.1/bin/java" -Xmx4096m \
+"/c/Program Files/Java/graalvm-jdk-21.0.9+7.1/bin/java" -Xmx6144m \
 	-XX:+UnlockExperimentalVMOptions -XX:+EnableJVMCI -XX:+UseJVMCICompiler \
 	-jar portfolio-0.0.1-SNAPSHOT.jar TransformEpsDataForTrainingTask \
 	"-prices=D:\data_to_load_prices" \

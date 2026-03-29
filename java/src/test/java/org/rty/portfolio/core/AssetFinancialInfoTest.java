@@ -131,6 +131,6 @@ class AssetFinancialInfoTest {
 		assertEquals(0D, info.bookValuePerShare(), ERROR_TOLERANCE);
 
 		info = new AssetFinancialInfo(TEST_ASSET, null, null, null, 1D, 2D, null, null, null, 2D);
-		assertEquals(-0.5D, info.bookValuePerShare(), ERROR_TOLERANCE);
+		assertEquals(-500D, info.bookValuePerShare(), ERROR_TOLERANCE);
 	}
 }
