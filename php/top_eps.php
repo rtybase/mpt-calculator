@@ -1,8 +1,8 @@
 <?php
 // EPS by price script
-	include_once("../lib/mysql.php");
-	include_once("../lib/utils.php");
-	include_once("./funcs.php");
+	include_once("./lib/mysql.php");
+	include_once("./lib/utils.php");
+	include_once("./lib/funcs.php");
 	header("Content-Type:text/html; charset=UTF-8");
 
 function getEps($link) {
@@ -17,11 +17,11 @@ function getEps($link) {
 	$query.= "INNER JOIN tbl_assets c ON a.fk_assetID = c.int_assetID ";
 	$query.= "LEFT JOIN tbl_n_gaap_eps d ON a.fk_assetID = d.fk_assetID AND a.dtm_date = d.dtm_date";
 
-	$res = mysql_query($query, $link);
-	if (!$res) die("Invalid query: ". mysql_error());
+	$res = mysqli_query($link, $query);
+	if (!$res) die("Invalid query: ". mysqli_error());
 
 	$ret = array();
-	while ($row = mysql_fetch_row($res)) {
+	while ($row = mysqli_fetch_row($res)) {
 		$assetId = $row[0];
 		$ret[$assetId] = array();
 		$ret[$assetId]["asset"] = $row[1];
@@ -35,7 +35,7 @@ function getEps($link) {
 		$ret[$assetId]["revenue"] = $row[9];
 		$ret[$assetId]["prd_revenue"] = $row[10];
 	}
-	mysql_free_result($res);
+	mysqli_free_result($res);
 
 	return $ret;
 }
@@ -47,10 +47,10 @@ function addLatestPrices($link, $epsData) {
 	$query.= "    FROM tbl_prices GROUP BY fk_assetID) b ";
 	$query.= "ON a.fk_assetID = b.fk_assetID AND a.dtm_date = b.dtm_date";
 
-	$res = mysql_query($query, $link);
-	if (!$res) die("Invalid query: ". mysql_error());
+	$res = mysqli_query($link, $query);
+	if (!$res) die("Invalid query: ". mysqli_error());
 
-	while ($row = mysql_fetch_row($res)) {
+	while ($row = mysqli_fetch_row($res)) {
 		$assetId = $row[0];
 		if (array_key_exists($assetId, $epsData)) {
 			$eps = $epsData[$assetId]["eps"];
@@ -58,7 +58,7 @@ function addLatestPrices($link, $epsData) {
 			$epsData[$assetId]["p_by_e"] = priceOverEarnings($row[1], $eps);
 		}
 	}
-	mysql_free_result($res);
+	mysqli_free_result($res);
 
 	return $epsData;
 }
@@ -148,4 +148,4 @@ function addLatestPrices($link, $epsData) {
     </tr></table>
   </body>
 </html>
-<?php mysql_close($link); ?>
+<?php mysqli_close($link); ?>

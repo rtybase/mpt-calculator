@@ -1,8 +1,8 @@
 <?php
 // Top rates script
-	include_once("../lib/mysql.php");
-	include_once("../lib/utils.php");
-	include_once("./funcs.php");
+	include_once("./lib/mysql.php");
+	include_once("./lib/utils.php");
+	include_once("./lib/funcs.php");
 	header("Content-Type:text/html; charset=UTF-8");
 
 	$period = periodTableFrom($_GET["period"]);
@@ -22,11 +22,11 @@
 	$query.= "LIMIT 0, 100";
 
 	$tableResult = "";
-	$res = mysql_query($query, $link);
+	$res = mysqli_query($link,$query);
 
-	if (!$res) die("Invalid query: ". mysql_error());
+	if (!$res) die("Invalid query: ". mysqli_error());
 	$i = 0;
-	while ($row = mysql_fetch_row($res)) {
+	while ($row = mysqli_fetch_row($res)) {
 		if ($i == 0) $tableResult.= "[";
 		else $tableResult.= ",[";
 
@@ -36,7 +36,7 @@
 		$tableResult.= toChartNumber(volatilityFrom($row[3]))."]";
 		$i++;
 	}
-	mysql_free_result($res);
+	mysqli_free_result($res);
 ?>
 <!doctype html>
 <html>
@@ -102,4 +102,4 @@
     </tr></table>
   </body>
 </html>
-<?php mysql_close($link); ?>
+<?php mysqli_close($link); ?>

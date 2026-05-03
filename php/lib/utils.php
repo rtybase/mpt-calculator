@@ -82,11 +82,11 @@ function printRow($row, $bgcolor, $color) {
 
 function printCategory($query, $id, $link) {
 	$ret = $id;
-	$res = mysql_query($query,$link);
+	$res = mysqli_query($link, $query);
 
-	if (!$res) die("Invalid query: ". mysql_error());
+	if (!$res) die("Invalid query: ". mysqli_error());
 
-	while ($row = mysql_fetch_row($res)) {
+	while ($row = mysqli_fetch_row($res)) {
 		if ($ret == $row[0] || empty($ret)) {
 			echo "\t\t<option value=\"".htmlentities($row[0])."\" selected>".htmlentities($row[1]).(empty($row[2])?"":" (".$row[2].")")."</option>\r\n";
 			$ret = htmlentities($row[0]);
@@ -96,7 +96,7 @@ function printCategory($query, $id, $link) {
 		}
 	}
 
-	mysql_free_result($res);
+	mysqli_free_result($res);
 	return $ret;
 }
 

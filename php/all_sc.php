@@ -1,8 +1,8 @@
 <?php
 // Show predictions from shift correlations script
-	include_once("../lib/mysql.php");
-	include_once("../lib/utils.php");
-	include_once("./funcs.php");
+	include_once("./lib/mysql.php");
+	include_once("./lib/utils.php");
+	include_once("./lib/funcs.php");
 	header("Content-Type:text/html; charset=UTF-8");
 
 function nextDateFromDetails($details) {
@@ -19,11 +19,11 @@ function get1DayShiftCorrelations($assetId, $link) {
 	$query.= "AND ABS(dbl_correlation) > 0.0 ";
 	$query.= "ORDER BY ABS(dbl_correlation) DESC";
 
-	$res = mysql_query($query, $link);
-	if (!$res) die("Invalid query: ". mysql_error());
+	$res = mysqli_query($link, $query);
+	if (!$res) die("Invalid query: ". mysqli_error());
 
 	$oneDayShiftCorrelations = array();
-	while ($row = mysql_fetch_array($res)) {
+	while ($row = mysqli_fetch_array($res)) {
 		$pAssetId = $row[0];
 
 		if ($row[0] == $assetId) {
@@ -44,7 +44,7 @@ function get1DayShiftCorrelations($assetId, $link) {
 			$oneDayShiftCorrelations[$pAssetId]["lastUpdateDate"] = $row[6];
 		}
 	}
-	mysql_free_result($res);
+	mysqli_free_result($res);
 
 	return $oneDayShiftCorrelations;
 }
@@ -112,12 +112,12 @@ function getEpsPredictions($assetId, $link) {
 	$query.= "AND  a.dtm_eps_date BETWEEN (NOW() - INTERVAL 60 DAY) AND NOW() ";
 	$query.= "ORDER BY a.dtm_prd_date DESC, a.vchr_model ASC";
 
-	$res = mysql_query($query, $link);
-	if (!$res) die("Invalid query: ". mysql_error());
+	$res = mysqli_query($link, $query);
+	if (!$res) die("Invalid query: ". mysqli_error());
 
 	$tableResult = "";
 	$i = 0;
-	while ($row = mysql_fetch_row($res)) {
+	while ($row = mysqli_fetch_row($res)) {
 		if ($i == 0) $tableResult.= "[";
 		else $tableResult.= ",[";
 
@@ -129,7 +129,7 @@ function getEpsPredictions($assetId, $link) {
 		$tableResult.= toChartNumber(roundOrNull($row[5], $RETURN_ROUND_PRECISION))."]";
 		$i++;
 	}
-	mysql_free_result($res);
+	mysqli_free_result($res);
 	return $tableResult;
 }
 
@@ -262,4 +262,4 @@ function getEpsPredictions($assetId, $link) {
     </tr></table>
   </body>
 </html>
-<?php mysql_close($link); ?>
+<?php mysqli_close($link); ?>

@@ -1,7 +1,7 @@
 <?php
-	include_once("../lib/mysql.php");
-	include_once("../lib/utils.php");
-	include_once("./funcs.php");
+	include_once("./lib/mysql.php");
+	include_once("./lib/utils.php");
+	include_once("./lib/funcs.php");
 	header("Content-Type:text/html; charset=UTF-8");
 
 function getRatesDataFor($assetId, $period, $link) {
@@ -234,12 +234,12 @@ function loadDividendsAndEpsFor($assetId, $link) {
 		var data = google.visualization.arrayToDataTable([
 			['Date', 'price']
 <?php
-		$res = mysql_query("select dtm_date, dbl_price from tbl_prices where fk_assetID=$id order by dtm_date asc", $link);
-		if (!$res) die("Invalid query: ". mysql_error());
-		while ($row = mysql_fetch_array($res)) {
+		$res = mysqli_query($link, "select dtm_date, dbl_price from tbl_prices where fk_assetID=$id order by dtm_date asc");
+		if (!$res) die("Invalid query: ". mysqli_error());
+		while ($row = mysqli_fetch_array($res)) {
 			echo ",['".$row[0]."',".$row[1]."]";
 		}
-		mysql_free_result($res);
+		mysqli_free_result($res);
 ?>
 		]);
 
@@ -328,4 +328,4 @@ function loadDividendsAndEpsFor($assetId, $link) {
     </tr></table>
   </body>
 </html>
-<?php mysql_close($link); ?>
+<?php mysqli_close($link); ?>

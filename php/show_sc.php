@@ -1,8 +1,8 @@
 <?php
 // Show shift correlation details for two assets script
-	include_once("../lib/mysql.php");
-	include_once("../lib/utils.php");
-	include_once("./funcs.php");
+	include_once("./lib/mysql.php");
+	include_once("./lib/utils.php");
+	include_once("./lib/funcs.php");
 	header("Content-Type:text/html; charset=UTF-8");
 
 function ratesForDatesWithShift($dates, $rates, $shift, $predictor) {
@@ -40,18 +40,18 @@ function ratesForDatesWithShift($dates, $rates, $shift, $predictor) {
 	$query.= "FROM  tbl_shift_correlations ";
 	$query.= "WHERE (fk_asset1ID=$asset1Id) AND (fk_asset2ID=$asset2Id) ";
 
-	$res = mysql_query($query, $link);
-	if (!$res) die("Invalid query: ". mysql_error());
+	$res = mysqli_query($link, $query);
+	if (!$res) die("Invalid query: ". mysqli_error());
 
 	$details = array();
 	$continuousUpdates = 0;
 	$lastUpdateDate = "";
-	while ($row = mysql_fetch_row($res)) {
+	while ($row = mysqli_fetch_row($res)) {
 		$details = json_decode($row[0], true);
 		$continuousUpdates = $row[1];
 		$lastUpdateDate = $row[2];
 	}
-	mysql_free_result($res);
+	mysqli_free_result($res);
 
 	$shift = $details["bestShift"];
 	$asset1Name = getName($asset1Id, $link);
@@ -201,4 +201,4 @@ function ratesForDatesWithShift($dates, $rates, $shift, $predictor) {
     </tr></table>
   </body>
 </html>
-<?php mysql_close($link); ?>
+<?php mysqli_close($link); ?>

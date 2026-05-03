@@ -72,12 +72,12 @@
 
 	function printAssets($assetId, $link) {
 		$query = "select int_assetID, vchr_name, vchr_type from tbl_assets order by vchr_type asc, vchr_name asc";
-		$res = mysql_query($query,$link);
+		$res = mysqli_query($link, $query);
 
-		if (!$res) die("Invalid query: ". mysql_error());
+		if (!$res) die("Invalid query: ". mysqli_error());
 
 		$lastType = "";
-		while ($row = mysql_fetch_row($res)) {
+		while ($row = mysqli_fetch_row($res)) {
 			if ($lastType != $row[2]) {
 				echo "<option value=\"-1\">--------------------&lt;&lt;&lt; ".htmlentities($row[2])." &gt;&gt;&gt;--------------------</option>\r\n";
 			}
@@ -91,25 +91,25 @@
 			$lastType = $row[2];
 		}
 
-		mysql_free_result($res);
+		mysqli_free_result($res);
 	}
 
 	function getLastPriceInfo($assetId, $link) {
 		$ret = array();
-		$res = mysql_query("select * from tbl_prices where fk_assetID=$assetId order by dtm_date desc limit 0,1", $link);
-		if (!$res) die("Invalid query: ". mysql_error());
-		while ($row = mysql_fetch_array($res)) $ret = $row;
-		mysql_free_result($res);
+		$res = mysqli_query($link, "select * from tbl_prices where fk_assetID=$assetId order by dtm_date desc limit 0,1");
+		if (!$res) die("Invalid query: ". mysqli_error());
+		while ($row = mysqli_fetch_array($res)) $ret = $row;
+		mysqli_free_result($res);
 		return $ret;
 	}
 
 	function getCollection($query, $id, $mainAsset, $link) {
 		global $RETURN_ROUND_PRECISION, $VOLATILITY_ROUND_PRECISION;
 		$ret = array();
-		$res = mysql_query($query, $link);
-		if (!$res) die("Invalid query: ". mysql_error());
+		$res = mysqli_query($link, $query);
+		if (!$res) die("Invalid query: ". mysqli_error());
 		$i = 0;
-		while ($row = mysql_fetch_row($res)) {
+		while ($row = mysqli_fetch_row($res)) {
 			$ret[$i] = array();
 			$ret[$i]["correlation"] = round($row[3], $VOLATILITY_ROUND_PRECISION);
 			$ret[$i]["portret"] = round($row[6], $RETURN_ROUND_PRECISION);
@@ -129,7 +129,7 @@
 			} 
 			$i++;
 		}
-		mysql_free_result($res);
+		mysqli_free_result($res);
 		return $ret;
 	}
 
@@ -205,11 +205,11 @@
 		$query.= "WHERE ((fk_asset1ID=$assetId1 and fk_asset2ID=$assetId2) OR (fk_asset1ID=$assetId2 and fk_asset2ID=$assetId1)) ";
 
 		$ret = array();
-		$res = mysql_query($query, $link);
-		if (!$res) die("Invalid query: ". mysql_error());
+		$res = mysqli_query($link, $query);
+		if (!$res) die("Invalid query: ". mysqli_error());
 
-		while ($row = mysql_fetch_array($res)) $ret = $row;
-		mysql_free_result($res);
+		while ($row = mysqli_fetch_array($res)) $ret = $row;
+		mysqli_free_result($res);
 		return $ret;
 	}
 
@@ -302,55 +302,55 @@
 			$query.= "a.fk_industryID=c.int_industryID AND ";
 			$query.= "a.vchr_symbol='".$stock."'";
 
-			$res = mysql_query($query, $link);
-			if (!$res) die("Invalid query: ". mysql_error());
+			$res = mysqli_query($link, $query);
+			if (!$res) die("Invalid query: ". mysqli_error());
 
-			while ($row = mysql_fetch_array($res)) $ret = $row;
-			mysql_free_result($res);
+			while ($row = mysqli_fetch_array($res)) $ret = $row;
+			mysqli_free_result($res);
 		}
 		return $ret;
 	}
 
 	function loadDividendsFor($assetId, $link) {
-		$res = mysql_query("select dtm_date, dbl_pay from tbl_dividends where fk_assetID=$assetId order by dtm_date asc", $link);
+		$res = mysqli_query($link, "select dtm_date, dbl_pay from tbl_dividends where fk_assetID=$assetId order by dtm_date asc");
 
-		if (!$res) die("Invalid query: ". mysql_error());
+		if (!$res) die("Invalid query: ". mysqli_error());
 
 		$result = array();
-		while ($row = mysql_fetch_array($res)) {
+		while ($row = mysqli_fetch_array($res)) {
 			$result[$row[0]] = $row[1];
 		}
-		mysql_free_result($res);
+		mysqli_free_result($res);
 
 		return $result;
 	}
 
 	function loadEpsFor($assetId, $link) {
-		$res = mysql_query("select dtm_date, dbl_eps, dbl_prd_eps from tbl_eps where fk_assetID=$assetId order by dtm_date asc", $link);
+		$res = mysqli_query($link, "select dtm_date, dbl_eps, dbl_prd_eps from tbl_eps where fk_assetID=$assetId order by dtm_date asc");
 
-		if (!$res) die("Invalid query: ". mysql_error());
+		if (!$res) die("Invalid query: ". mysqli_error());
 
 		$result = array();
-		while ($row = mysql_fetch_array($res)) {
+		while ($row = mysqli_fetch_array($res)) {
 			$result[$row[0]] = array();
 			$result[$row[0]]["eps"] = $row[1];
 			$result[$row[0]]["eps_predicted"] = $row[2];
 		}
-		mysql_free_result($res);
+		mysqli_free_result($res);
 
 		return $result;
 	}
 
 	function loadEarningsFor($assetId, $link) {
-		$res = mysql_query("select dtm_date, dbl_eps from tbl_earnings where fk_assetID=$assetId order by dtm_date asc", $link);
+		$res = mysqli_query($link, "select dtm_date, dbl_eps from tbl_earnings where fk_assetID=$assetId order by dtm_date asc");
 
-		if (!$res) die("Invalid query: ". mysql_error());
+		if (!$res) die("Invalid query: ". mysqli_error());
 
 		$result = array();
-		while ($row = mysql_fetch_array($res)) {
+		while ($row = mysqli_fetch_array($res)) {
 			$result[$row[0]] = $row[1];
 		}
-		mysql_free_result($res);
+		mysqli_free_result($res);
 
 		return $result;
 	}

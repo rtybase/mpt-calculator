@@ -1,8 +1,8 @@
 <?php
 // ML quality metrics
-	include_once("../lib/mysql.php");
-	include_once("../lib/utils.php");
-	include_once("./funcs.php");
+	include_once("./lib/mysql.php");
+	include_once("./lib/utils.php");
+	include_once("./lib/funcs.php");
 	header("Content-Type:text/html; charset=UTF-8");
 
 function chartHeaderFrom($models, $metric) {
@@ -35,12 +35,12 @@ function chartDataFrom($metrciValues) {
 	$query.= "FROM tbl_ml_quality ";
 	$query.= "ORDER BY int_dataset, vchr_metric, dtm_report_date, bln_after_retrain, vchr_model, dbl_result";
 
-	$res = mysql_query($query, $link);
-	if (!$res) die("Invalid query: ". mysql_error());
+	$res = mysqli_query($link, $query);
+	if (!$res) die("Invalid query: ". mysqli_error());
 
 	$models = array();
 	$table = array();
-	while ($row = mysql_fetch_row($res)) {
+	while ($row = mysqli_fetch_row($res)) {
 		$data_set = $row[0];
 		$metric = $row[1];
 		$date = $row[2];
@@ -70,7 +70,7 @@ function chartDataFrom($metrciValues) {
 		$models["retrain"]["all"] = 1;
 		$models[$metric][$model] = 1;
 	}
-	mysql_free_result($res);
+	mysqli_free_result($res);
 ?>
 <!doctype html>
 <html>
@@ -148,4 +148,4 @@ function chartDataFrom($metrciValues) {
     </tr></table>
   </body>
 </html>
-<?php mysql_close($link); ?>
+<?php mysqli_close($link); ?>

@@ -1,8 +1,8 @@
 <?php
 // Top shift correlations script
-	include_once("../lib/mysql.php");
-	include_once("../lib/utils.php");
-	include_once("./funcs.php");
+	include_once("./lib/mysql.php");
+	include_once("./lib/utils.php");
+	include_once("./lib/funcs.php");
 	header("Content-Type:text/html; charset=UTF-8");
 
 function getTopShiftCorrelations($includeFunds, $shift, $correlation, $link) {
@@ -18,12 +18,12 @@ function getTopShiftCorrelations($includeFunds, $shift, $correlation, $link) {
 		$query.= "AND fk_asset2ID IN (SELECT int_assetID FROM tbl_assets WHERE vchr_type not like '%Fund') ";
 	}
 
-	$res = mysql_query($query, $link);
-	if (!$res) die("Invalid query: ". mysql_error());
+	$res = mysqli_query($link, $query);
+	if (!$res) die("Invalid query: ". mysqli_error());
 
 	$ret = array();
 	$i = 0;
-	while ($row = mysql_fetch_row($res)) {
+	while ($row = mysqli_fetch_row($res)) {
 		$ret[$i] = array();
 
 		$ret[$i]["asset1Id"] = $row[0];
@@ -40,7 +40,7 @@ function getTopShiftCorrelations($includeFunds, $shift, $correlation, $link) {
 
 		$i++;
 	}
-	mysql_free_result($res);
+	mysqli_free_result($res);
 
 	return $ret;
 }
@@ -145,4 +145,4 @@ function getTopShiftCorrelations($includeFunds, $shift, $correlation, $link) {
     </tr></table>
   </body>
 </html>
-<?php mysql_close($link); ?>
+<?php mysqli_close($link); ?>

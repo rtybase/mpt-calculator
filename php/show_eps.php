@@ -1,8 +1,8 @@
 <?php
 // Show EPS details
-	include_once("../lib/mysql.php");
-	include_once("../lib/utils.php");
-	include_once("./funcs.php");
+	include_once("./lib/mysql.php");
+	include_once("./lib/utils.php");
+	include_once("./lib/funcs.php");
 	header("Content-Type:text/html; charset=UTF-8");
 
 function mergeDividendsEpsAndPricesFor($assetId, $link) {
@@ -16,10 +16,10 @@ function mergeDividendsEpsAndPricesFor($assetId, $link) {
 	$query.= " from tbl_prices where fk_assetID=$assetId ";
 	$query.= " and dtm_date>=\"".$minDate."\" order by dtm_date asc";
 
-	$res = mysql_query($query, $link);
-	if (!$res) die("Invalid query: ". mysql_error());
+	$res = mysqli_query($link, $query);
+	if (!$res) die("Invalid query: ". mysqli_error());
 
-	while ($row = mysql_fetch_array($res)) {
+	while ($row = mysqli_fetch_array($res)) {
 		if (!array_key_exists($row[0], $divsAndEps)) {
 			$divsAndEps[$row[0]] = array();
 		}
@@ -28,7 +28,7 @@ function mergeDividendsEpsAndPricesFor($assetId, $link) {
 		$divsAndEps[$row[0]]["return"] = $row[3];
 	}
 
-	mysql_free_result($res);
+	mysqli_free_result($res);
 
 	ksort($divsAndEps);
 	return $divsAndEps;
@@ -87,14 +87,14 @@ function getAllEpsDetails($assetId, $link) {
 	$query.= "where a.fk_assetID=$assetId ";
 	$query.= "order by a.dtm_date DESC";
 
-	$res = mysql_query($query, $link);
-	if (!$res) die("Invalid query: ". mysql_error());
+	$res = mysqli_query($link, $query);
+	if (!$res) die("Invalid query: ". mysqli_error());
 
 	$tableResult = "";
 	$roundPrecision = 2;
 	$i = 0;
 
-	while ($row = mysql_fetch_array($res)) {
+	while ($row = mysqli_fetch_array($res)) {
 		if ($i == 0) $tableResult.= "[";
 		else $tableResult.= ",[";
 
@@ -111,7 +111,7 @@ function getAllEpsDetails($assetId, $link) {
 		$i++;
 	}
 
-	mysql_free_result($res);
+	mysqli_free_result($res);
 	return $tableResult;
 }
 
@@ -123,16 +123,16 @@ function getFScore($assetSymbol, $link) {
 		$query.= "where vchr_symbol='$assetSymbol' ";
 		$query.= "order by dtm_date asc";
 
-		$res = mysql_query($query, $link);
-		if (!$res) die("Invalid query: ". mysql_error());
+		$res = mysqli_query($link, $query);
+		if (!$res) die("Invalid query: ". mysqli_error());
 
 		$roundPrecision = 2;
-		while ($row = mysql_fetch_array($res)) {
+		while ($row = mysqli_fetch_array($res)) {
 			$tableResult.= ",['$row[0]',";
 			$tableResult.= toChartNumber(round($row[1], $roundPrecision))."]";
 		}
 
-		mysql_free_result($res);
+		mysqli_free_result($res);
 
 	}
 
@@ -358,4 +358,4 @@ function getFScore($assetSymbol, $link) {
     </tr></table>
   </body>
 </html>
-<?php mysql_close($link); ?>
+<?php mysqli_close($link); ?>

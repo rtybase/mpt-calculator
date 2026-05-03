@@ -1,8 +1,8 @@
 <?php
 // Dividends by price script
-	include_once("../lib/mysql.php");
-	include_once("../lib/utils.php");
-	include_once("./funcs.php");
+	include_once("./lib/mysql.php");
+	include_once("./lib/utils.php");
+	include_once("./lib/funcs.php");
 	header("Content-Type:text/html; charset=UTF-8");
 
 function getDividends($link) {
@@ -14,18 +14,18 @@ function getDividends($link) {
 	$query.= "ON a.fk_assetID = b.fk_assetID AND a.dtm_date = b.dtm_date ";
 	$query.= "INNER JOIN tbl_assets c ON a.fk_assetID = c.int_assetID";
 
-	$res = mysql_query($query, $link);
-	if (!$res) die("Invalid query: ". mysql_error());
+	$res = mysqli_query($link, $query);
+	if (!$res) die("Invalid query: ". mysqli_error());
 
 	$ret = array();
-	while ($row = mysql_fetch_row($res)) {
+	while ($row = mysqli_fetch_row($res)) {
 		$assetId = $row[0];
 		$ret[$assetId] = array();
 		$ret[$assetId]["asset"] = $row[1];
 		$ret[$assetId]["d_pay"] = $row[2];
 		$ret[$assetId]["d_date"] = $row[3];
 	}
-	mysql_free_result($res);
+	mysqli_free_result($res);
 
 	return $ret;
 }
@@ -37,10 +37,10 @@ function addLatestPrices($link, $dividendsData) {
 	$query.= "    FROM tbl_prices GROUP BY fk_assetID) b ";
 	$query.= "ON a.fk_assetID = b.fk_assetID AND a.dtm_date = b.dtm_date";
 
-	$res = mysql_query($query, $link);
-	if (!$res) die("Invalid query: ". mysql_error());
+	$res = mysqli_query($link, $query);
+	if (!$res) die("Invalid query: ". mysqli_error());
 
-	while ($row = mysql_fetch_row($res)) {
+	while ($row = mysqli_fetch_row($res)) {
 		$assetId = $row[0];
 		if (array_key_exists($assetId, $dividendsData)) {
 			$d = $dividendsData[$assetId]["d_pay"];
@@ -48,7 +48,7 @@ function addLatestPrices($link, $dividendsData) {
 			$dividendsData[$assetId]["pay_by_price"] = percentWeightFrom($d / $row[1]);
 		}
 	}
-	mysql_free_result($res);
+	mysqli_free_result($res);
 
 	return $dividendsData;
 }
@@ -121,4 +121,4 @@ function addLatestPrices($link, $dividendsData) {
     </tr></table>
   </body>
 </html>
-<?php mysql_close($link); ?>
+<?php mysqli_close($link); ?>

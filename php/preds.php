@@ -1,8 +1,8 @@
 <?php
 // ML predictions
-	include_once("../lib/mysql.php");
-	include_once("../lib/utils.php");
-	include_once("./funcs.php");
+	include_once("./lib/mysql.php");
+	include_once("./lib/utils.php");
+	include_once("./lib/funcs.php");
 	header("Content-Type:text/html; charset=UTF-8");
 
 function getPredictions($link) {
@@ -15,12 +15,12 @@ function getPredictions($link) {
 	$query.= "WHERE  a.dtm_eps_date BETWEEN (NOW() - INTERVAL 60 DAY) AND NOW() ";
 	$query.= "ORDER BY a.fk_assetID ASC, a.dtm_prd_date DESC, a.vchr_model ASC";
 
-	$res = mysql_query($query, $link);
-	if (!$res) die("Invalid query: ". mysql_error());
+	$res = mysqli_query($link, $query);
+	if (!$res) die("Invalid query: ". mysqli_error());
 
 	$tableResult = "";
 	$i = 0;
-	while ($row = mysql_fetch_row($res)) {
+	while ($row = mysqli_fetch_row($res)) {
 		if ($i == 0) $tableResult.= "[";
 		else $tableResult.= ",[";
 
@@ -34,7 +34,7 @@ function getPredictions($link) {
 		$tableResult.= "'<a href=\"./show_eps.php?id=".$row[0]."\">details...</a>']";
 		$i++;
 	}
-	mysql_free_result($res);
+	mysqli_free_result($res);
 	return $tableResult;
 }
 
@@ -125,4 +125,4 @@ function getPredictions($link) {
     </tr></table>
   </body>
 </html>
-<?php mysql_close($link); ?>
+<?php mysqli_close($link); ?>

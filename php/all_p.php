@@ -1,8 +1,8 @@
 <?php
 // All pairs script
-	include_once("../lib/mysql.php");
-	include_once("../lib/utils.php");
-	include_once("./funcs.php");
+	include_once("./lib/mysql.php");
+	include_once("./lib/utils.php");
+	include_once("./lib/funcs.php");
 	header("Content-Type:text/html; charset=UTF-8");
 
 function getAllCorrelations($assetId, $assetName, $link) {
@@ -31,11 +31,11 @@ function buildDescription($id, $shift, $correlation, $predictionText, $link) {
 }
 
 function getAllShiftCorrelationsFor($query, $assetId, $assetName, $predictionText, $link) {
-	$res = mysql_query($query, $link);
-	if (!$res) die("Invalid query: ". mysql_error());
+	$res = mysqli_query($link, $query);
+	if (!$res) die("Invalid query: ". mysqli_error());
 
 	$tableResult = buildRow($assetId, "", addslashes($assetName));
-	while ($row = mysql_fetch_row($res)) {
+	while ($row = mysqli_fetch_row($res)) {
 		$id = $row[0];
 
 		if ($id == $assetId) {
@@ -45,7 +45,7 @@ function getAllShiftCorrelationsFor($query, $assetId, $assetName, $predictionTex
 		$description = buildDescription($id, $row[2], $row[3], $predictionText, $link);
 		$tableResult.= ",".buildRow($id, $assetId, $description);
 	}
-	mysql_free_result($res);
+	mysqli_free_result($res);
 	return $tableResult;
 }
 
@@ -167,4 +167,4 @@ function getAllPredictedByShiftCorrelations($assetId, $assetName, $link) {
     </tr></table>
   </body>
 </html>
-<?php mysql_close($link); ?>
+<?php mysqli_close($link); ?>

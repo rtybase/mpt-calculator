@@ -1,8 +1,8 @@
 <?php
 // Show financial score details script
-	include_once("../lib/mysql.php");
-	include_once("../lib/utils.php");
-	include_once("./funcs.php");
+	include_once("./lib/mysql.php");
+	include_once("./lib/utils.php");
+	include_once("./lib/funcs.php");
 	header("Content-Type:text/html; charset=UTF-8");
 
 function loadFinancialData($assetSymbol, $link) {
@@ -21,11 +21,11 @@ function loadFinancialData($assetSymbol, $link) {
 	$query.= " WHERE vchr_symbol='$assetSymbol'";
 	$query.= " ORDER BY dtm_date ASC";
 
-	$res = mysql_query($query, $link);
-	if (!$res) die("Invalid query: ". mysql_error());
+	$res = mysqli_query($link, $query);
+	if (!$res) die("Invalid query: ". mysqli_error());
 
 	$financialData = array();
-	while ($row = mysql_fetch_array($res)) {
+	while ($row = mysqli_fetch_array($res)) {
 		$financialData[$row[0]] = array();
 
 		$financialData[$row[0]]["total_current_assets"] = $row[1];
@@ -44,7 +44,7 @@ function loadFinancialData($assetSymbol, $link) {
 		$financialData[$row[0]]["fcfps"] = $row[14];
 	}
 
-	mysql_free_result($res);
+	mysqli_free_result($res);
 	return $financialData;
 }
 
@@ -301,4 +301,4 @@ function extractFCFPSRatiosFrom($financialData) {
     </tr></table>
   </body>
 </html>
-<?php mysql_close($link); ?>
+<?php mysqli_close($link); ?>

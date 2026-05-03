@@ -1,8 +1,8 @@
 <?php
 // Custom portfolio data script
-	include_once("../lib/mysql.php");
-	include_once("../lib/utils.php");
-	include_once("./funcs.php");
+	include_once("./lib/mysql.php");
+	include_once("./lib/utils.php");
+	include_once("./lib/funcs.php");
 	header("Content-Type:text/html; charset=UTF-8");
 
 function printPortfolios($portfolioId, $link) {
@@ -14,15 +14,15 @@ function getPortfolioInfo($portfolioId, $link) {
 	$query = "SELECT vchr_name, txt_json_composition FROM tbl_custom_portfolios ";
 	$query.= "WHERE int_portfolioID=$portfolioId";
 
-	$res = mysql_query($query, $link);
-	if (!$res) die("Invalid query: ". mysql_error());
+	$res = mysqli_query($link, $query);
+	if (!$res) die("Invalid query: ". mysqli_error());
 
 	$details = array();
-	while ($row = mysql_fetch_row($res)) {
+	while ($row = mysqli_fetch_row($res)) {
 		$details["name"] = $row[0];
 		$details["composition"] = json_decode($row[1], true);
 	}
-	mysql_free_result($res);
+	mysqli_free_result($res);
 	return $details;
 }
 
@@ -48,19 +48,19 @@ function getPortfolioData($portfolioId, $link) {
 	$query = "SELECT dtm_date, txt_json_stats FROM tbl_custom_portfolios_data ";
 	$query.= "WHERE fk_portfolioID=$portfolioId ORDER by dtm_date ASC";
 
-	$res = mysql_query($query, $link);
-	if (!$res) die("Invalid query: ". mysql_error());
+	$res = mysqli_query($link, $query);
+	if (!$res) die("Invalid query: ". mysqli_error());
 
 	$data = array();
 	$i = 0;
-	while ($row = mysql_fetch_row($res)) {
+	while ($row = mysqli_fetch_row($res)) {
 		$data[$i] = array();
 		$data[$i]["date"] = $row[0];
 		$data[$i]["data"] = json_decode($row[1], true);
 
 		$i++;
 	}
-	mysql_free_result($res);
+	mysqli_free_result($res);
 	return $data;
 }
 
@@ -194,4 +194,4 @@ function getPortfolioData($portfolioId, $link) {
     </tr></table>
   </body>
 </html>
-<?php mysql_close($link); ?>
+<?php mysqli_close($link); ?>
