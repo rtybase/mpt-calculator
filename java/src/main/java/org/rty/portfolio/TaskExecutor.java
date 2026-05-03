@@ -39,7 +39,7 @@ public class TaskExecutor {
 
 	public static void main(String[] args) throws Throwable {
 		if (args.length > 0) {
-			Class.forName("com.mysql.jdbc.Driver").newInstance();
+			Class.forName("com.mysql.cj.jdbc.Driver").newInstance();
 			initialiseDbManager(loadProperties());
 			registerAllTasks();
 			execute(args[0], extractParameters(args));

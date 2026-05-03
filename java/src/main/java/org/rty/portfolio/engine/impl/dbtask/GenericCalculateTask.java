@@ -1,5 +1,6 @@
 package org.rty.portfolio.engine.impl.dbtask;
 
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -9,7 +10,6 @@ import org.rty.portfolio.core.utils.ConcurrentTaskExecutorWithBatching.Exception
 import org.rty.portfolio.db.DbManager;
 import org.rty.portfolio.engine.AbstractDbTask;
 
-import com.mysql.jdbc.Statement;
 
 public abstract class GenericCalculateTask<T> extends AbstractDbTask {
 	private static final int NUMBER_OF_THREADS = computeNoOfThreads();
