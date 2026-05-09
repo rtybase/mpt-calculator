@@ -1,0 +1,26 @@
+services:
+
+  ubuntu:
+    build:
+      context: .
+      dockerfile: ubuntu.dockerfile
+    restart: no
+
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1gb
+        reservations:
+          cpus: '1'
+          memory: 512m
+
+    environment:
+      PUID: 1000
+      PGID: 10
+
+    volumes:
+      - type: bind
+        source: /volume1/docker/ubuntu/app
+        target: /opt/app
+

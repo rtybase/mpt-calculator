@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
@@ -39,6 +40,7 @@ public abstract class BulkCsvLoader<T> {
 			loadFromOneFile(inputFile);
 		} else if (toLoadFrom.isDirectory()) {
 			final File[] folderContent = toLoadFrom.listFiles();
+			Arrays.sort(folderContent);
 
 			for (File file : folderContent) {
 				if (file.isFile()) {
