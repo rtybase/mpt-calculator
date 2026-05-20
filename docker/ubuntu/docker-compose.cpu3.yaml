@@ -1,0 +1,7 @@
+services:
+
+  ubuntu:
+    deploy:
+      resources:
+        limits:
+          cpus: '3'

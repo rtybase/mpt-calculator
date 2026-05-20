@@ -2,6 +2,7 @@ package org.rty.portfolio.db;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -32,27 +33,26 @@ import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.base.Preconditions;
 
 public class DbManager {
-	private final Connection connection;
+	private final DbConnection connection;
 	private final LoadingCache<String, Integer> cache;
 
-	public DbManager(Connection connection) {
-		this.connection = Objects.requireNonNull(connection, "connection must not be null.");
-
+	public DbManager(String connectionString) {
+		this.connection = new DbConnection(connectionString);
 		this.cache = Caffeine.newBuilder()
 				  .maximumSize(1000)
 				  .build(this::queryDbForAssetIdFromName);
 	}
 
 	public void setAutoCommit(boolean autoCommitFlag) throws Exception {
-		connection.setAutoCommit(autoCommitFlag);
+		connection.get().setAutoCommit(autoCommitFlag);
 	}
 
 	public void commit() throws Exception {
-		connection.commit();
+		connection.get().commit();
 	}
 
 	public void close() throws Exception {
-		connection.close();
+		connection.get().close();
 	}
 
 	/**
@@ -62,7 +62,7 @@ public class DbManager {
 	public boolean applyAverages() throws Exception {
 		boolean ret = false;
 
-		try (CallableStatement cStmt = connection.prepareCall("{call usp_applyavg(?)}")) {
+		try (CallableStatement cStmt = connection.get().prepareCall("{call usp_applyavg(?)}")) {
 			cStmt.registerOutParameter(1, Types.INTEGER);
 			cStmt.execute();
 
@@ -91,7 +91,7 @@ public class DbManager {
 		final List<String> failedResults = new ArrayList<>(prices.size());
 		final List<String> possiblyGoodResults = new ArrayList<>(prices.size());
 
-		try (PreparedStatement pStmt = connection.prepareStatement(
+		try (PreparedStatement pStmt = connection.get().prepareStatement(
 				"INSERT INTO tbl_prices (fk_assetID, dbl_price, dbl_change, dbl_return, dtm_date, dtm_time, dbl_volume, dbl_vol_change_rate)"
 						+ " VALUES (?,?,?,?,?,?,?,?)"
 						+ " ON DUPLICATE KEY UPDATE"
@@ -133,7 +133,7 @@ public class DbManager {
 		final List<String> failedResults = new ArrayList<>(dividends.size());
 		final List<String> possiblyGoodResults = new ArrayList<>(dividends.size());
 
-		try (PreparedStatement pStmt = connection.prepareStatement(
+		try (PreparedStatement pStmt = connection.get().prepareStatement(
 				"INSERT INTO tbl_dividends (fk_assetID, dbl_pay, dtm_date)"
 						+ " VALUES (?,?,?)"
 						+ " ON DUPLICATE KEY UPDATE"
@@ -166,7 +166,7 @@ public class DbManager {
 		final List<String> failedResults = new ArrayList<>(assetsEps.size());
 		final List<String> possiblyGoodResults = new ArrayList<>(assetsEps.size());
 
-		try (PreparedStatement pStmt = connection.prepareStatement(
+		try (PreparedStatement pStmt = connection.get().prepareStatement(
 				"INSERT INTO tbl_earnings (fk_assetID, dbl_eps, dtm_date)"
 						+ " VALUES (?,?,?)"
 						+ " ON DUPLICATE KEY UPDATE"
@@ -199,7 +199,7 @@ public class DbManager {
 		final List<String> failedResults = new ArrayList<>(assetsEps.size());
 		final List<String> possiblyGoodResults = new ArrayList<>(assetsEps.size());
 
-		try (PreparedStatement pStmt = connection.prepareStatement(
+		try (PreparedStatement pStmt = connection.get().prepareStatement(
 				"INSERT INTO tbl_eps (fk_assetID, dbl_eps, dbl_prd_eps, dtm_date)"
 						+ " VALUES (?,?,?,?)"
 						+ " ON DUPLICATE KEY UPDATE"
@@ -233,7 +233,7 @@ public class DbManager {
 		final List<String> failedResults = new ArrayList<>(assetsNonGaapEps.size());
 		final List<String> possiblyGoodResults = new ArrayList<>(assetsNonGaapEps.size());
 
-		try (PreparedStatement pStmt = connection.prepareStatement(
+		try (PreparedStatement pStmt = connection.get().prepareStatement(
 				"INSERT INTO tbl_n_gaap_eps (fk_assetID, dbl_eps, dbl_prd_eps, dtm_date, bln_after_market_close, dbl_revenue, dbl_prd_revenue)"
 						+ " VALUES (?,?,?,?,?,?,?)"
 						+ " ON DUPLICATE KEY UPDATE"
@@ -273,7 +273,7 @@ public class DbManager {
 		final List<String> failedResults = new ArrayList<>(assetFinancialInfo.size());
 		final List<String> possiblyGoodResults = new ArrayList<>(assetFinancialInfo.size());
 
-		try (PreparedStatement pStmt = connection.prepareStatement(
+		try (PreparedStatement pStmt = connection.get().prepareStatement(
 				"INSERT INTO tbl_finances_quarter (vchr_symbol, dtm_date,"
 				+ "dbl_total_current_assets, dbl_total_current_liabilities,"
 				+ "dbl_total_assets, dbl_total_liabilities,"
@@ -322,7 +322,7 @@ public class DbManager {
 
 		final List<AssetFinancialInfo> result = new ArrayList<>(2048);
 
-		try (PreparedStatement pStmt = connection.prepareStatement("SELECT vchr_symbol, dtm_date,"
+		try (PreparedStatement pStmt = connection.get().prepareStatement("SELECT vchr_symbol, dtm_date,"
 				+ " dbl_total_current_assets, dbl_total_current_liabilities,"
 				+ " dbl_total_assets, dbl_total_liabilities,"
 				+ " dbl_total_equity, dbl_net_cash_flow_operating,"
@@ -355,7 +355,7 @@ public class DbManager {
 	 * 
 	 */
 	public 	int[] addBulkShiftCorrelations(List<AssetsCorrelationInfo> assetsShiftCorrelations) throws Exception {
-		try (PreparedStatement pStmt = connection.prepareStatement(
+		try (PreparedStatement pStmt = connection.get().prepareStatement(
 				"INSERT INTO tbl_shift_correlations (fk_asset1ID, fk_asset2ID, int_shift, dbl_correlation, dtm_last_update_date, txt_json)"
 						+ " VALUES (?,?,?,?, now(),?)"
 						+ " ON DUPLICATE KEY UPDATE"
@@ -385,7 +385,7 @@ public class DbManager {
 	public boolean addNewPrice(String assetName, double price, double change, double rate, Date date) throws Exception {
 		boolean ret = false;
 
-		try (CallableStatement cStmt = connection.prepareCall("{call usp_addPrice(?,?,?,?,?,?,?)}")) {
+		try (CallableStatement cStmt = connection.get().prepareCall("{call usp_addPrice(?,?,?,?,?,?,?)}")) {
 
 			cStmt.setString(1, assetName);
 			cStmt.setDouble(2, price);
@@ -411,7 +411,7 @@ public class DbManager {
 	 * 
 	 */
 	public int[] addNew2AssetsPortfolioInfo(List<PortfolioStatistics> results) throws Exception {
-		try (PreparedStatement pStmt = connection.prepareStatement(
+		try (PreparedStatement pStmt = connection.get().prepareStatement(
 				"INSERT INTO tbl_correlations (fk_asset1ID, fk_asset2ID, dbl_covariance, dbl_correlation, dbl_weight1, dbl_weight2, dbl_portret, dbl_portvar)"
 						+ " VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
 						+ " ON DUPLICATE KEY UPDATE"
@@ -448,7 +448,7 @@ public class DbManager {
 
 		final Map<Integer, Map<String, Double>> storage = new HashMap<>();
 
-		try (PreparedStatement pStmt = connection.prepareStatement("select fk_assetID, dtm_date, dbl_return"
+		try (PreparedStatement pStmt = connection.get().prepareStatement("select fk_assetID, dtm_date, dbl_return"
 				+ " from tbl_prices"
 				+ " where dtm_date between (NOW() - INTERVAL ? YEAR) and NOW()")) {
 			pStmt.setInt(1, yearsBack);
@@ -470,7 +470,7 @@ public class DbManager {
 	public Map<Integer, String> getAllCustomPortfolios() throws Exception {
 		final Map<Integer, String> portfolios = new HashMap<>();
 
-		try (Statement stmt = connection.createStatement();
+		try (Statement stmt = connection.get().createStatement();
 				ResultSet rs = stmt
 						.executeQuery("select int_portfolioID, txt_json_composition from tbl_custom_portfolios")) {
 			while (rs.next()) {
@@ -487,7 +487,7 @@ public class DbManager {
 	 * 
 	 */
 	public int[] addBulkCustomPortfolioOptimalResults(List<PortflioOptimalResults> results) throws Exception {
-		try (PreparedStatement pStmt = connection.prepareStatement(
+		try (PreparedStatement pStmt = connection.get().prepareStatement(
 				"INSERT INTO tbl_custom_portfolios_data (fk_portfolioID, dtm_date, txt_json_stats)"
 						+ " VALUES (?, now(), ?)"
 						+ " ON DUPLICATE KEY UPDATE"
@@ -512,7 +512,7 @@ public class DbManager {
 
 		final List<AssetPriceInfo> result = new ArrayList<>(2048);
 
-		try (PreparedStatement pStmt = connection.prepareStatement("select a.vchr_symbol, p.dbl_price, p.dbl_change, p.dbl_return,"
+		try (PreparedStatement pStmt = connection.get().prepareStatement("select a.vchr_symbol, p.dbl_price, p.dbl_change, p.dbl_return,"
 				+ " dbl_volume, dbl_vol_change_rate, p.dtm_date"
 				+ " from tbl_prices p, tbl_assets a"
 				+ " where p.fk_assetID = a.int_assetID"
@@ -546,7 +546,7 @@ public class DbManager {
 
 		final List<AssetDividendInfo> result = new ArrayList<>(2048);
 
-		try (PreparedStatement pStmt = connection.prepareStatement("select a.vchr_symbol, d.dbl_pay, d.dtm_date"
+		try (PreparedStatement pStmt = connection.get().prepareStatement("select a.vchr_symbol, d.dbl_pay, d.dtm_date"
 				+ "	from tbl_dividends d, tbl_assets a"
 				+ "	where d.fk_assetID = a.int_assetID"
 				+ "	 and a.vchr_symbol is not null"
@@ -587,7 +587,7 @@ public class DbManager {
 					+ " and e.dtm_date between (NOW() - INTERVAL ? YEAR) and NOW()",
 				useSymbol ? "a.vchr_symbol" : "a.vchr_name");
 
-		try (PreparedStatement pStmt = connection.prepareStatement(sqlCommand)) {
+		try (PreparedStatement pStmt = connection.get().prepareStatement(sqlCommand)) {
 			pStmt.setInt(1, yearsBack);
 
 			try (ResultSet rs = pStmt.executeQuery()) {
@@ -614,7 +614,7 @@ public class DbManager {
 
 		final List<AssetNonGaapEpsInfo> result = new ArrayList<>(2048);
 
-		try (PreparedStatement pStmt = connection.prepareStatement("select a.vchr_symbol, e.dbl_eps, e.dbl_prd_eps, e.dtm_date,"
+		try (PreparedStatement pStmt = connection.get().prepareStatement("select a.vchr_symbol, e.dbl_eps, e.dbl_prd_eps, e.dtm_date,"
 				+ " bln_after_market_close, dbl_revenue, dbl_prd_revenue"
 				+ " from tbl_n_gaap_eps e, tbl_assets a"
 				+ " where e.fk_assetID = a.int_assetID"
@@ -646,7 +646,7 @@ public class DbManager {
 	public List<Pair<String, Pair<Integer, Integer>>> getAllStocks() throws Exception {
 		final List<Pair<String, Pair<Integer, Integer>>> result = new ArrayList<>(2048);
 
-		try (Statement stmt = connection.createStatement();
+		try (Statement stmt = connection.get().createStatement();
 				ResultSet rs = stmt.executeQuery("select vchr_symbol,fk_sectorID,fk_industryID from tbl_stocks")) {
 			while (rs.next()) {
 				result.add(new Pair<>(rs.getString(1),
@@ -667,7 +667,7 @@ public class DbManager {
 
 		final Map<String, NavigableMap<Date, Double>> storage = new HashMap<>();
 
-		try (PreparedStatement pStmt = connection.prepareStatement("select vchr_symbol, dtm_date, dbl_fscore"
+		try (PreparedStatement pStmt = connection.get().prepareStatement("select vchr_symbol, dtm_date, dbl_fscore"
 				+ " from tbl_fscores"
 				+ " where dtm_date between (NOW() - INTERVAL ? YEAR) and NOW()")) {
 			pStmt.setInt(1, yearsBack);
@@ -698,7 +698,7 @@ public class DbManager {
 	}
 
 	private Integer queryDbForAssetIdFromName(String assetName) throws Exception {
-		try (PreparedStatement pStmt = connection
+		try (PreparedStatement pStmt = connection.get()
 				.prepareStatement("SELECT int_assetID FROM tbl_assets WHERE UPPER(vchr_name)=UPPER(?)"
 						+ " OR UPPER(vchr_symbol)=UPPER(?)")) {
 			pStmt.setString(1, assetName);
@@ -766,5 +766,21 @@ public class DbManager {
 		}
 
 		return value;
+	}
+
+	private static class DbConnection {
+		private final String connectionString;
+		private Connection connection;
+
+		private DbConnection(String connectionString) {
+			this.connectionString = Objects.requireNonNull(connectionString, "connectionString must not be null.");
+		}
+
+		private synchronized Connection get() throws Exception {
+			if (connection == null) {
+				connection = DriverManager.getConnection(connectionString);
+			}
+			return connection;
+		}
 	}
 }

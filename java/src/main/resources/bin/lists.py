@@ -43,7 +43,19 @@ LISTS = {
 		)f ON e.vchr_symbol = f.vchr_symbol
 		AND e.dtm_date = f.dtm_date
 		WHERE e.dtm_date < 
-		(STR_TO_DATE(CONCAT(YEAR(NOW()), '-', MONTH(NOW()), '-01'), '%Y-%m-%d') - INTERVAL 3 MONTH)"""
+		(STR_TO_DATE(CONCAT(YEAR(NOW()), '-', MONTH(NOW()), '-01'), '%Y-%m-%d') - INTERVAL 3 MONTH)""",
+    "FIN-Q-L": """SELECT e.vchr_symbol, e.vchr_symbol
+		FROM tbl_finances_quarter e
+		INNER JOIN (
+			SELECT vchr_symbol, max( dtm_date ) dtm_date
+			FROM tbl_finances_quarter
+			GROUP BY vchr_symbol
+		) f ON e.vchr_symbol = f.vchr_symbol
+		AND e.dtm_date = f.dtm_date
+		WHERE e.dtm_date <
+		(STR_TO_DATE(CONCAT(YEAR(NOW()), '-', MONTH(NOW()), '-01'), '%Y-%m-%d') - INTERVAL 3 MONTH)
+		AND e.vchr_symbol in (SELECT vchr_symbol FROM tbl_assets WHERE vchr_symbol IS NOT NULL)"""
+
 }
 
 if len(sys.argv) > 1:

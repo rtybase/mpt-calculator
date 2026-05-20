@@ -44,7 +44,11 @@ public abstract class BulkCsvLoader<T> {
 
 			for (File file : folderContent) {
 				if (file.isFile()) {
-					loadFromOneFile(file.getPath());
+					try {
+						loadFromOneFile(file.getPath());
+					} catch (RuntimeException ex) {
+						LOGGER.warn("Load failure because of ...", ex);
+					}
 				}
 			}
 		}

@@ -2,8 +2,6 @@ package org.rty.portfolio;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -39,7 +37,6 @@ public class TaskExecutor {
 
 	public static void main(String[] args) throws Throwable {
 		if (args.length > 0) {
-			Class.forName("com.mysql.cj.jdbc.Driver").newInstance();
 			initialiseDbManager(loadProperties());
 			registerAllTasks();
 			execute(args[0], extractParameters(args));
@@ -50,14 +47,13 @@ public class TaskExecutor {
 	}
 
 	private static void initialiseDbManager(Properties props) throws Exception {
-		String connectionString = props.getProperty(CONN_STRING);
+		final String connectionString = props.getProperty(CONN_STRING);
 
 		if (Strings.isNullOrEmpty(connectionString)) {
-			throw new Exception(String.format("'%s' not found!", PROP_FILE));
+			throw new Exception(String.format("'%s' not found in the '%s'!", CONN_STRING, PROP_FILE));
 		}
 
-		Connection conn = DriverManager.getConnection(connectionString);
-		dbManager = new DbManager(conn);
+		dbManager = new DbManager(connectionString);
 	}
 
 	private static void registerAllTasks() throws Exception {
