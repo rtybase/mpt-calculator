@@ -52,7 +52,7 @@ public class DbManager {
 	}
 
 	public void close() throws Exception {
-		connection.get().close();
+		connection.close();
 	}
 
 	/**
@@ -781,6 +781,12 @@ public class DbManager {
 				connection = DriverManager.getConnection(connectionString);
 			}
 			return connection;
+		}
+
+		private void close() throws Exception {
+			if (connection != null) {
+				connection.close();
+			}
 		}
 	}
 }
