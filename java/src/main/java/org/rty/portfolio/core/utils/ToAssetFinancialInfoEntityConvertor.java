@@ -1,8 +1,12 @@
 package org.rty.portfolio.core.utils;
 
+import java.time.Year;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import org.rty.portfolio.core.AssetFinancialInfo;
 import org.slf4j.Logger;
@@ -11,6 +15,9 @@ import org.slf4j.LoggerFactory;
 public class ToAssetFinancialInfoEntityConvertor {
 	private static final Logger LOGGER = LoggerFactory
 			.getLogger(ToAssetFinancialInfoEntityConvertor.class.getSimpleName());
+
+	private static final int MAX_DAYS_TOLERANCE = 10;
+	private static final Set<Date> STANDARD_QUORTER_ENDS = generateEndOfQuorterDates();
 
 	private static final String ASSET_NAME_COLUMN = "Symbol";
 	private static final String DATE_COLUMN = "Quarterly Ending:";
@@ -70,7 +77,7 @@ public class ToAssetFinancialInfoEntityConvertor {
 	}
 
 	public AssetFinancialInfo toEntity(String assetName, String[] line) {
-		final Date date = toDate(line);
+		final Date date = toDate(assetName, line);
 
 		return new AssetFinancialInfo(assetName, date,
 				ToEntityConvertorsUtil.valueOrDefaultFrom(line, totalCurrentAssetsColumnIndex, null),
@@ -83,14 +90,34 @@ public class ToAssetFinancialInfoEntityConvertor {
 				ToEntityConvertorsUtil.valueOrDefaultFrom(line, shareIssuedColumnIndex, null)) ;
 	}
 
-	private Date toDate(String[] line) {
+	private Date toDate(String assetName, String[] line) {
 		final String strDate = line[dateColumnIndex].trim();
 
 		if (strDate.isEmpty()) {
 			throw new IllegalArgumentException(String.format("Empty date found!"));
 		}
 
-		return ToEntityConvertorsUtil.toDate(strDate, ToEntityConvertorsUtil.EPS_DATE_FORMAT);
+		final Date parsedDate = ToEntityConvertorsUtil.toDate(strDate, ToEntityConvertorsUtil.EPS_DATE_FORMAT);
+		final Optional<Date> correctedDate = DatesAndSetUtil.findClosestDate(parsedDate, STANDARD_QUORTER_ENDS,
+				MAX_DAYS_TOLERANCE);
+
+		if (correctedDate.isPresent()) {
+			if (!correctedDate.get().equals(parsedDate)) {
+				LOGGER.info("Using corrected date '{}' instead of '{}' for '{}'.",
+						DatesAndSetUtil.dateToStr(correctedDate.get()),
+						DatesAndSetUtil.dateToStr(parsedDate),
+						assetName);
+
+				return correctedDate.get();
+			}
+
+		} else {
+			LOGGER.warn("No standard quorter end date for '{}' at '{}' found.",
+					assetName,
+					DatesAndSetUtil.dateToStr(parsedDate));
+		}
+
+		return parsedDate;
 	}
 
 	private void resetIndexes() {
@@ -110,5 +137,35 @@ public class ToAssetFinancialInfoEntityConvertor {
 		if (columnIndex < 0) {
 			LOGGER.warn("'{}' column is not defined!", columnName);
 		}
+	}
+
+	private static Set<Date> generateEndOfQuorterDates() {
+		final Set<Date> dates = new HashSet<>();
+
+		final int startYear = Year.now().minusYears(20L).getValue();
+		final int endYear = Year.now().plusYears(1L).getValue();
+
+		for (int year = startYear; year <= endYear; year++) {
+			dates.add(dateFrom(year, 1, 31));
+			dates.add(dateFrom(year, 4, 30));
+			dates.add(dateFrom(year, 7, 31));
+			dates.add(dateFrom(year, 10, 31));
+
+			dates.add(dateFrom(year, 12, 31));
+			dates.add(dateFrom(year, 3, 31));
+			dates.add(dateFrom(year, 6, 30));
+			dates.add(dateFrom(year, 9, 30));
+
+			dates.add(dateFrom(year, 2, 28));
+			dates.add(dateFrom(year, 5, 31));
+			dates.add(dateFrom(year, 8, 31));
+			dates.add(dateFrom(year, 11, 30));
+		}
+
+		return Set.copyOf(dates);
+	}
+
+	private static Date dateFrom(int year, int month, int day) {
+		return new Date(year - 1900, month - 1, day);
 	}
 }

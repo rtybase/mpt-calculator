@@ -110,14 +110,15 @@ public class ToAssetNonGaapEpsInfoEntityConvertor {
 		if (epsDateCorrected.isPresent()) {
 			if (!epsDateCorrected.get().equals(epsDate)) {
 				LOGGER.info("Using corrected date '{}' instead of '{}' for '{}'.",
-						DatesAndSetUtil.dateToStr(epsDateCorrected.get()), DatesAndSetUtil.dateToStr(epsDate),
+						DatesAndSetUtil.dateToStr(epsDateCorrected.get()),
+						DatesAndSetUtil.dateToStr(epsDate),
 						assetName);
 
 				return epsDateCorrected.get();
 			}
 
 		} else {
-			LOGGER.warn("No close date from '{}' at '{}' found.", assetName, DatesAndSetUtil.dateToStr(epsDate));
+			LOGGER.warn("No close date for '{}' at '{}' found.", assetName, DatesAndSetUtil.dateToStr(epsDate));
 		}
 		return epsDate;
 	}

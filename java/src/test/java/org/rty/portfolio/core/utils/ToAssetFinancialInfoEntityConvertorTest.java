@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.Date;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.rty.portfolio.core.AssetFinancialInfo;
@@ -15,6 +17,11 @@ public class ToAssetFinancialInfoEntityConvertorTest extends CommonTestRoutines 
 
 	private static final String[] TEST_LINE = new String[] { TEST_ASSET, "7/17/2025", "$1,000", "$2,000", "$3,000",
 			"-$4,000", "$5,000", "$6,000", "--" };
+	private static final String[] TEST_LINE_DATE_CORECTION = new String[] { TEST_ASSET, "7/29/2025", "$1,000", "$2,000", "$3,000",
+			"-$4,000", "$5,000", "$6,000", "--" };
+	private static final String[] TEST_LINE_NO_DATE_CORECTION = new String[] { TEST_ASSET, "7/31/2025", "$1,000", "$2,000", "$3,000",
+			"-$4,000", "$5,000", "$6,000", "--" };
+
 
 	private ToAssetFinancialInfoEntityConvertor convertor;
 
@@ -30,7 +37,29 @@ public class ToAssetFinancialInfoEntityConvertorTest extends CommonTestRoutines 
 		assertEquals(TEST_ASSET, convertor.assetNameFrom(TEST_LINE));
 
 		final AssetFinancialInfo entity = convertor.toEntity(TEST_ASSET, TEST_LINE);
-		verifyEntityContent(entity);
+		verifyEntityContent(entity, D_2025_07_17);
+		assertNull(entity.shareIssued);
+	}
+
+	@Test
+	void testToEntityWithDateCorrection() {
+		convertor.updateHeadersFrom("test_file.csv", HEADER_LINE);
+
+		assertEquals(TEST_ASSET, convertor.assetNameFrom(TEST_LINE_DATE_CORECTION));
+
+		final AssetFinancialInfo entity = convertor.toEntity(TEST_ASSET, TEST_LINE_DATE_CORECTION);
+		verifyEntityContent(entity, dateFrom(31));
+		assertNull(entity.shareIssued);
+	}
+
+	@Test
+	void testToEntityWithoutDateCorrection() {
+		convertor.updateHeadersFrom("test_file.csv", HEADER_LINE);
+
+		assertEquals(TEST_ASSET, convertor.assetNameFrom(TEST_LINE_NO_DATE_CORECTION));
+
+		final AssetFinancialInfo entity = convertor.toEntity(TEST_ASSET, TEST_LINE_NO_DATE_CORECTION);
+		verifyEntityContent(entity, dateFrom(31));
 		assertNull(entity.shareIssued);
 	}
 
@@ -43,7 +72,7 @@ public class ToAssetFinancialInfoEntityConvertorTest extends CommonTestRoutines 
 		assertEquals(TEST_ASSET, convertor.assetNameFrom(lineWithIssuedColumn));
 
 		final AssetFinancialInfo entity = convertor.toEntity(TEST_ASSET, lineWithIssuedColumn);
-		verifyEntityContent(entity);
+		verifyEntityContent(entity, D_2025_07_17);
 		assertEquals(8000D, entity.shareIssued, ERROR_TOLERANCE);
 	}
 
@@ -68,9 +97,9 @@ public class ToAssetFinancialInfoEntityConvertorTest extends CommonTestRoutines 
 				() -> convertor.toEntity(TEST_ASSET, lineWithEmptyDate));
 	}
 
-	private void verifyEntityContent(final AssetFinancialInfo entity) {
+	private void verifyEntityContent(AssetFinancialInfo entity, Date expectedDate) {
 		assertEquals(TEST_ASSET, entity.assetName);
-		assertEquals(D_2025_07_17, entity.date);
+		assertEquals(expectedDate, entity.date);
 		assertEquals(1000D, entity.totalCurrentAssets, ERROR_TOLERANCE);
 		assertEquals(2000D, entity.totalCurrentLiabilities, ERROR_TOLERANCE);
 		assertEquals(3000D, entity.totalLiabilities, ERROR_TOLERANCE);
