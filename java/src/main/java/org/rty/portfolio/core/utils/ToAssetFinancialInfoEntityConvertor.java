@@ -30,6 +30,8 @@ public class ToAssetFinancialInfoEntityConvertor {
 	private static final String CAPITAL_EXPENDITURES_COLUMN = "Capital Expenditures";
 	private static final String SHARE_ISSUED_COLUMN = "Share Issued";
 
+	private final boolean shouldDivideBy1000;
+
 	private int assetNameColumnIndex;
 	private int dateColumnIndex;
 	private int totalCurrentAssetsColumnIndex;
@@ -41,7 +43,8 @@ public class ToAssetFinancialInfoEntityConvertor {
 	private int capitalExpendituresColumnIndex;
 	private int shareIssuedColumnIndex;
 
-	public ToAssetFinancialInfoEntityConvertor() {
+	public ToAssetFinancialInfoEntityConvertor(boolean shouldDivideBy1000) {
+		this.shouldDivideBy1000 = shouldDivideBy1000;
 		resetIndexes();
 	}
 
@@ -80,14 +83,40 @@ public class ToAssetFinancialInfoEntityConvertor {
 		final Date date = toDate(assetName, line);
 
 		return new AssetFinancialInfo(assetName, date,
-				ToEntityConvertorsUtil.valueOrDefaultFrom(line, totalCurrentAssetsColumnIndex, null),
-				ToEntityConvertorsUtil.valueOrDefaultFrom(line, totalCurrentLiabilitiesColumnIndex, null),
-				ToEntityConvertorsUtil.valueOrDefaultFrom(line, totalAssetsColumnIndex, null),
-				ToEntityConvertorsUtil.valueOrDefaultFrom(line, totalLiabilitiesColumnIndex, null),
-				ToEntityConvertorsUtil.valueOrDefaultFrom(line, totalEquityColumnIndex, null),
-				ToEntityConvertorsUtil.valueOrDefaultFrom(line, netCashFlowOperatingColumnIndex, null),
-				ToEntityConvertorsUtil.valueOrDefaultFrom(line, capitalExpendituresColumnIndex, null),
+				divideBy1000IfNeeded(ToEntityConvertorsUtil.valueOrDefaultFrom(line, totalCurrentAssetsColumnIndex, null)),
+				divideBy1000IfNeeded(ToEntityConvertorsUtil.valueOrDefaultFrom(line, totalCurrentLiabilitiesColumnIndex, null)),
+				divideBy1000IfNeeded(ToEntityConvertorsUtil.valueOrDefaultFrom(line, totalAssetsColumnIndex, null)),
+				divideBy1000IfNeeded(ToEntityConvertorsUtil.valueOrDefaultFrom(line, totalLiabilitiesColumnIndex, null)),
+				divideBy1000IfNeeded(ToEntityConvertorsUtil.valueOrDefaultFrom(line, totalEquityColumnIndex, null)),
+				divideBy1000IfNeeded(ToEntityConvertorsUtil.valueOrDefaultFrom(line, netCashFlowOperatingColumnIndex, null)),
+				divideBy1000IfNeeded(alwaysNegative(ToEntityConvertorsUtil.valueOrDefaultFrom(line, capitalExpendituresColumnIndex, null))),
+
+				// never divided by 1000!
 				ToEntityConvertorsUtil.valueOrDefaultFrom(line, shareIssuedColumnIndex, null)) ;
+	}
+
+	private Double divideBy1000IfNeeded(Double val) {
+		if (val == null) {
+			return null;
+		}
+
+		if (shouldDivideBy1000) {
+			return val / 1000D;
+		}
+
+		return val;
+	}
+
+	private Double alwaysNegative(Double val) {
+		if (val == null) {
+			return null;
+		}
+
+		if (val > 0) {
+			return -val;
+		}
+
+		return val;
 	}
 
 	private Date toDate(String assetName, String[] line) {

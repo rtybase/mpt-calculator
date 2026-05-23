@@ -13,7 +13,8 @@ import org.rty.portfolio.db.DbManager;
  *
  */
 public class LoadAssetFinancialInfoToDbTask extends GenericLoadToDbTask<AssetFinancialInfo> {
-	public static final int NO_OF_COLUMNS = 9;
+	private static final int NO_OF_COLUMNS = 9;
+	private static final String INPUT_DIV_BY_1000_PARAM = "-div_1000";
 
 	private ToAssetFinancialInfoEntityConvertor convertor;
 
@@ -23,7 +24,8 @@ public class LoadAssetFinancialInfoToDbTask extends GenericLoadToDbTask<AssetFin
 
 	@Override
 	public void execute(Map<String, String> parameters) throws Exception {
-		convertor = new ToAssetFinancialInfoEntityConvertor();
+		convertor = new ToAssetFinancialInfoEntityConvertor(
+				"true".equalsIgnoreCase(parameters.get(INPUT_DIV_BY_1000_PARAM)));
 
 		super.execute(parameters);
 	}
