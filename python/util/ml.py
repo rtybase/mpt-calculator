@@ -56,10 +56,16 @@ CORE_COLUMNS_FOR_TRAINING = ['sector','industry','month',\
     'prev_eps_spr', 'prev_no_analysts', 'prev_p_e', 'prev_f_score',\
     'prev_ngaap_pred_eps', 'prev_ngaap_eps', "prev_div_yld",\
     'prev_ngaap_eps_spr', 'prev_revenue_spr',\
+    'prev_cu_ratio', 'prev_to_ratio', 'prev_d_e_calc',\
+    'prev_d_e_rep', 'prev_fcf_ps', 'prev_p_b',\
+
     'after_market_close', 'pred_eps', 'eps',\
     'eps_spr', 'no_analysts', 'p_e', 'f_score',\
     'ngaap_pred_eps', 'ngaap_eps', "div_yld",\
     'ngaap_eps_spr', 'revenue_spr',\
+    'cu_ratio', 'to_ratio', 'd_e_calc',\
+    'd_e_rep', 'fcf_ps', 'p_b',\
+
     'spr_pred_eps_prev_pred_eps', 'spr_eps_prev_eps',\
     'spr_ngaap_pred_eps_prev_ngaap_pred_eps', 'spr_ngaap_eps_prev_ngaap_eps',\
     'rate_before_m_1d', 'v_chng_before_m_1d',\
