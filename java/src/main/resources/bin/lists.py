@@ -52,8 +52,9 @@ LISTS = {
 			GROUP BY vchr_symbol
 		) f ON e.vchr_symbol = f.vchr_symbol
 		AND e.dtm_date = f.dtm_date
-		WHERE e.dtm_date <
-		(STR_TO_DATE(CONCAT(YEAR(NOW()), '-', MONTH(NOW()), '-01'), '%Y-%m-%d') - INTERVAL 3 MONTH)
+		WHERE (e.dtm_date <
+			(STR_TO_DATE(CONCAT(YEAR(NOW()), '-', MONTH(NOW()), '-01'), '%Y-%m-%d') - INTERVAL 3 MONTH)
+		OR e.dbl_share_issued IS NULL)
 		AND e.vchr_symbol in (SELECT vchr_symbol FROM tbl_assets WHERE vchr_symbol IS NOT NULL)"""
 
 }

@@ -14,28 +14,29 @@ DS2_FILE = "inputs-ml/out-training-ds-2.csv"
 MAX_DEGREE = 3
 MODELS = {}
 
-DTR_DS2_ARGS = {'max_depth': 5, 'min_samples_leaf': 15,\
+DTR_DS2_ARGS = {'max_depth': 5, 'min_samples_leaf': 16,\
         'min_samples_split': 2, 'criterion': 'absolute_error',\
         'random_state': 42}
 
-DTR_DS1_ARGS = {'max_depth': 5, 'min_samples_leaf': 10,\
+DTR_DS1_ARGS = {'max_depth': 5, 'min_samples_leaf': 8,\
         'min_samples_split': 2, 'criterion': 'absolute_error',\
         'random_state': 42}
 
-RFR_DS2_ARGS = {'max_depth': 5, 'min_samples_leaf': 15,\
+RFR_DS2_ARGS = {'max_depth': 5, 'min_samples_leaf': 7,\
         'min_samples_split': 2, 'n_estimators': 400,\
         'criterion': 'absolute_error', 'random_state': 42,\
         'oob_score': True, 'n_jobs': -1}
 
-RFR_DS1_ARGS = {'max_depth': 5, 'min_samples_leaf': 10,\
-        'min_samples_split': 2, 'n_estimators': 400,\
+RFR_DS1_ARGS = {'max_depth': 5, 'min_samples_leaf': 18,\
+        'min_samples_split': 2, 'n_estimators': 200,\
         'criterion': 'absolute_error', 'random_state': 42,\
         'oob_score': True, 'n_jobs': -1}
 
 XGB_DS2_ARGS = {'booster': 'gbtree', 'eval_metric': 'rmse',\
         'reg_alpha': 8.54327702906688, 'reg_lambda': 7.960301462774691,\
-        'colsample_bytree': 0.8, 'subsample': 0.9342611289677315,\
+        'colsample_bytree': 0.7, 'subsample': 0.9,\
         'learning_rate': 0.03187866984798271, 'max_depth': 5,\
+        'min_child_weight': 4,\
         'n_estimators': 400, 'random_state': 42,\
         'n_jobs': -1, 'nthread': -1,\
         'objective': 'reg:squarederror', 'tree_method': 'hist',\
@@ -43,8 +44,9 @@ XGB_DS2_ARGS = {'booster': 'gbtree', 'eval_metric': 'rmse',\
 
 XGB_DS1_ARGS = {'booster': 'gbtree', 'eval_metric': 'rmse',\
         'reg_alpha': 8.54327702906688, 'reg_lambda': 7.960301462774691,\
-        'colsample_bytree': 0.6, 'subsample': 0.9342611289677315,\
+        'colsample_bytree': 0.6, 'subsample': 0.8,\
         'learning_rate': 0.03187866984798271, 'max_depth': 6,\
+        'min_child_weight': 5,\
         'n_estimators': 400, 'random_state': 42,\
         'n_jobs': -1, 'nthread': -1,\
         'objective': 'reg:squarederror', 'tree_method': 'hist',\
