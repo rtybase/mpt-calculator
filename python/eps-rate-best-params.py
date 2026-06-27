@@ -36,7 +36,7 @@ def dtr_model_and_paramrs():
     params = {
         'max_depth': [5, 6, 7],
         'min_samples_split': [2, 4, 6, 8, 10],
-        'min_samples_leaf': [4, 6, 7, 8, 10, 12, 14, 15, 16, 18],
+        'min_samples_leaf': [i for i in range(4, 21)],
         'criterion': ['absolute_error']
     }
 
@@ -45,7 +45,7 @@ def dtr_model_and_paramrs():
 
 def rfr_model_and_paramrs():
     params = {
-        'n_estimators': [200, 300, 400],
+        'n_estimators': [200, 250, 300, 350, 400],
         'max_depth': [5, 6],
         'min_samples_split': [2, 4, 6, 8, 10],
         'min_samples_leaf': [4, 6, 7, 8, 10, 12, 14, 15, 16, 18],
@@ -57,23 +57,23 @@ def rfr_model_and_paramrs():
 
 def xgb_model_and_paramrs():
     params = {
-        'n_estimators':[400, 500],
+        'n_estimators':[i*50 for i in range(6, 13)],
         'min_child_weight':[4, 5],
-        'gamma':[i/10.0 for i in range(3, 6)],
-        'subsample':[i/10.0 for i in range(6, 11)],
-        'colsample_bytree':[i/10.0 for i in range(6, 11)],
-        'max_depth': [4, 6, 7],
+#        'gamma':[i/10.0 for i in range(3, 6)],
+        'subsample':[i/10.0 for i in range(8, 11)],
+        'colsample_bytree':[i/10.0 for i in range(6, 9)],
+        'max_depth': [5, 6, 7],
         'objective': ['reg:squarederror'],
         'booster': ['gbtree', 'gblinear'],
         'eval_metric': ['rmse'],
-        'eta': [i/10.0 for i in range(3, 6)],
+#        'eta': [i/10.0 for i in range(3, 6)],
         'reg_alpha': [8.54327702906688],
         'reg_lambda': [7.960301462774691],
         'learning_rate': [0.03187866984798271]
     }
 
     model = XGBRegressor(random_state=42, nthread=-1, device='cuda',\
-                tree_method='hist', early_stopping_rounds=100)
+                tree_method='hist')#, early_stopping_rounds=1250000)
     return model, params
 
 def best_params_for_data(X, y):
