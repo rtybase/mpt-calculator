@@ -1,24 +1,38 @@
 import requests
 import csv
 import sys
+import time
+from datetime import datetime
 
 API_KEY = "YOUR_API_KEY_HERE"
 BASE_URL = "https://www.alphavantage.co/query"
 
 def fetch_av(function, symbol):
     """Fetch Alpha Vantage JSON for a given function."""
-    params = {
-        "function": function,
-        "symbol": symbol,
-        "apikey": API_KEY
-    }
-    r = requests.get(BASE_URL, params=params)
-    r.raise_for_status()
-    return r.json()
+    with requests.Session() as s:
+        params = {
+            "function": function,
+            "symbol": symbol,
+            "apikey": API_KEY
+        }
+        response = s.get(BASE_URL, params=params)
+        response.raise_for_status()
+        data = response.json()
+        response.close()  # explicitly close HTTP connection
+        time.sleep(12)
+        return data
 
 def extract_quarterly(data, key="quarterlyReports"):
     """Extract quarterly reports safely."""
     return data.get(key, [])
+
+def format_date(date_str):
+    """Convert YYYY-MM-DD  MM/dd/yyyy."""
+    try:
+        dt = datetime.strptime(date_str, "%Y-%m-%d")
+        return dt.strftime("%m/%d/%Y")
+    except Exception:
+        return date_str  # fallback if unexpected format
 
 def merge_by_fiscal_date(cashflow, shares, balance):
     """Merge three datasets by fiscalDateEnding."""
@@ -65,8 +79,8 @@ symbol = sys.argv[1].upper()
 #print(f"Fetching Alpha Vantage data for {symbol}...")
 
 cashflow_data = fetch_av("CASH_FLOW", symbol)
-shares_data = fetch_av("SHARES_OUTSTANDING", symbol)
 balance_data = fetch_av("BALANCE_SHEET", symbol)
+shares_data = fetch_av("SHARES_OUTSTANDING", symbol)
 
 cashflow_q = extract_quarterly(cashflow_data)
 shares_q = extract_quarterly(shares_data, "data")
@@ -94,5 +108,5 @@ writer.writeheader()
 for date in sorted(merged.keys(), reverse=True):
     row = merged[date]
     row["Symbol"] = symbol
-    row["Quarterly Ending:"] = date
+    row["Quarterly Ending:"] = format_date(date)
     writer.writerow(row)
