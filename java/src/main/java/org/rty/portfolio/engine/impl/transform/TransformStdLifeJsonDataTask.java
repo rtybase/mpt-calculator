@@ -94,7 +94,8 @@ public class TransformStdLifeJsonDataTask extends AbstractTask {
 				.replace("</span>", "")
 				.replace("<span class='dls_fundUp'>", "")
 				.replace("<span class='dls_fundDown'>", ""));
-		double currentPrice = Double.parseDouble(dataNode.get(ASSET_PRICE).asText());
+		double currentPrice = Double.parseDouble(dataNode.get(ASSET_PRICE).asText()
+				.replace("(GBP)", ""));
 		double previousProce = currentPrice - change;
 
 		return new AssetPriceInfo(
