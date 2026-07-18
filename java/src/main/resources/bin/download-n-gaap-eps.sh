@@ -4,7 +4,8 @@ set -ue
 
 FOLDER_FOR_N_GAAP_EPS_FILES=${FOLDER_FOR_N_GAAP_EPS_FILES:-"./data_to_load_n_gaap_eps"}
 JCACHE_FOLDER=${JCACHE_FOLDER:-"./jcache"}
-CACHE_FOLDER="/d/cache"
+CACHE_FOLDER="./data-cache"
+TEMP_FOLDER=${TEMP_FOLDER:-"./temp"}
 MAX_AGE_SECONDS=$((5*24*60*60))
 
 extract_session() {
@@ -55,6 +56,7 @@ load_n_gaap_eps () {
 	out_file_name=`echo "$ticker" | sed -e 's/[\.\%]/-/g' | tr '[:upper:]' '[:lower:]'`;
 	eps_out_file="${FOLDER_FOR_N_GAAP_EPS_FILES}/${out_file_name}.csv"
 	id_file="${CACHE_FOLDER}/${out_file_name}-id.json"
+	tmp_out_file="${TEMP_FOLDER}/n-gaap-eps-${out_file_name}.json"
 
 	if [ -f $eps_out_file ]; then
 		echo "${eps_out_file} already exists."
@@ -72,17 +74,17 @@ load_n_gaap_eps () {
 			java -XX:+AutoCreateSharedArchive -XX:SharedArchiveFile=${JCACHE_FOLDER}/j-client.jsa \
 				-Duse-http2=true -jar portfolio-0.0.1-SNAPSHOT.jar DownloadTask \
 				"-url=https://endpoints.investing.com/earnings/v1/instruments/$symbol_id/earnings?limit=10" \
-				-outfile=n-gaap-eps.json -headers=headers/investing-sess.prop
+				"-outfile=${tmp_out_file}" \
+				-headers=headers/investing-sess.prop
 
-			if [ -s n-gaap-eps.json ]; then
-				python to_csv.py n-gaap-eps.json | \
-#					grep -iE "OFFICIAL|earning_date_type" | \
+			if [ -s ${tmp_out_file} ]; then
+				python to_csv.py ${tmp_out_file} | \
 					sed -e "s/,${symbol_id},/,\"${asset_name//&/\\&}\",/g" 1>${eps_out_file} 2>/dev/null
 			else
 				echo "No data for ${asset_name}"
 			fi
 
-			rm -rf n-gaap-eps.json
+			rm -rf ${tmp_out_file}
 		else
 			echo "No ID for ${asset_name}"
 		fi
@@ -95,6 +97,7 @@ echo "Loading definitions from ${input_file}"
 mkdir -p ${FOLDER_FOR_N_GAAP_EPS_FILES}
 mkdir -p ${JCACHE_FOLDER}
 mkdir -p ${CACHE_FOLDER}
+mkdir -p ${TEMP_FOLDER}
 
 dos2unix ${input_file}
 

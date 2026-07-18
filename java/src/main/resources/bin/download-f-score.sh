@@ -34,6 +34,7 @@ load_fscore () {
 		fi
 
 		rm -rf fscore.html
+		sleep $(( ( RANDOM % 7 )  + 15 ))
 	fi
 }
 

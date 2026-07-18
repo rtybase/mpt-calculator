@@ -4,6 +4,7 @@ set -ue
 
 FOLDER_FOR_EPS_FILES=${FOLDER_FOR_EPS_FILES:-"./data_to_load_eps"}
 JCACHE_FOLDER=${JCACHE_FOLDER:-"./jcache"}
+TEMP_FOLDER=${TEMP_FOLDER:-"./temp"}
 
 load_eps () {
 	ticker=$2
@@ -12,6 +13,7 @@ load_eps () {
 
 	out_file_name=`echo "$1" | sed -e 's/[\.\%]/-/g' | tr '[:upper:]' '[:lower:]'`;
 	eps_out_file="${FOLDER_FOR_EPS_FILES}/${out_file_name}.csv"
+	tmp_out_file="${TEMP_FOLDER}/eps-${out_file_name}.json"
 
 	if [ -f $eps_out_file ]; then
 		echo "${eps_out_file} already exists."
@@ -19,10 +21,10 @@ load_eps () {
 		java -XX:+AutoCreateSharedArchive -XX:SharedArchiveFile=${JCACHE_FOLDER}/j-client.jsa \
 			-Duse-http2=true -jar portfolio-0.0.1-SNAPSHOT.jar DownloadTask \
 			"-url=https://api.nasdaq.com/api/company/$1/earnings-surprise" \
-			-outfile=eps.json
+			"-outfile=${tmp_out_file}"
 
-		if [ -s eps.json ]; then
-			cat eps.json | python -m json.tool | \
+		if [ -s ${tmp_out_file} ]; then
+			cat "${tmp_out_file}" | python -m json.tool | \
 				grep -iE "(dateReported|eps|consensusForecast)" | \
 				sed -e 's/[\",\$\(\)\:]//g' | awk -F ' ' '{ print $2}' | paste -d " " - - - | \
 				tail -n +2 | \
@@ -31,7 +33,7 @@ load_eps () {
 			echo "No data for ${ticker}"
 		fi
 
-		rm -rf eps.json
+		rm -rf "${tmp_out_file}"
 	fi
 }
 
@@ -40,6 +42,7 @@ echo "Loading definitions from ${input_file}"
 
 mkdir -p ${FOLDER_FOR_EPS_FILES}
 mkdir -p ${JCACHE_FOLDER}
+mkdir -p ${TEMP_FOLDER}
 
 dos2unix ${input_file}
 

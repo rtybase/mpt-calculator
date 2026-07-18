@@ -19,7 +19,8 @@ load_yf () {
 	else 
 		url="https://finance.yahoo.com/quote/$1/history/$3"
 		java -XX:+AutoCreateSharedArchive -XX:SharedArchiveFile=${JCACHE_FOLDER}/j-client.jsa \
-			-Duse-http2=true -jar portfolio-0.0.1-SNAPSHOT.jar DownloadTask \
+			-Duse-http2=false \
+			-jar portfolio-0.0.1-SNAPSHOT.jar DownloadTask \
 			"-url=$url" -outfile=out.html -headers=headers/yh-headers.prop
 
 		./ParseTable.exe "-link=out.html" "-format=CSV"

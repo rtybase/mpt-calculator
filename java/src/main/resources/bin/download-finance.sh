@@ -10,13 +10,19 @@ load_finance () {
 	echo "Finance data for: ${ticker}"
 
 	out_file_name=`echo "$1" | sed -e 's/[\.\%]/-/g' | tr '[:upper:]' '[:lower:]'`;
-	finance_out_file="${FOLDER_FOR_FINANCE_FILES}/${out_file_name}.csv"
+	finance_out_file1="${FOLDER_FOR_FINANCE_FILES}/${out_file_name}-1.csv"
+	finance_out_file2="${FOLDER_FOR_FINANCE_FILES}/${out_file_name}-2.csv"
 
-	if [ -f $finance_out_file ]; then
-		echo "${finance_out_file} already exists."
+	if [ -f $finance_out_file1 ]; then
+		echo "${finance_out_file1} already exists."
 	else
-#		python more-fin-data.py ${ticker} 1>>${finance_out_file} 2>/dev/null
-		python more-fin-data-yf.py ${ticker} 1>>${finance_out_file} 2>/dev/null
+		python more-fin-data-yf.py ${ticker} 1>>${finance_out_file1} 2>/dev/null
+	fi
+
+	if [ -f $finance_out_file2 ]; then
+		echo "${finance_out_file2} already exists."
+	else
+		python more-fin-data.py ${ticker} 1>>${finance_out_file2} 2>/dev/null
 	fi
 }
 

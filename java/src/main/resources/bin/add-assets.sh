@@ -17,7 +17,12 @@ mkdir -p ${FOLDER_FOR_FINANCE_FILES}
 ./download-f-score.sh inputs/new-assets.txt
 ./download-finance.sh inputs/new-assets.txt
 
-./all_downloads.sh "inputs/new-assets.txt" "5y" "inputs/new-assets.txt"
+./download_all_yf.sh "inputs/new-assets.txt" "5y" &
+./download-eps.sh "inputs/new-assets.txt" &
+./download-earnings.sh "inputs/new-assets.txt" &
+./download-n-gaap-eps.sh "inputs/new-assets.txt" &
+
+wait
 
 python add-assets.py inputs/new-assets.txt
 python add-stocks.py ${FOLDER_FOR_SECTOR_FILES}
