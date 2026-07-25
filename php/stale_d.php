@@ -4,21 +4,12 @@
 	include_once("./lib/funcs.php");
 	header("Content-Type:text/html; charset=UTF-8");
 
-	$link = connect("portfolio");
-
-	$query = "SELECT a.fk_assetID, b.vchr_name, MAX( a.dtm_date ) ";
-	$query.= "FROM tbl_prices a, tbl_assets b ";
-	$query.= "WHERE a.fk_assetID = b.int_assetID ";
-	$query.= "GROUP BY a.fk_assetID ";
-	$query.= "HAVING DATEDIFF( NOW( ) , MAX( a.dtm_date ) ) > 5 ";
-	$query.= "ORDER BY MAX( a.dtm_date ), b.vchr_name DESC";
-
-	$allCorrelation = getCollection($query, $id, $mainAsset, $link);
-
+function tableDataFrom($query, $link) {
 	$tableResult = "";
 	$res = mysqli_query($link, $query);
 
 	if (!$res) die("Invalid query: ". mysqli_error());
+
 	$i = 0;
 	while ($row = mysqli_fetch_row($res)) {
 		if ($i == 0) $tableResult.= "[";
@@ -28,7 +19,37 @@
 		$tableResult.= $row[2]."']";
 		$i++;
 	}
+
 	mysqli_free_result($res);
+	return $tableResult;
+}
+
+	$link = connect("portfolio");
+
+	$queryStale = "SELECT b.fk_assetID, a.vchr_name, b.dtm_max_date ";
+	$queryStale.= "FROM tbl_assets a, ( ";
+	$queryStale.= "	SELECT fk_assetID,  MAX( dtm_date ) as dtm_max_date ";
+	$queryStale.= "	FROM tbl_prices ";
+	$queryStale.= "	GROUP BY fk_assetID ";
+	$queryStale.= ") b ";
+	$queryStale.= "WHERE a.int_assetID=b.fk_assetID ";
+	$queryStale.= "AND a.bln_deleted = 0 ";
+	$queryStale.= "AND DATEDIFF(NOW(), b.dtm_max_date) > 5 ";
+	$queryStale.= "ORDER BY b.dtm_max_date DESC, a.vchr_name ASC ";
+
+	$tableStaleResult = tableDataFrom($queryStale, $link);
+
+	$queryDeleted = "SELECT b.fk_assetID, a.vchr_name, b.dtm_max_date ";
+	$queryDeleted.= "FROM tbl_assets a, ( ";
+	$queryDeleted.= "	SELECT fk_assetID,  MAX( dtm_date ) as dtm_max_date ";
+	$queryDeleted.= "	FROM tbl_prices ";
+	$queryDeleted.= "	GROUP BY fk_assetID ";
+	$queryDeleted.= ") b ";
+	$queryDeleted.= "WHERE a.int_assetID=b.fk_assetID ";
+	$queryDeleted.= "AND a.bln_deleted = 1 ";
+	$queryDeleted.= "ORDER BY b.dtm_max_date DESC, a.vchr_name ASC ";
+
+	$tableDeletedResult = tableDataFrom($queryDeleted, $link);
 ?>
 <!doctype html>
 <html>
@@ -45,9 +66,13 @@
 	google.charts.setOnLoadCallback(generateTable);
 
 	function generateTable() {
-		var data = generateData();
-		data.addRows([<?php echo $tableResult; ?>]);
-		drawTable('table_div', data);
+		var dataForStale = generateData();
+		dataForStale.addRows([<?php echo $tableStaleResult; ?>]);
+		drawTable('table1_div', dataForStale);
+
+		var dataForDeleted = generateData();
+		dataForDeleted.addRows([<?php echo $tableDeletedResult; ?>]);
+		drawTable('table2_div', dataForDeleted);
 	}
 
 	function drawTable(element, data) {
@@ -71,7 +96,12 @@
       <td><table align="center" border="0">
 	<tr><td><font face="verdana">Assets with stale data</font></td></tr>
 	<tr><td><hr/></td></tr>
-	<tr><td><div id='table_div' style="width: 1044px;"></div></td></tr>
+	<tr><td><div id='table1_div' style="width: 1044px;"></div></td></tr>
+
+	<tr><td><hr/></td></tr>
+	<tr><td><font face="verdana">Deleted assets</font></td></tr>
+	<tr><td><hr/></td></tr>
+	<tr><td><div id='table2_div' style="width: 1044px;"></div></td></tr>
       </table></td>
     </tr></table>
   </body>

@@ -4,17 +4,20 @@ import util.flow
 
 LISTS = {
     "L": """SELECT vchr_price_symbol, vchr_name FROM tbl_assets 
-		WHERE vchr_price_symbol like "%.L" 
+		WHERE (vchr_price_symbol like "%.L" 
 		OR vchr_price_symbol like "%.IR" 
 		OR vchr_price_symbol like "%.RO"
-		OR vchr_price_symbol in ('GBPUSD%3DX')
+		OR vchr_price_symbol in ('GBPUSD%3DX'))
+		AND bln_deleted=0
 		ORDER by vchr_name""",
     "ALL": """SELECT vchr_price_symbol, vchr_name FROM tbl_assets 
 		WHERE vchr_price_symbol is not null
+		AND bln_deleted=0
 		ORDER by vchr_name""",
     "STOCKS": """SELECT vchr_symbol, vchr_name FROM tbl_assets 
 		WHERE vchr_type="Stock" 
 		AND vchr_symbol is not null
+		AND bln_deleted=0
 		ORDER by vchr_name""",
     "SCORE": """SELECT e.vchr_symbol, e.vchr_symbol FROM tbl_fscores e
 		INNER JOIN (
@@ -55,8 +58,8 @@ LISTS = {
 		WHERE (e.dtm_date <
 			(STR_TO_DATE(CONCAT(YEAR(NOW()), '-', MONTH(NOW()), '-01'), '%Y-%m-%d') - INTERVAL 3 MONTH)
 		OR e.dbl_share_issued IS NULL)
-		AND e.vchr_symbol in (SELECT vchr_symbol FROM tbl_assets WHERE vchr_symbol IS NOT NULL)"""
-
+		AND e.vchr_symbol in (SELECT vchr_symbol FROM tbl_assets
+			WHERE vchr_symbol IS NOT NULL AND bln_deleted=0)"""
 }
 
 if len(sys.argv) > 1:
