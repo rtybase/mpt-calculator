@@ -1,5 +1,6 @@
 package org.rty.portfolio.engine.impl.transform;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -171,6 +172,46 @@ class TransformEpsDataForTrainingTaskTest {
 		assertSame(priceAtCurrentEps, result.priceAtCurrentEps);
 		assertSame(priceAfterCurrentEps, result.priceAfterCurrentEps);
 		assertSame(price2DaysAfterCurrentEps, result.price2DaysAfterCurrentEps);
+	}
+
+	@Test
+	void testToCSV() {
+		setSectorDetails();
+		setPreviousEpsData();
+		setCurrentEpsBasicData();
+		addFScoreToStore(9D, dateFrom(15));
+		priceAtCurrentEps = addPriceDataToStore(D_2025_07_17);
+		priceAfterCurrentEps = addPriceDataToStore(dateFrom(18));
+		price2DaysAfterCurrentEps = addPriceDataToStore(dateFrom(19));
+
+		verifyNothingCollected();
+
+		collectDataFor(currentEps);
+
+		assertEquals(1, dataForTraining.size());
+		final AssetEpsHistoricalInfo result = dataForTraining.get(0);
+
+		assertArrayEquals(
+				new String[] { "asset_id", "sector", "industry", "eps_date", "month", "after_market_close",
+						"prev_after_market_close", "no_analysts", "prev_no_analysts", "f_score", "prev_f_score",
+						"eps_spr", "prev_eps_spr", "ngaap_eps_spr", "prev_ngaap_eps_spr", "revenue_spr",
+						"prev_revenue_spr", "revenue_ch_r", "pred_eps", "prev_pred_eps", "ch_r_pred_eps", "eps",
+						"prev_eps", "ch_r_eps", "ngaap_pred_eps", "prev_ngaap_pred_eps", "ch_r_ngaap_pred_eps",
+						"ngaap_eps", "prev_ngaap_eps", "ch_r_ngaap_eps", "p_e", "prev_p_e", "ch_r_p_e", "p_b",
+						"prev_p_b", "ch_r_p_b", "div_yld", "prev_div_yld", "ch_r_div_yld", "cu_ratio", "prev_cu_ratio",
+						"ch_r_cu_ratio", "to_ratio", "prev_to_ratio", "ch_r_to_ratio", "d_e_calc", "prev_d_e_calc",
+						"ch_r_d_e_calc", "d_e_rep", "prev_d_e_rep", "ch_r_d_e_rep", "fcf_ps", "prev_fcf_ps",
+						"ch_r_fcf_ps", "fcf_ch_r", "rate_before_m_1d", "v_chng_before_m_1d", "rate_before",
+						"v_chng_before", "rate_after", "v_chng_after", "rate_after_p_1d", "v_chng_after_p_1d" },
+				AssetEpsHistoricalInfo.HEADER.toCsvLine());
+
+		assertArrayEquals(
+				new String[] { "MSFT", "1", "1", "2025-07-17", "6", "0", "0", "1", "1", "9.0", "9.0", "0.0", "0.0",
+						"0.0", "0.0", "0.0", "0.0", "0.0", "1.0", "1.0", "0.0", "1.0", "1.0", "0.0", "1.0", "1.0",
+						"0.0", "1.0", "1.0", "0.0", "1.0", "1.0", "0.0", "0.0", "0.0", "0.0", "100.0", "100.0", "0.0",
+						"0.5", "0.5", "0.0", "0.5", "0.5", "0.0", "-2.0", "-2.0", "0.0", "0.5", "0.5", "0.0", "500.0",
+						"500.0", "0.0", "0.0", "1.0", "1.0", "1.0", "1.0", "1.0", "1.0", "1.0", "1.0" },
+				result.toCsvLine());
 	}
 
 	@Test

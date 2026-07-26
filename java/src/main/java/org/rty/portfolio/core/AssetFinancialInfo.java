@@ -97,12 +97,16 @@ public class AssetFinancialInfo implements CsvWritable, EntryWithAssetNameAndDat
 		}
 	}
 
-	public double freeCashFlowPerShare() {
+	public double freeCashFlow() {
 		if (capitalExpenditures == null) {
-			return result(div(mul(netCashFlowOperating, ONE_K), shareIssued));
+			return result(mul(netCashFlowOperating, ONE_K));
 		} else {
-			return result(div(mul(diff(netCashFlowOperating, Math.abs(capitalExpenditures)), ONE_K), shareIssued));
+			return result(mul(diff(netCashFlowOperating, Math.abs(capitalExpenditures)), ONE_K));
 		}
+	}
+
+	public double freeCashFlowPerShare() {
+		return result(div(freeCashFlow(), shareIssued));
 	}
 
 	public double bookValuePerShare() {

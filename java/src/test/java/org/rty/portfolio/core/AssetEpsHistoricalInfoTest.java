@@ -550,6 +550,7 @@ class AssetEpsHistoricalInfoTest {
 		assertEquals(-2D, info.getCurrentDebtOverEquityCalculated(), ERROR_TOLERANCE);
 		assertEquals(0.5D, info.getCurrentDebtOverEquityReported(), ERROR_TOLERANCE);
 		assertEquals(500D, info.getCurrentFreeCashFlowPerShare(), ERROR_TOLERANCE);
+		assertEquals(1000D, info.getCurrentFreeCashFlow(), ERROR_TOLERANCE);
 		assertEquals(-0.004D, info.getCurrentPOverB(), ERROR_TOLERANCE);
 	}
 
@@ -559,6 +560,7 @@ class AssetEpsHistoricalInfoTest {
 		assertEquals(0D, info.getCurrentDebtOverEquityCalculated(), ERROR_TOLERANCE);
 		assertEquals(0D, info.getCurrentDebtOverEquityReported(), ERROR_TOLERANCE);
 		assertEquals(0D, info.getCurrentFreeCashFlowPerShare(), ERROR_TOLERANCE);
+		assertEquals(0D, info.getCurrentFreeCashFlow(), ERROR_TOLERANCE);
 		assertEquals(0D, info.getCurrentPOverB(), ERROR_TOLERANCE);
 	}
 

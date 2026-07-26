@@ -80,6 +80,10 @@ public class Calculator {
 	public static double calculateEpsSurprise(double reportedEps, double predictedEps) {
 		final double diff = calculateChange(reportedEps, predictedEps);
 
+		if (almostZero(diff)) {
+			return 0D;
+		}
+
 		if (almostZero(predictedEps)) {
 			if (diff < 0D) {
 				return -MAX_VALUE;

@@ -4,6 +4,10 @@ import java.util.Optional;
 
 import org.rty.portfolio.core.utils.DataHandlingUtil;
 import org.rty.portfolio.core.utils.DatesAndSetUtil;
+import org.rty.portfolio.core.utils.HistoricalRowGenerator;
+import org.rty.portfolio.core.utils.HistoricalRowGenerator.ColumnKind;
+import org.rty.portfolio.core.utils.HistoricalRowGenerator.Row;
+import org.rty.portfolio.core.utils.HistoricalRowGenerator.RowHeader;
 import org.rty.portfolio.math.Calculator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,71 +18,50 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class AssetEpsHistoricalInfo implements CsvWritable {
 	private static final Logger LOGGER = LoggerFactory.getLogger(AssetEpsHistoricalInfo.class.getSimpleName());
 
-	public static final String[] HEADER = new String[] { "asset_id",
-			"sector",
+	public static final RowHeader HEADER = RowHeader
+			.startWithHeader("asset_id", ColumnKind.CURRENT_VALUE_ONLY)
+			.addHeader("sector", ColumnKind.CURRENT_VALUE_ONLY)
+			.addHeader("industry", ColumnKind.CURRENT_VALUE_ONLY)
+			.addHeader("eps_date", ColumnKind.CURRENT_VALUE_ONLY)
+			.addHeader("month", ColumnKind.CURRENT_VALUE_ONLY)
 
-			"industry",
-			"eps_date",
-			"month",
+			.addHeader("after_market_close", ColumnKind.CURRENT_AND_PREVIOUS_VALUES)
+			.addHeader("no_analysts", ColumnKind.CURRENT_AND_PREVIOUS_VALUES)
+			.addHeader("f_score", ColumnKind.CURRENT_AND_PREVIOUS_VALUES)
+			.addHeader("eps_spr", ColumnKind.CURRENT_AND_PREVIOUS_VALUES)
+			.addHeader("ngaap_eps_spr", ColumnKind.CURRENT_AND_PREVIOUS_VALUES)
 
-			"prev_after_market_close",
-			"prev_pred_eps",
-			"prev_eps",
-			"prev_eps_spr",
-			"prev_no_analysts",
-			"prev_ngaap_pred_eps",
-			"prev_ngaap_eps",
-			"prev_ngaap_eps_spr",
-			"prev_revenue_spr",
-			"prev_p_e",
-			"prev_f_score",
-			"prev_div_yld",
+			.addHeader("revenue_spr", ColumnKind.CURRENT_AND_PREVIOUS_VALUES)
+			.addHeader("revenue_ch_r", ColumnKind.CURRENT_VALUE_ONLY)
 
-			"prev_cu_ratio",
-			"prev_to_ratio",
-			"prev_d_e_calc",
-			"prev_d_e_rep",
-			"prev_fcf_ps",
-			"prev_p_b",
+			.addHeader("pred_eps", ColumnKind.CURRENT_PREVIOUS_AND_CHANGE_RATE_VALUES)
+			.addHeader("eps", ColumnKind.CURRENT_PREVIOUS_AND_CHANGE_RATE_VALUES)
+			.addHeader("ngaap_pred_eps", ColumnKind.CURRENT_PREVIOUS_AND_CHANGE_RATE_VALUES)
+			.addHeader("ngaap_eps", ColumnKind.CURRENT_PREVIOUS_AND_CHANGE_RATE_VALUES)
 
-			"after_market_close",
-			"pred_eps",
-			"eps",
-			"eps_spr",
-			"no_analysts",
-			"ngaap_pred_eps",
-			"ngaap_eps",
-			"ngaap_eps_spr",
-			"revenue_spr",
-			"p_e",
-			"f_score",
-			"div_yld",
+			.addHeader("p_e", ColumnKind.CURRENT_PREVIOUS_AND_CHANGE_RATE_VALUES)
+			.addHeader("p_b", ColumnKind.CURRENT_PREVIOUS_AND_CHANGE_RATE_VALUES)
+			.addHeader("div_yld", ColumnKind.CURRENT_PREVIOUS_AND_CHANGE_RATE_VALUES)
+			.addHeader("cu_ratio", ColumnKind.CURRENT_PREVIOUS_AND_CHANGE_RATE_VALUES)
+			.addHeader("to_ratio", ColumnKind.CURRENT_PREVIOUS_AND_CHANGE_RATE_VALUES)
+			.addHeader("d_e_calc", ColumnKind.CURRENT_PREVIOUS_AND_CHANGE_RATE_VALUES)
+			.addHeader("d_e_rep", ColumnKind.CURRENT_PREVIOUS_AND_CHANGE_RATE_VALUES)
 
-			"cu_ratio",
-			"to_ratio",
-			"d_e_calc",
-			"d_e_rep",
-			"fcf_ps",
-			"p_b",
-
-			"spr_pred_eps_prev_pred_eps", "spr_eps_prev_eps",
-			"spr_ngaap_pred_eps_prev_ngaap_pred_eps", "spr_ngaap_eps_prev_ngaap_eps",
+			.addHeader("fcf_ps", ColumnKind.CURRENT_PREVIOUS_AND_CHANGE_RATE_VALUES)
+			.addHeader("fcf_ch_r", ColumnKind.CURRENT_VALUE_ONLY)
 
 			// as-of "before" or "after" EPS announcement
 			// "m" for minus, "p" for plus
-			"rate_before_m_1d",
-			"v_chng_before_m_1d",
+			.addHeader("rate_before_m_1d", ColumnKind.CURRENT_VALUE_ONLY)
+			.addHeader("v_chng_before_m_1d", ColumnKind.CURRENT_VALUE_ONLY)
+			.addHeader("rate_before", ColumnKind.CURRENT_VALUE_ONLY)
+			.addHeader("v_chng_before", ColumnKind.CURRENT_VALUE_ONLY)
+			.addHeader("rate_after", ColumnKind.CURRENT_VALUE_ONLY)
+			.addHeader("v_chng_after", ColumnKind.CURRENT_VALUE_ONLY)
+			.addHeader("rate_after_p_1d", ColumnKind.CURRENT_VALUE_ONLY)
+			.addHeader("v_chng_after_p_1d", ColumnKind.CURRENT_VALUE_ONLY)
+			.build();
 
-			"rate_before",
-			"v_chng_before",
-
-			"rate_after",
-			"v_chng_after",
-
-			"rate_after_p_1d",
-			"v_chng_after_p_1d" };
-
-	private static final double PRECISION = 100D;
 	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
 	public final String assetName;
@@ -205,6 +188,10 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 		return Optional.ofNullable(previousFinancialInfo).map(AssetFinancialInfo::debtOverEquityReported).orElse(0D);
 	}
 
+	public double getPreviousFreeCashFlow() {
+		return Optional.ofNullable(previousFinancialInfo).map(AssetFinancialInfo::freeCashFlow).orElse(0D);
+	}
+
 	public double getPreviousFreeCashFlowPerShare() {
 		return Optional.ofNullable(previousFinancialInfo).map(AssetFinancialInfo::freeCashFlowPerShare).orElse(0D);
 	}
@@ -263,6 +250,10 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 
 	public double getCurrentDebtOverEquityReported() {
 		return Optional.ofNullable(currentFinancialInfo).map(AssetFinancialInfo::debtOverEquityReported).orElse(0D);
+	}
+
+	public double getCurrentFreeCashFlow() {
+		return Optional.ofNullable(currentFinancialInfo).map(AssetFinancialInfo::freeCashFlow).orElse(0D);
 	}
 
 	public double getCurrentFreeCashFlowPerShare() {
@@ -338,77 +329,59 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 		final double previousPredictedEpsValue = getPreviousPredictedEps();
 		final double previousNonGaapPredictedEpsValue = getPreviousNonGaapPredictedEps();
 		final double previousNonGaapEpsValue = getPreviousNonGaapEps();
-		final double previousEpsSurprise = surprise(previousEps.eps, previousPredictedEpsValue);
+		final double previousEpsSurprise = Calculator.calculateEpsSurprise(previousEps.eps, previousPredictedEpsValue);
 
 		final double currentPredictedEpsValue = getCurrentPredictedEps();
 		final double currentNonGaapPredictedEpsValue = getCurrentNonGaapPredictedEps();
 		final double currentNonGaapEpsValue = getCurrentNonGaapEps();
-		final double currentEpsSurprise = surprise(currentEps.eps, currentPredictedEpsValue);
+		final double currentEpsSurprise = Calculator.calculateEpsSurprise(currentEps.eps, currentPredictedEpsValue);
 
-		return new String[] {
-				assetName,
-				"" + sectorIndex,
-				"" + industryIndex,
-				"" + DatesAndSetUtil.dateToStr(currentEps.date),
-				"" + getMonthIndex(),
+		final Row row = HEADER.newRow();
 
-				"" + getPreviousAfterMarketClose(),
-				"" + round(previousPredictedEpsValue),
-				"" + round(previousEps.eps),
-				"" + previousEpsSurprise,
-				numberOfAnalystsFrom(previousEps),
-				"" + round(previousNonGaapPredictedEpsValue),
-				"" + round(previousNonGaapEpsValue),
-				"" + surprise(previousNonGaapEpsValue, previousNonGaapPredictedEpsValue),
-				"" + revenueSurprise(previousNonGaapEps, previousEpsSurprise),
-				"" + round(getPreviousPOverE()),
-				"" + previousFScore,
-				"" + round(getPreviousDividendYield()),
+		row.add("asset_id", assetName);
+		row.add("sector", sectorIndex);
+		row.add("industry", industryIndex);
+		row.add("eps_date", DatesAndSetUtil.dateToStr(currentEps.date));
+		row.add("month", getMonthIndex());
 
-				"" + round(getPreviousCurrentRatio()),
-				"" + round(getPreviousTotalRatio()),
-				"" + round(getPreviousDebtOverEquityCalculated()),
-				"" + round(getPreviousDebtOverEquityReported()),
-				"" + round(getPreviousFreeCashFlowPerShare()),
-				"" + round(getPreviousPOverB()),
+		row.add("after_market_close", getCurrentAfterMarketClose(), getPreviousAfterMarketClose());
+		row.add("no_analysts", numberOfAnalystsFrom(currentEps), numberOfAnalystsFrom(previousEps));
+		row.add("f_score", currentFScore, previousFScore);
+		row.add("eps_spr", currentEpsSurprise, previousEpsSurprise);
+		row.add("ngaap_eps_spr",
+				Calculator.calculateEpsSurprise(currentNonGaapEpsValue, currentNonGaapPredictedEpsValue),
+				Calculator.calculateEpsSurprise(previousNonGaapEpsValue, previousNonGaapPredictedEpsValue));
 
-				"" + getCurrentAfterMarketClose(),
-				"" + round(currentPredictedEpsValue),
-				"" + round(currentEps.eps),
-				"" + currentEpsSurprise,
-				numberOfAnalystsFrom(currentEps),
-				"" + round(currentNonGaapPredictedEpsValue),
-				"" + round(currentNonGaapEpsValue),
-				"" + surprise(currentNonGaapEpsValue, currentNonGaapPredictedEpsValue),
-				"" + revenueSurprise(currentNonGaapEps, currentEpsSurprise),
-				"" + round(getCurrentPOverE()),
-				"" + currentFScore,
-				"" + round(getCurrentDividendYield()),
+		row.add("revenue_spr", revenueSurprise(currentNonGaapEps, currentEpsSurprise),
+				revenueSurprise(previousNonGaapEps, previousEpsSurprise));
+		row.add("revenue_ch_r", revenueChange(currentNonGaapEps, previousNonGaapEps));
 
-				"" + round(getCurrentCurrentRatio()),
-				"" + round(getCurrentTotalRatio()),
-				"" + round(getCurrentDebtOverEquityCalculated()),
-				"" + round(getCurrentDebtOverEquityReported()),
-				"" + round(getCurrentFreeCashFlowPerShare()),
-				"" + round(getCurrentPOverB()),
+		row.add("pred_eps", currentPredictedEpsValue, previousPredictedEpsValue, true);
+		row.add("eps", currentEps.eps, previousEps.eps, true);
+		row.add("ngaap_pred_eps", currentNonGaapPredictedEpsValue, previousNonGaapPredictedEpsValue, true);
+		row.add("ngaap_eps", currentNonGaapEpsValue, previousNonGaapEpsValue, true);
 
-				"" + surprise(currentPredictedEpsValue, previousPredictedEpsValue),
-				"" + surprise(currentEps.eps, previousEps.eps),
-				"" + surprise(currentNonGaapPredictedEpsValue, previousNonGaapPredictedEpsValue),
-				"" + surprise(currentNonGaapEpsValue, previousNonGaapEpsValue),
+		row.add("p_e", getCurrentPOverE(), getPreviousPOverE(), true);
+		row.add("p_b", getCurrentPOverB(), getPreviousPOverB(), true);
+		row.add("div_yld", getCurrentDividendYield(), getPreviousDividendYield(), true);
+		row.add("cu_ratio", getCurrentCurrentRatio(), getPreviousCurrentRatio(), true);
+		row.add("to_ratio", getCurrentTotalRatio(), getPreviousTotalRatio(), true);
+		row.add("d_e_calc", getCurrentDebtOverEquityCalculated(), getPreviousDebtOverEquityCalculated(), true);
+		row.add("d_e_rep", getCurrentDebtOverEquityReported(), getPreviousDebtOverEquityReported(), true);
 
-				rateIfAvailable(getInfoBeforeMinusOneDayEpsAnnouncement()),
-				volumeChangeRateIfAvailable(getInfoBeforeMinusOneDayEpsAnnouncement()),
+		row.add("fcf_ps", getCurrentFreeCashFlowPerShare(), getPreviousFreeCashFlowPerShare(), true);
+		row.add("fcf_ch_r", Calculator.calculateEpsSurprise(getCurrentFreeCashFlow(), getPreviousFreeCashFlow()));
 
-				rateIfAvailable(getInfoBeforeEpsAnnouncement()),
-				volumeChangeRateIfAvailable(getInfoBeforeEpsAnnouncement()),
+		row.add("rate_before_m_1d", rateIfAvailable(getInfoBeforeMinusOneDayEpsAnnouncement()));
+		row.add("v_chng_before_m_1d", volumeChangeRateIfAvailable(getInfoBeforeMinusOneDayEpsAnnouncement()));
+		row.add("rate_before", rateIfAvailable(getInfoBeforeEpsAnnouncement()));
+		row.add("v_chng_before", volumeChangeRateIfAvailable(getInfoBeforeEpsAnnouncement()));
+		row.add("rate_after", rateIfAvailable(getInfoAfterEpsAnnouncement()));
+		row.add("v_chng_after", volumeChangeRateIfAvailable(getInfoAfterEpsAnnouncement()));
+		row.add("rate_after_p_1d", rateIfAvailable(getInfoAfterPlusOneDayEpsAnnouncement()));
+		row.add("v_chng_after_p_1d", volumeChangeRateIfAvailable(getInfoAfterPlusOneDayEpsAnnouncement()));
 
-				rateIfAvailable(getInfoAfterEpsAnnouncement()),
-				volumeChangeRateIfAvailable(getInfoAfterEpsAnnouncement()),
-
-				rateIfAvailable(getInfoAfterPlusOneDayEpsAnnouncement()),
-				volumeChangeRateIfAvailable(getInfoAfterPlusOneDayEpsAnnouncement())
-		};
+		return row.toCsvLine();
 	}
 
 	private static String rateIfAvailable(AssetPriceInfo priceInfo) {
@@ -416,7 +389,7 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 			return "";
 		}
 
-		return "" + round(priceInfo.rate);
+		return HistoricalRowGenerator.toStringValue(priceInfo.rate);
 	}
 
 	private String volumeChangeRateIfAvailable(AssetPriceInfo priceInfo) {
@@ -431,10 +404,10 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 			return "0";
 		}
 
-		return "" + round(priceInfo.volumeChangeRate);
+		return HistoricalRowGenerator.toStringValue(priceInfo.volumeChangeRate);
 	}
 
-	private static String numberOfAnalystsFrom(AssetEpsInfo eps) {
+	private static int numberOfAnalystsFrom(AssetEpsInfo eps) {
 		final Integer noOfAnalysts = eps.noOfAnalysts;
 		final Double predictedEps = eps.epsPredicted;
 
@@ -444,18 +417,40 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 						eps.assetName,
 						DatesAndSetUtil.dateToStr(eps.date));
 			}
-			return "1";
+			return 1;
 		}
 
-		return "" + noOfAnalysts;
+		return noOfAnalysts;
+	}
+
+	private static Double revenueFrom(AssetNonGaapEpsInfo nonGaapEps) {
+		if (nonGaapEps == null || nonGaapEps.revenue == null) {
+			return null;
+		}
+
+		return nonGaapEps.revenue;
 	}
 
 	private static double revenueSurprise(AssetNonGaapEpsInfo nonGaapEps, double defaultValue) {
-		if (nonGaapEps == null || nonGaapEps.revenue == null || nonGaapEps.revenuePredicted == null) {
+		final Double revenue = revenueFrom(nonGaapEps);
+
+		if (revenue == null || nonGaapEps.revenuePredicted == null) {
 			return defaultValue;
 		}
 
-		return surprise(nonGaapEps.revenue, nonGaapEps.revenuePredicted);
+		return Calculator.calculateEpsSurprise(revenue, nonGaapEps.revenuePredicted);
+	}
+
+	private static double revenueChange(AssetNonGaapEpsInfo currentNonGaapEps,
+			AssetNonGaapEpsInfo previoussNonGaapEps) {
+		final Double currentRevenue = revenueFrom(currentNonGaapEps);
+		final Double previousRevenue = revenueFrom(previoussNonGaapEps);
+
+		if (currentRevenue == null || previousRevenue == null) {
+			return 0D;
+		}
+
+		return Calculator.calculateEpsSurprise(currentRevenue, previousRevenue);
 	}
 
 	private static double nonGaapPredictedEpsFrom(AssetNonGaapEpsInfo nonGaapEps, AssetEpsInfo eps) {
@@ -498,13 +493,5 @@ public class AssetEpsHistoricalInfo implements CsvWritable {
 			return nonGaapEps.afterMarketClose ? 1 : 0;
 		}
 		return 0;
-	}
-
-	private static double round(double v) {
-		return Calculator.round(v, PRECISION);
-	}
-
-	private static double surprise(double v1, double v2) {
-		return Calculator.round(Calculator.calculateEpsSurprise(v1, v2), PRECISION);
 	}
 }

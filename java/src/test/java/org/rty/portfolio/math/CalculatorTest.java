@@ -73,6 +73,9 @@ class CalculatorTest {
 
 		epsSurprise = Calculator.calculateEpsSurprise(-1D, 0D);
 		assertEquals(-Calculator.MAX_VALUE, epsSurprise, ERROR_TOLERANCE);
+
+		epsSurprise = Calculator.calculateEpsSurprise(0D, 0D);
+		assertEquals(0D, epsSurprise, ERROR_TOLERANCE);
 	}
 
 	@Test

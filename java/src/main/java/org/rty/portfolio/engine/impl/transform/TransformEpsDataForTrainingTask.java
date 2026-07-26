@@ -296,7 +296,7 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 	private static void writeData(String outputFile, List<AssetEpsHistoricalInfo> data) throws Exception {
 		if (!data.isEmpty()) {
 			final CsvWriter<AssetEpsHistoricalInfo> writer = new CsvWriter<>(outputFile);
-			writer.write(AssetEpsHistoricalInfo.HEADER);
+			writer.write(AssetEpsHistoricalInfo.HEADER.toCsvLine());
 			writer.write(data);
 			writer.close();
 		}
