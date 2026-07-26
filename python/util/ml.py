@@ -54,24 +54,26 @@ XGB_DS1_ARGS = {'booster': 'gbtree', 'eval_metric': 'rmse',\
 
 
 CORE_COLUMNS_FOR_TRAINING = ['sector','industry','month',\
-    'prev_after_market_close', 'prev_pred_eps', 'prev_eps',\
-    'prev_eps_spr', 'prev_no_analysts', 'prev_p_e', 'prev_f_score',\
-    'prev_ngaap_pred_eps', 'prev_ngaap_eps', "prev_div_yld",\
-    'prev_ngaap_eps_spr', 'prev_revenue_spr',\
-    'prev_cu_ratio', 'prev_to_ratio', 'prev_d_e_calc',\
-    'prev_d_e_rep', 'prev_fcf_ps', 'prev_p_b',\
-
-    'after_market_close', 'pred_eps', 'eps',\
-    'eps_spr', 'no_analysts', 'p_e', 'f_score',\
-    'ngaap_pred_eps', 'ngaap_eps', "div_yld",\
-    'ngaap_eps_spr', 'revenue_spr',\
-    'cu_ratio', 'to_ratio', 'd_e_calc',\
-    'd_e_rep', 'fcf_ps', 'p_b',\
-
-    'spr_pred_eps_prev_pred_eps', 'spr_eps_prev_eps',\
-    'spr_ngaap_pred_eps_prev_ngaap_pred_eps', 'spr_ngaap_eps_prev_ngaap_eps',\
-    'rate_before_m_1d', 'v_chng_before_m_1d',\
-    'rate_before', 'v_chng_before']
+  'after_market_close','prev_after_market_close',\
+  'no_analysts','prev_no_analysts',\
+  'f_score','prev_f_score',\
+  'eps_spr','prev_eps_spr',\
+  'ngaap_eps_spr','prev_ngaap_eps_spr',\
+  'revenue_spr','prev_revenue_spr','revenue_ch_r',\
+  'pred_eps','prev_pred_eps','ch_r_pred_eps',\
+  'eps','prev_eps','ch_r_eps',\
+  'ngaap_pred_eps','prev_ngaap_pred_eps','ch_r_ngaap_pred_eps',\
+  'ngaap_eps','prev_ngaap_eps','ch_r_ngaap_eps',\
+  'p_e','prev_p_e','ch_r_p_e',\
+  'p_b','prev_p_b','ch_r_p_b',\
+  'div_yld','prev_div_yld','ch_r_div_yld',\
+  'cu_ratio','prev_cu_ratio','ch_r_cu_ratio',\
+  'to_ratio','prev_to_ratio','ch_r_to_ratio',\
+  'd_e_calc','prev_d_e_calc','ch_r_d_e_calc',\
+  'd_e_rep','prev_d_e_rep','ch_r_d_e_rep',\
+  'fcf_ps','prev_fcf_ps','ch_r_fcf_ps', 'fcf_ch_r',\
+  'rate_before_m_1d','v_chng_before_m_1d',\
+  'rate_before','v_chng_before']
 
 POLY_P_MODEL_TEMPLATE = "ds{0}-m-polynomial-{1}-p"
 POLY_L_MODEL_TEMPLATE = "ds{0}-m-polynomial-{1}-l"
