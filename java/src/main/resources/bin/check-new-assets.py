@@ -8,6 +8,7 @@ COL_VALUATION = 7
 COL_SYMBOL = 0
 
 MULTIPLIERS = {
+    'T': 1_000_000_000_000,
     'B': 1_000_000_000,
     'M': 1_000_000,
     'K': 1_000

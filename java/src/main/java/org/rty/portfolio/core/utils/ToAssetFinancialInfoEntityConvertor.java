@@ -16,7 +16,7 @@ public class ToAssetFinancialInfoEntityConvertor {
 	private static final Logger LOGGER = LoggerFactory
 			.getLogger(ToAssetFinancialInfoEntityConvertor.class.getSimpleName());
 
-	private static final int MAX_DAYS_TOLERANCE = 10;
+	private static final int MAX_DAYS_TOLERANCE = 13;
 	private static final Set<Date> STANDARD_QUORTER_ENDS = generateEndOfQuorterDates();
 
 	private static final String ASSET_NAME_COLUMN = "Symbol";

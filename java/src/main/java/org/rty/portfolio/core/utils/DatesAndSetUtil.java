@@ -101,13 +101,13 @@ public final class DatesAndSetUtil {
 		}
 
 		final long daysDiffToNext = daysDiff(toDate, next);
-		final long daysDiffFromOrevious = daysDiff(toDate, previous);
+		final long daysDiffFromPrevious = daysDiff(toDate, previous);
 
-		if (daysDiffToNext <= daysDiffFromOrevious) {
+		if (daysDiffToNext <= daysDiffFromPrevious) {
 			return valueIfTrue(daysDiffToNext <= maxDaysToTolerate, next);
 		}
 
-		return valueIfTrue(daysDiffFromOrevious <= maxDaysToTolerate, previous);
+		return valueIfTrue(daysDiffFromPrevious <= maxDaysToTolerate, previous);
 	}
 
 	public static <T> T oneOrTheOther(boolean condition, T one, T theOther) {
