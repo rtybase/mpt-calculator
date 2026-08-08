@@ -6,7 +6,7 @@ FOLDER_FOR_N_GAAP_EPS_FILES=${FOLDER_FOR_N_GAAP_EPS_FILES:-"./data_to_load_n_gaa
 JCACHE_FOLDER=${JCACHE_FOLDER:-"./jcache"}
 CACHE_FOLDER="./data-cache"
 TEMP_FOLDER=${TEMP_FOLDER:-"./temp"}
-MAX_AGE_SECONDS=$((5*24*60*60))
+MAX_AGE_SECONDS=$((14*24*60*60))
 
 extract_session() {
 	java -XX:+AutoCreateSharedArchive -XX:SharedArchiveFile=${JCACHE_FOLDER}/j-client.jsa \
@@ -24,12 +24,18 @@ extract_session() {
 update_id() {
 	ticker=$1
 	out_file=$2
+	temp_file="${TEMP_FOLDER}/in-id-${ticker}.html"
 
 	java -XX:+AutoCreateSharedArchive -XX:SharedArchiveFile=${JCACHE_FOLDER}/j-client.jsa \
 		-Duse-http2=true -jar portfolio-0.0.1-SNAPSHOT.jar DownloadTask \
-		"-url=https://api.investing.com/api/search/v2/search?q=$ticker" \
-		-outfile=$out_file -headers=headers/investing-sess.prop
+		"-url=https://www.investing.com/search/?q=$ticker" \
+		"-outfile=$temp_file" -headers=headers/investing.prop
 
+	grep -iE "window.allResultsQuotesDataArray = " "$temp_file" | \
+		grep -Eo -i "\[.*" | \
+		grep -Eo ".*\]" > "${out_file}"
+
+	rm -rf "$temp_file"
 }
 
 update_id_if_required() {
