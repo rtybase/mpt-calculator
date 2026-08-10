@@ -10,6 +10,7 @@ import org.rty.portfolio.core.AssetEpsInfo;
 import org.rty.portfolio.core.AssetNonGaapEpsInfo;
 import org.rty.portfolio.core.utils.DataHandlingUtil;
 import org.rty.portfolio.core.utils.ToAssetNonGaapEpsInfoEntityConvertor;
+import org.rty.portfolio.db.DbConnection;
 import org.rty.portfolio.db.DbManager;
 
 /**
@@ -31,9 +32,14 @@ public class LoadNonGaapEpsToDbTask extends GenericLoadToDbTask<AssetNonGaapEpsI
 	public void execute(Map<String, String> parameters) throws Exception {
 		say("Loading EPS data from DB ...");
 		Map<String, NavigableMap<Date, AssetEpsInfo>> epsStore = new HashMap<>();
-		DataHandlingUtil.addDataToMapByNameAndDate(dbManager.getAllStocksEpsInfo(YEARS_BACK, true), epsStore);
-		DataHandlingUtil.addDataToMapByNameAndDate(dbManager.getAllStocksEpsInfo(YEARS_BACK, false), epsStore);
+
+		final DbConnection connection = dbManager.get();
+
+		DataHandlingUtil.addDataToMapByNameAndDate(connection.getAllStocksEpsInfo(YEARS_BACK, true), epsStore);
+		DataHandlingUtil.addDataToMapByNameAndDate(connection.getAllStocksEpsInfo(YEARS_BACK, false), epsStore);
 		convertor = new ToAssetNonGaapEpsInfoEntityConvertor(epsStore);
+
+		connection.close();
 
 		super.execute(parameters);
 	}
@@ -44,8 +50,8 @@ public class LoadNonGaapEpsToDbTask extends GenericLoadToDbTask<AssetNonGaapEpsI
 	}
 
 	@Override
-	protected List<String> saveResults(List<AssetNonGaapEpsInfo> dataToAdd) throws Exception {
-		return dbManager.addBulkNonGaapEps(dataToAdd);
+	protected List<String> saveResults(List<AssetNonGaapEpsInfo> dataToAdd, DbConnection connection) throws Exception {
+		return connection.addBulkNonGaapEps(dataToAdd);
 	}
 
 	@Override

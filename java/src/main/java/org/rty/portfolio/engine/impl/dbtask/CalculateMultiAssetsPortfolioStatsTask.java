@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.rty.portfolio.core.PortfolioStatistics;
 import org.rty.portfolio.core.utils.ConcurrentTaskExecutorWithBatching;
 import org.rty.portfolio.core.utils.JsonUtil;
+import org.rty.portfolio.db.DbConnection;
 import org.rty.portfolio.db.DbManager;
 
 public class CalculateMultiAssetsPortfolioStatsTask extends GenericCalculateTask<PortfolioStatistics> {
@@ -19,11 +20,11 @@ public class CalculateMultiAssetsPortfolioStatsTask extends GenericCalculateTask
 
 	@Override
 	public void execute(Map<String, String> parameters) throws Exception {
-		final Map<Integer, List<Integer>> portfolios = loadPortfolioDefinitions();
+		final DbConnection connection = dbManager.get();
+		final Map<Integer, List<Integer>> portfolios = loadPortfolioDefinitions(connection);
+		connection.close();
 
-		say("Prepare storage... ");
-		Map<Integer, Map<String, Double>> storage = dbManager.getAllDailyRates(YEARS_BACK);
-		say(DONE);
+		final Map<Integer, Map<String, Double>> storage = loadAllDailyRates(YEARS_BACK);
 
 		say("Running calculations... ");
 		final long start = System.currentTimeMillis();
@@ -55,15 +56,15 @@ public class CalculateMultiAssetsPortfolioStatsTask extends GenericCalculateTask
 	}
 
 	@Override
-	protected int[] saveResults(List<PortfolioStatistics> resultsToSave) throws Exception {
-		return dbManager.addBulkCustomPortfolioOptimalResults(
+	protected int[] saveResults(List<PortfolioStatistics> resultsToSave, DbConnection connection) throws Exception {
+		return connection.addBulkCustomPortfolioOptimalResults(
 				resultsToSave.stream().map(v -> v.portflioOptimalResults).toList());
 	}
 
-	private Map<Integer, List<Integer>> loadPortfolioDefinitions() throws Exception {
+	private Map<Integer, List<Integer>> loadPortfolioDefinitions(DbConnection connection) throws Exception {
 		say("Load custom portfolio definitions... ");
 
-		final Map<Integer, String> rawCustomPortfolios = dbManager.getAllCustomPortfolios();
+		final Map<Integer, String> rawCustomPortfolios = connection.getAllCustomPortfolios();
 		final Map<Integer, List<Integer>> portfolios = new HashMap<>();
 
 		int total = 0;

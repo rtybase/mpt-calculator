@@ -15,6 +15,8 @@ import au.com.bytecode.opencsv.CSVReader;
 public abstract class AbstractTask implements Task {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getSimpleName());
 
+	public static final String MAX_CONNECTIONS_PARAM = "-max_conn";
+
 	public static final String INPUT_FILE_PARAM = "-file";
 	public static final String URL_PARAM = "-url";
 	public static final String OUTPUT_FILE_PARAM = "-outfile";
@@ -23,7 +25,7 @@ public abstract class AbstractTask implements Task {
 	public static final String DATE_FORMAT_PARAM = "-date_format";
 	public static final String PRICE_VALUE_INDEX_PARAM = "-price_value_index";
 	public static final String VOLUME_VALUE_INDEX_PARAM = "-volume_value_index";
-	
+
 	public static final String INPUT_SYMBOL = "-in_symbol";
 	public static final String OUT_SYMBOL = "-out_symbol";
 

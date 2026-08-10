@@ -19,9 +19,7 @@ public abstract class Generic2AssetsCalculateTask<T> extends GenericCalculateTas
 
 	@Override
 	public final void execute(Map<String, String> params) throws Exception {
-		say("Prepare storage... ");
-		Map<Integer, Map<String, Double>> storage = dbManager.getAllDailyRates(yearsBack);
-		say(DONE);
+		Map<Integer, Map<String, Double>> storage = loadAllDailyRates(yearsBack);
 		say("Prepare indexes... ");
 		int[] indexes = DatesAndSetUtil.getIndexesFrom(storage);
 		say(DONE);
@@ -32,7 +30,6 @@ public abstract class Generic2AssetsCalculateTask<T> extends GenericCalculateTas
 		final AtomicInteger total = new AtomicInteger(0);
 		final AtomicInteger totalFail = new AtomicInteger(0);
 
-		dbManager.setAutoCommit(false);
 		final ConcurrentTaskExecutorWithBatching<T> taskExecutor = createExecutor(totalFail);
 
 		for (int i = 0; i < indexes.length; ++i) {
@@ -44,8 +41,6 @@ public abstract class Generic2AssetsCalculateTask<T> extends GenericCalculateTas
 		}
 
 		taskExecutor.close();
-		dbManager.commit();
-		dbManager.setAutoCommit(true);
 
 		long ex_time = System.currentTimeMillis() - start;
 		say("{}. Execution time: {}ms,", DONE, ex_time);

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.rty.portfolio.db.DbConnection;
 import org.rty.portfolio.db.DbManager;
 import org.rty.portfolio.engine.AbstractDbTask;
 import org.rty.portfolio.io.BulkCsvLoader;
@@ -30,12 +31,14 @@ public abstract class GenericLoadToDbTask<T> extends AbstractDbTask {
 
 			@Override
 			protected List<String> saveResults(List<T> dataToAdd) throws Exception {
-				dbManager.setAutoCommit(false);
+				final DbConnection connection = dbManager.get();
+				connection.setAutoCommit(false);
 
-				List<String> result = GenericLoadToDbTask.this.saveResults(dataToAdd);
+				List<String> result = GenericLoadToDbTask.this.saveResults(dataToAdd, connection);
 
-				dbManager.commit();
-				dbManager.setAutoCommit(true);
+				connection.commit();
+				connection.setAutoCommit(true);
+				connection.close();
 
 				return result;
 			}
@@ -63,7 +66,7 @@ public abstract class GenericLoadToDbTask<T> extends AbstractDbTask {
 	/**
 	 * Returns a list of assets that failed to save.
 	 */
-	protected abstract List<String> saveResults(List<T> dataToAdd) throws Exception;
+	protected abstract List<String> saveResults(List<T> dataToAdd, DbConnection connection) throws Exception;
 
 	protected abstract T toEntity(String assetName, String[] line);
 

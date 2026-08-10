@@ -8,6 +8,7 @@ import java.util.Objects;
 import java.util.Properties;
 
 import org.rty.portfolio.db.DbManager;
+import org.rty.portfolio.engine.AbstractTask;
 import org.rty.portfolio.engine.Task;
 import org.rty.portfolio.engine.impl.dbtask.Calculate2AssetsPortfolioStatsTask;
 import org.rty.portfolio.engine.impl.dbtask.CalculateAssetStatsTask;
@@ -37,23 +38,34 @@ public class TaskExecutor {
 
 	public static void main(String[] args) throws Throwable {
 		if (args.length > 0) {
-			initialiseDbManager(loadProperties());
+			final Map<String, String> parameters = extractParameters(args);
+
+			initialiseDbManager(loadProperties(), parameters);
 			registerAllTasks();
-			execute(args[0], extractParameters(args));
+			execute(args[0], parameters);
 			dbManager.close();
 		} else {
 			throw new Exception(String.format("task is not specified!"));
 		}
 	}
 
-	private static void initialiseDbManager(Properties props) throws Exception {
+	private static void initialiseDbManager(Properties props, Map<String, String> parameters) throws Exception {
 		final String connectionString = props.getProperty(CONN_STRING);
 
 		if (Strings.isNullOrEmpty(connectionString)) {
 			throw new Exception(String.format("'%s' not found in the '%s'!", CONN_STRING, PROP_FILE));
 		}
 
-		dbManager = new DbManager(connectionString);
+		dbManager = new DbManager(connectionString, maxConnectionsFrom(parameters));
+	}
+
+	private static int maxConnectionsFrom(Map<String, String> parameters) {
+		final String paremeterValue = parameters.get(AbstractTask.MAX_CONNECTIONS_PARAM);
+		if (!Strings.isNullOrEmpty(paremeterValue)) {
+			return Integer.parseInt(paremeterValue);
+		}
+
+		return 1;
 	}
 
 	private static void registerAllTasks() throws Exception {

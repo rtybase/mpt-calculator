@@ -7,29 +7,25 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.rty.portfolio.core.utils.ConcurrentTaskExecutorWithBatching;
 import org.rty.portfolio.core.utils.ConcurrentTaskExecutorWithBatching.ExceptionThrowingConsumer;
+import org.rty.portfolio.db.DbConnection;
 import org.rty.portfolio.db.DbManager;
 import org.rty.portfolio.engine.AbstractDbTask;
-
 
 public abstract class GenericCalculateTask<T> extends AbstractDbTask {
 	private static final int NUMBER_OF_THREADS = computeNoOfThreads();
 	private static final int BATCH_SIZE = 3072;
-
-	private final Object syncObject = new Object();
 
 	public GenericCalculateTask(DbManager dbManager) {
 		super(dbManager);
 	}
 
 	protected final ConcurrentTaskExecutorWithBatching<T> createExecutor(final AtomicInteger totalFail) {
-		final ConcurrentTaskExecutorWithBatching<T> taskExecutor = new ConcurrentTaskExecutorWithBatching<>(NUMBER_OF_THREADS,
-				NUMBER_OF_THREADS,
-				BATCH_SIZE,
-				newResultProcessingConsumer(totalFail));
+		final ConcurrentTaskExecutorWithBatching<T> taskExecutor = new ConcurrentTaskExecutorWithBatching<>(
+				NUMBER_OF_THREADS, NUMBER_OF_THREADS, BATCH_SIZE, newResultProcessingConsumer(totalFail));
 		return taskExecutor;
 	}
 
-	protected abstract int[] saveResults(List<T> resultsToSave) throws Exception;
+	protected abstract int[] saveResults(List<T> resultsToSave, DbConnection connection) throws Exception;
 
 	protected abstract boolean validateResult(T result);
 
@@ -46,17 +42,18 @@ public abstract class GenericCalculateTask<T> extends AbstractDbTask {
 			}
 
 			if (!listOfResults.isEmpty()) {
-				synchronized (syncObject) {
-					saveResultsAndReportErrors(listOfResults, totalFail);
-					dbManager.commit();
-				}
+				saveResultsAndReportErrors(listOfResults, totalFail);
 			}
 		};
 	}
 
 	private void saveResultsAndReportErrors(List<T> resultsToSave, AtomicInteger totalFail) throws Exception {
+		final DbConnection connection = dbManager.get(); // will block if no connections available
+		connection.setAutoCommit(false);
+
 		try {
-			final int[] executionResults = saveResults(resultsToSave);
+			final int[] executionResults = saveResults(resultsToSave, connection);
+			connection.commit();
 
 			for (int i = 0; i < executionResults.length; i++) {
 				if (executionResults[i] == Statement.EXECUTE_FAILED) {
@@ -66,6 +63,9 @@ public abstract class GenericCalculateTask<T> extends AbstractDbTask {
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
+		} finally {
+			connection.setAutoCommit(true);
+			connection.close();
 		}
 	}
 

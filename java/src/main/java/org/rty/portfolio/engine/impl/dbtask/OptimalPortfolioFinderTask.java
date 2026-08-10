@@ -41,9 +41,7 @@ public class OptimalPortfolioFinderTask extends AbstractDbTask {
 
 		queue.add(toOrderedList(assetMappings.keySet()));
 
-		say("Prepare storage... ");
-		Map<Integer, Map<String, Double>> storage = dbManager.getAllDailyRates(YEARS_BACK);
-		say(DONE);
+		Map<Integer, Map<String, Double>> storage = loadAllDailyRates(YEARS_BACK);
 
 		say("Running calculations... ");
 		final long start = System.currentTimeMillis();

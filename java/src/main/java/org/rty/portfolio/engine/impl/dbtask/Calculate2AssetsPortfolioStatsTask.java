@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 
 import org.rty.portfolio.core.PortfolioStatistics;
+import org.rty.portfolio.db.DbConnection;
 import org.rty.portfolio.db.DbManager;
 
 public class Calculate2AssetsPortfolioStatsTask extends Generic2AssetsCalculateTask<PortfolioStatistics> {
@@ -31,7 +32,7 @@ public class Calculate2AssetsPortfolioStatsTask extends Generic2AssetsCalculateT
 	}
 
 	@Override
-	protected int[] saveResults(List<PortfolioStatistics> resultsToSave) throws Exception {
-		return dbManager.addNew2AssetsPortfolioInfo(resultsToSave);
+	protected int[] saveResults(List<PortfolioStatistics> resultsToSave, DbConnection connection) throws Exception {
+		return connection.addNew2AssetsPortfolioInfo(resultsToSave);
 	}
 }

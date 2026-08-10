@@ -24,6 +24,7 @@ import org.rty.portfolio.core.utils.DatesAndSetUtil;
 import org.rty.portfolio.core.utils.FileNameUtil;
 import org.rty.portfolio.core.utils.ToAssetNonGaapEpsInfoEntityConvertor;
 import org.rty.portfolio.core.utils.ToEntityConvertorsUtil;
+import org.rty.portfolio.db.DbConnection;
 import org.rty.portfolio.db.DbManager;
 import org.rty.portfolio.engine.AbstractDbTask;
 import org.rty.portfolio.engine.impl.dbtask.load.GenericLoadToDbTask;
@@ -264,8 +265,11 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 
 		say("Loading non-GAAP-EPS data from '{}' ...", nonGaapEpsInputFile);
 		nonGaapEpsLoader.load(nonGaapEpsInputFile);
+
 		say("Loading non-GAAP-EPS data from DB ...");
-		DataHandlingUtil.addDataToMapByNameAndDate(dbManager.getAllStocksNonGaapEpsInfo(YEARS_BACK), nonGaapEpsStore);
+		final DbConnection connection = dbManager.get();
+		DataHandlingUtil.addDataToMapByNameAndDate(connection.getAllStocksNonGaapEpsInfo(YEARS_BACK), nonGaapEpsStore);
+		connection.close();
 	}
 
 	private void loadEpsAndPricesFromDb(Map<String, NavigableMap<Date, AssetEpsInfo>> epsStore,
@@ -274,23 +278,27 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 			Map<String, NavigableMap<Date, Double>> stocksAndFScoreStore,
 			Map<String, NavigableMap<Date, AssetDividendInfo>> dividendStore,
 			Map<String, NavigableMap<Date, AssetFinancialInfo>> financialsStore) throws Exception {
+		final DbConnection connection = dbManager.get();
+
 		say("Loading Stocks and Sectors data from DB ...");
-		addStocksSectors(stocksAndsectorsStore, dbManager.getAllStocks());
+		addStocksSectors(stocksAndsectorsStore, connection.getAllStocks());
 
 		say("Loading Stocks and F-Scores data from DB ...");
-		stocksAndFScoreStore.putAll(dbManager.getAllStockFScore(YEARS_BACK));
+		stocksAndFScoreStore.putAll(connection.getAllStockFScore(YEARS_BACK));
 
 		say("Loading EPS data from DB ...");
-		DataHandlingUtil.addDataToMapByNameAndDate(dbManager.getAllStocksEpsInfo(YEARS_BACK, true), epsStore);
+		DataHandlingUtil.addDataToMapByNameAndDate(connection.getAllStocksEpsInfo(YEARS_BACK, true), epsStore);
 
 		say("Loading prices data from DB ...");
-		DataHandlingUtil.addDataToMapByNameAndDate(dbManager.getAllStocksPriceInfo(YEARS_BACK), priceStore);
+		DataHandlingUtil.addDataToMapByNameAndDate(connection.getAllStocksPriceInfo(YEARS_BACK), priceStore);
 
 		say("Loading dividends data from DB ...");
-		DataHandlingUtil.addDataToMapByNameAndDate(dbManager.getAllStocksDividendInfo(YEARS_BACK), dividendStore);
+		DataHandlingUtil.addDataToMapByNameAndDate(connection.getAllStocksDividendInfo(YEARS_BACK), dividendStore);
 
 		say("Loading financial data from DB ...");
-		DataHandlingUtil.addDataToMapByNameAndDate(dbManager.getAllStocksFinancialInfo(YEARS_BACK), financialsStore);
+		DataHandlingUtil.addDataToMapByNameAndDate(connection.getAllStocksFinancialInfo(YEARS_BACK), financialsStore);
+
+		connection.close();
 	}
 
 	private static void writeData(String outputFile, List<AssetEpsHistoricalInfo> data) throws Exception {

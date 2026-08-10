@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.rty.portfolio.core.AssetEpsInfo;
 import org.rty.portfolio.core.utils.ToEntityConvertorsUtil;
+import org.rty.portfolio.db.DbConnection;
 import org.rty.portfolio.db.DbManager;
 
 /**
@@ -27,8 +28,8 @@ public class LoadEarningsToDbTask extends GenericLoadToDbTask<AssetEpsInfo> {
 	}
 
 	@Override
-	protected List<String> saveResults(List<AssetEpsInfo> dataToAdd) throws Exception {
-		return dbManager.addBulkEarnings(dataToAdd);
+	protected List<String> saveResults(List<AssetEpsInfo> dataToAdd, DbConnection connection) throws Exception {
+		return connection.addBulkEarnings(dataToAdd);
 	}
 
 	@Override

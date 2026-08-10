@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.rty.portfolio.core.AssetDividendInfo;
 import org.rty.portfolio.core.utils.ToEntityConvertorsUtil;
+import org.rty.portfolio.db.DbConnection;
 import org.rty.portfolio.db.DbManager;
 
 /**
@@ -21,8 +22,8 @@ public class LoadDividendsToDbTask extends GenericLoadToDbTask<AssetDividendInfo
 	}
 
 	@Override
-	protected List<String> saveResults(List<AssetDividendInfo> dataToAdd) throws Exception {
-		return dbManager.addBulkDividends(dataToAdd);
+	protected List<String> saveResults(List<AssetDividendInfo> dataToAdd, DbConnection connection) throws Exception {
+		return connection.addBulkDividends(dataToAdd);
 	}
 
 	@Override

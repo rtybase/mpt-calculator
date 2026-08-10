@@ -4,11 +4,12 @@ import java.util.List;
 
 import org.rty.portfolio.core.AssetPriceInfo;
 import org.rty.portfolio.core.utils.ToEntityConvertorsUtil;
+import org.rty.portfolio.db.DbConnection;
 import org.rty.portfolio.db.DbManager;
 
 /**
- * A general purpose price CSV loader. The format must be: 
- * assetName, price, change, rate, date, volume, volumeChangeRate
+ * A general purpose price CSV loader. The format must be: assetName, price,
+ * change, rate, date, volume, volumeChangeRate
  * 
  * date is in format of yyyy-MM-dd
  *
@@ -21,8 +22,8 @@ public class LoadPricesToDbTask extends GenericLoadToDbTask<AssetPriceInfo> {
 	}
 
 	@Override
-	protected List<String> saveResults(List<AssetPriceInfo> pricesToAdd) throws Exception {
-		return dbManager.addBulkPrices(pricesToAdd);
+	protected List<String> saveResults(List<AssetPriceInfo> pricesToAdd, DbConnection connection) throws Exception {
+		return connection.addBulkPrices(pricesToAdd);
 	}
 
 	@Override

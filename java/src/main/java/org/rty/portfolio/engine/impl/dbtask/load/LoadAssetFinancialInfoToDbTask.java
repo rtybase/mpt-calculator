@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.rty.portfolio.core.AssetFinancialInfo;
 import org.rty.portfolio.core.utils.ToAssetFinancialInfoEntityConvertor;
+import org.rty.portfolio.db.DbConnection;
 import org.rty.portfolio.db.DbManager;
 
 /**
@@ -31,8 +32,8 @@ public class LoadAssetFinancialInfoToDbTask extends GenericLoadToDbTask<AssetFin
 	}
 
 	@Override
-	protected List<String> saveResults(List<AssetFinancialInfo> dataToAdd) throws Exception {
-		return dbManager.addBulkFinancialInfo(dataToAdd);
+	protected List<String> saveResults(List<AssetFinancialInfo> dataToAdd, DbConnection connection) throws Exception {
+		return connection.addBulkFinancialInfo(dataToAdd);
 	}
 
 	@Override

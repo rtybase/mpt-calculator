@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 
 import org.rty.portfolio.core.AssetsCorrelationInfo;
+import org.rty.portfolio.db.DbConnection;
 import org.rty.portfolio.db.DbManager;
 
 public class CalculateAssetsShiftCorrelationTask extends Generic2AssetsCalculateTask<AssetsCorrelationInfo> {
@@ -56,7 +57,7 @@ public class CalculateAssetsShiftCorrelationTask extends Generic2AssetsCalculate
 	}
 
 	@Override
-	protected int[] saveResults(List<AssetsCorrelationInfo> resultsToSave) throws Exception {
-		return dbManager.addBulkShiftCorrelations(resultsToSave);
+	protected int[] saveResults(List<AssetsCorrelationInfo> resultsToSave, DbConnection connection) throws Exception {
+		return connection.addBulkShiftCorrelations(resultsToSave);
 	}
 }
