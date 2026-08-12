@@ -1,10 +1,11 @@
 package org.rty.portfolio.db;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
@@ -14,9 +15,11 @@ import com.google.common.base.Preconditions;
 
 public class DbManager {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DbManager.class.getSimpleName());
+	private static final boolean NOT_FREE = false;
+	private static final boolean FREE = true;
 
-	private final List<DbConnection> allConnections;
-	private final BlockingQueue<DbConnection> availableConnections;
+	private final Map<Integer, DbConnectionHolder> allConnections;
+	private final BlockingQueue<DbConnection> freeConnections;
 
 	private final Object syncObject = new Object();
 
@@ -30,8 +33,9 @@ public class DbManager {
 
 		this.maximumConnections = maximumConnections;
 		this.connectionString = Objects.requireNonNull(connectionString, "connectionString must not be null!");
-		this.availableConnections = new LinkedBlockingQueue<>(maximumConnections);
-		this.allConnections = new ArrayList<>(maximumConnections);
+
+		this.freeConnections = new LinkedBlockingQueue<>(maximumConnections);
+		this.allConnections = new HashMap<>();
 	}
 
 	String getConnectionString() {
@@ -39,35 +43,61 @@ public class DbManager {
 	}
 
 	void free(DbConnection connection) throws Exception {
-		availableConnections.put(connection);
+		final int internalId = connection.getInternalId();
+		final DbConnectionHolder dbConnectionHolder = allConnections.get(internalId);
+
+		if (dbConnectionHolder != null) {
+			if (dbConnectionHolder.freeFlag().compareAndSet(NOT_FREE, FREE)) {
+				freeConnections.put(connection);
+			}
+		} else {
+			LOGGER.warn("DB connection with internalId '{}' was never registered before!", internalId);
+		}
 	}
 
 	public DbConnection get() throws Exception {
 		if (currentConnection.get() == maximumConnections) {
-			return availableConnections.take();
+			return getFreeConnection();
 		}
 
 		synchronized (syncObject) {
-			if (currentConnection.get() < maximumConnections) {
-				final DbConnection connection = new DbConnection(this);
+			final int internalId = currentConnection.get();
 
-				allConnections.add(connection);
+			if (internalId < maximumConnections) {
 				currentConnection.incrementAndGet();
 
-				LOGGER.info("New DB connection created. Total so far '{}'", allConnections.size());
-
-				return connection;
+				return addNewConnection(internalId);
 			}
 		}
 
-		return availableConnections.take();
+		return getFreeConnection();
 	}
 
 	public void close() throws Exception {
 		synchronized (syncObject) {
-			for (DbConnection connection : allConnections) {
-				connection.shutdown();
+			for (Map.Entry<Integer, DbConnectionHolder> entry : allConnections.entrySet()) {
+				entry.getValue().dbConnection().shutdown();
 			}
 		}
+	}
+
+	private DbConnection addNewConnection(int internalId) throws Exception {
+		final DbConnection connection = new DbConnection(this, internalId);
+
+		allConnections.put(internalId, new DbConnectionHolder(connection, new AtomicBoolean(NOT_FREE)));
+
+		LOGGER.info("New DB connection created. Total so far '{}'", allConnections.size());
+
+		return connection;
+	}
+
+	private DbConnection getFreeConnection() throws Exception {
+		final DbConnection connection = freeConnections.take(); // will block waiting for free entry
+		allConnections.get(connection.getInternalId()).freeFlag().set(NOT_FREE);
+
+		return connection;
+	}
+
+	private record DbConnectionHolder(DbConnection dbConnection, AtomicBoolean freeFlag) {
 	}
 }

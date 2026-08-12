@@ -35,13 +35,19 @@ public class DbConnection {
 	private final Connection connection;
 	private final LoadingCache<String, Integer> cache;
 	private final DbManager manager;
+	private final int internalId;
 
-	DbConnection(DbManager manager) throws Exception {
+	DbConnection(DbManager manager, int internalId) throws Exception {
+		this.internalId = internalId;
 		this.manager = manager;
 		this.connection = DriverManager.getConnection(manager.getConnectionString());
 		this.cache = Caffeine.newBuilder()
 				  .maximumSize(1000)
 				  .build(this::queryDbForAssetIdFromName);
+	}
+
+	int getInternalId() {
+		return internalId;
 	}
 
 	void shutdown() throws Exception {
