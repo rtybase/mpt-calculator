@@ -15,6 +15,9 @@ import au.com.bytecode.opencsv.CSVReader;
 public abstract class AbstractTask implements Task {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getSimpleName());
 
+	public static final String CONVERT_TO_CSV_PARAM = "-to_csv";
+	public static final String IGNORE_TABLE_HEADERS_PARAM = "-ignore_table_headers";
+	public static final String INPUT_DIV_BY_1000_PARAM = "-div_1000";
 	public static final String MAX_CONNECTIONS_PARAM = "-max_conn";
 
 	public static final String INPUT_FILE_PARAM = "-file";
@@ -38,6 +41,13 @@ public abstract class AbstractTask implements Task {
 
 	protected void say(String text, Object... params) {
 		logger.info(text, params);
+	}
+
+	protected static boolean isTrue(Map<String, String> parameters, String parameterName) {
+		Objects.requireNonNull(parameters, "parameters must not be null!");
+		Objects.requireNonNull(parameterName, "parameterName must not be null!");
+
+		return "true".equalsIgnoreCase(parameters.get(parameterName));
 	}
 
 	protected static String getValidParameterValue(Map<String, String> parameters, String parameterName) {

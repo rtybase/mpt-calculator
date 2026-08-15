@@ -9,6 +9,7 @@ import java.util.Properties;
 import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.message.BasicHeader;
 import org.rty.portfolio.engine.AbstractTask;
+import org.rty.portfolio.io.TableParser;
 import org.rty.portfolio.net.HttpClient;
 import org.rty.portfolio.net.RtyHttpClient;
 import org.rty.portfolio.net.RtyHttpClientWithHTTP2Support;
@@ -36,13 +37,18 @@ public class DownloadTask extends AbstractTask {
 		say("Downloading '{}' to '{}'", url, outFile);
 		httpClient.get(url, outFile, extraHeadersFrom(httpHeadersFile));
 		say(DONE);
+
+		if (isTrue(parameters, CONVERT_TO_CSV_PARAM)) {
+			final String outCsvFile = outFile + ".csv";
+
+			say("Coverting '{}' to '{}'", outFile, outCsvFile);
+			TableParser.parseToCsv(outFile, outCsvFile, !isTrue(parameters, IGNORE_TABLE_HEADERS_PARAM));
+			say(DONE);
+		}
 	}
 
 	private static String headersFileValues(Map<String, String> parameters) {
-		if (parameters != null) {
-			return parameters.get(HTTP_HEADERS_FILE_PARAM);
-		}
-		return null;
+		return parameters.get(HTTP_HEADERS_FILE_PARAM);
 	}
 
 	private static List<Header> extraHeadersFrom(String httpHeadersFile) throws Exception {
