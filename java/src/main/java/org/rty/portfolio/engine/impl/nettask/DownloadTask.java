@@ -41,7 +41,7 @@ public class DownloadTask extends AbstractTask {
 		if (isTrue(parameters, CONVERT_TO_CSV_PARAM)) {
 			final String outCsvFile = outFile + ".csv";
 
-			say("Coverting '{}' to '{}'", outFile, outCsvFile);
+			say("Converting '{}' to '{}'", outFile, outCsvFile);
 			TableParser.parseToCsv(outFile, outCsvFile, !isTrue(parameters, IGNORE_TABLE_HEADERS_PARAM));
 			say(DONE);
 		}

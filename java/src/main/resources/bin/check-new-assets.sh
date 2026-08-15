@@ -13,11 +13,11 @@ java -XX:+AutoCreateSharedArchive -XX:SharedArchiveFile=${JCACHE_FOLDER}/j-clien
 	-Duse-http2=false \
 	-jar portfolio-0.0.1-SNAPSHOT.jar DownloadTask \
 	"-url=$url" \
-	"-outfile=${TEMP_FOLDER}/out.html" \
+	"-outfile=${TEMP_FOLDER}/ch-a-out.html" \
+	"-to_csv=true" "-ignore_table_headers=true" \
 	-headers=headers/yh-headers.prop
 
-./ParseTable.exe "-link=${TEMP_FOLDER}/out.html" "-format=CSV"
-rm -rf ${TEMP_FOLDER}/out.html
+rm -rf "${TEMP_FOLDER}/ch-a-out.html"
 
-python check-new-assets.py out.csv ${valuation}
-rm -rf out.csv
+python check-new-assets.py "${TEMP_FOLDER}/ch-a-out.html.csv" ${valuation}
+rm -rf "${TEMP_FOLDER}/ch-a-out.html.csv"
