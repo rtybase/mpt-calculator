@@ -7,6 +7,7 @@ create table tbl_assets (
 	vchr_symbol varchar(50),
 	vchr_price_symbol varchar(50),
 	vchr_type VARCHAR(20) NOT NULL default "Stock",
+	vchr_region VARCHAR(15) NOT NULL default "AMER",
 	bln_deleted BOOLEAN NOT NULL default 0,
 	primary key (int_assetID),
 	unique (vchr_name)

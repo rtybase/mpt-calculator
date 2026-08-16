@@ -3,15 +3,14 @@ import util.db
 import util.flow
 
 LISTS = {
-    "L": """SELECT vchr_price_symbol, vchr_name FROM tbl_assets 
-		WHERE (vchr_price_symbol like "%.L" 
-		OR vchr_price_symbol like "%.IR" 
-		OR vchr_price_symbol like "%.RO"
-		OR vchr_price_symbol in ('GBPUSD%3DX'))
+    "EU": """SELECT vchr_price_symbol, vchr_name FROM tbl_assets 
+		WHERE vchr_price_symbol is not null
+		AND vchr_region='EU'
 		AND bln_deleted=0
 		ORDER by vchr_name""",
-    "ALL": """SELECT vchr_price_symbol, vchr_name FROM tbl_assets 
+    "AMER": """SELECT vchr_price_symbol, vchr_name FROM tbl_assets 
 		WHERE vchr_price_symbol is not null
+		AND vchr_region='AMER'
 		AND bln_deleted=0
 		ORDER by vchr_name""",
     "STOCKS": """SELECT vchr_symbol, vchr_name FROM tbl_assets 

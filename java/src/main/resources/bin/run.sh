@@ -7,6 +7,7 @@ source ./all_configs.sh
 load_uk_in() {
 	echo "---------------------------------------------------"
 	echo "UK Investing data for: $2"
+#	./ParseTable.exe "-link=https://uk.investing.com/$1-historical-data" "-format=CSV"
 
 	java -XX:+AutoCreateSharedArchive -XX:SharedArchiveFile=${JCACHE_FOLDER}/j-client.jsa \
 		-Duse-http2=true -jar portfolio-0.0.1-SNAPSHOT.jar DownloadTask \
@@ -29,7 +30,7 @@ mkdir -p ${FOLDER_FOR_DIVIDEND_FILES}
 
 load_uk_in "indices/uk-100" "FTSE100" "ftse100-1.csv"
 
-python lists.py ALL > "inputs/yf-inputs.txt"
+python lists.py AMER > "inputs/yf-inputs.txt"
 
 ./download_all_yf.sh "inputs/yf-inputs.txt" "1m"
 
