@@ -8,6 +8,11 @@ LISTS = {
 		AND vchr_region='EU'
 		AND bln_deleted=0
 		ORDER by vchr_name""",
+    "CDT": """SELECT vchr_price_symbol, vchr_name FROM tbl_assets 
+		WHERE vchr_price_symbol is not null
+		AND vchr_region='CDT'
+		AND bln_deleted=0
+		ORDER by vchr_name""",
     "AMER": """SELECT vchr_price_symbol, vchr_name FROM tbl_assets 
 		WHERE vchr_price_symbol is not null
 		AND vchr_region='AMER'
@@ -20,18 +25,22 @@ LISTS = {
 		ORDER by vchr_name""",
     "SCORE": """SELECT e.vchr_symbol, e.vchr_symbol FROM tbl_fscores e
 		INNER JOIN (
-		    SELECT vchr_symbol, max( dtm_date ) dtm_date
-		    FROM tbl_fscores
-		    GROUP BY vchr_symbol
+			SELECT vchr_symbol, max( dtm_date ) dtm_date
+			FROM tbl_fscores
+			WHERE vchr_symbol in 
+				(SELECT vchr_symbol FROM tbl_stocks WHERE bln_deleted=0)
+			GROUP BY vchr_symbol
 		) f ON e.vchr_symbol = f.vchr_symbol
 		AND e.dtm_date = f.dtm_date
 		WHERE e.dtm_date < 
 		(STR_TO_DATE(CONCAT(YEAR(NOW()), '-', MONTH(NOW()), '-01'), '%Y-%m-%d') - INTERVAL 3 MONTH)""",
     "SCORE-L": """SELECT e.vchr_symbol, e.vchr_symbol FROM tbl_fscores e
 		INNER JOIN (
-		    SELECT vchr_symbol, max( dtm_date ) dtm_date
-		    FROM tbl_fscores
-		    GROUP BY vchr_symbol
+			SELECT vchr_symbol, max( dtm_date ) dtm_date
+			FROM tbl_fscores
+			WHERE vchr_symbol in 
+				(SELECT vchr_symbol FROM tbl_stocks WHERE bln_deleted=0)
+			GROUP BY vchr_symbol
 		) f ON e.vchr_symbol = f.vchr_symbol
 		AND e.dtm_date = f.dtm_date
 		WHERE e.dtm_date >= 
@@ -39,10 +48,12 @@ LISTS = {
 		AND e.dbl_fscore <= 0.0""",
     "FIN-Q": """SELECT e.vchr_symbol, e.vchr_symbol FROM tbl_finances_quarter e
 		INNER JOIN (
-		    SELECT vchr_symbol, max( dtm_date ) dtm_date
-		    FROM tbl_finances_quarter
-		    GROUP BY vchr_symbol
-		)f ON e.vchr_symbol = f.vchr_symbol
+			SELECT vchr_symbol, max( dtm_date ) dtm_date
+			FROM tbl_finances_quarter
+			WHERE vchr_symbol in 
+				(SELECT vchr_symbol FROM tbl_stocks WHERE bln_deleted=0)
+			GROUP BY vchr_symbol
+		) f ON e.vchr_symbol = f.vchr_symbol
 		AND e.dtm_date = f.dtm_date
 		WHERE e.dtm_date < 
 		(STR_TO_DATE(CONCAT(YEAR(NOW()), '-', MONTH(NOW()), '-01'), '%Y-%m-%d') - INTERVAL 3 MONTH)""",
@@ -51,6 +62,8 @@ LISTS = {
 		INNER JOIN (
 			SELECT vchr_symbol, max( dtm_date ) dtm_date
 			FROM tbl_finances_quarter
+			WHERE vchr_symbol in 
+				(SELECT vchr_symbol FROM tbl_stocks WHERE bln_deleted=0)
 			GROUP BY vchr_symbol
 		) f ON e.vchr_symbol = f.vchr_symbol
 		AND e.dtm_date = f.dtm_date

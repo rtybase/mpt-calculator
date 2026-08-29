@@ -40,6 +40,7 @@ create table tbl_stocks (
 	vchr_symbol varchar(50) not null,
 	fk_sectorID int(10) unsigned NOT NULL,
 	fk_industryID int(10) unsigned NOT NULL,
+	bln_deleted BOOLEAN NOT NULL default 0,
 	primary key (vchr_symbol),
 	foreign key(fk_sectorID) references tbl_sectors (int_sectorID),
 	foreign key(fk_industryID) references tbl_industries (int_industryID)
