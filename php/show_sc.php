@@ -169,11 +169,11 @@ function ratesForDatesWithShift($dates, $rates, $shift, $predictor) {
 	<tr><td><div id="chart2_div" style="width: 1044px; height: 350px;"></div></td></tr>
 <?php
 	if (!empty($minRateForecast) || !empty($maxRateForecast)) {
-		echo "<tr><td><hr></td></tr>";
-		echo "<tr><td><font face=\"verdana\">Forecast return/price for $asset2Name on $forecastDate (more <a href=\"./all_sc.php?id=$asset2Id\">here...</a>):</font></td></tr>";
-
 		$lastDate = end($details["dates"]);
 		$forecastDate = nextDateFrom($lastDate);
+
+		echo "<tr><td><hr></td></tr>";
+		echo "<tr><td><font face=\"verdana\">Forecast return/price for $asset2Name on $forecastDate (more <a href=\"./all_sc.php?id=$asset2Id\">here...</a>):</font></td></tr>";
 
 		$lastPriceInfo = getLastPriceInfo($asset2Id, $link);
 		$lastPrice = (float) $lastPriceInfo["dbl_price"];
