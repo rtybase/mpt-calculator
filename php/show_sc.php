@@ -36,9 +36,10 @@ function ratesForDatesWithShift($dates, $rates, $shift, $predictor) {
 
 	$link = connect("portfolio");
 
-	$query = "SELECT txt_json, int_continuous_updates, dtm_last_update_date ";
+	$query = "SELECT txt_json, int_continuous_updates, dtm_last_update_date, ";
+	$query.= "dbl_min_rate_forecast, dbl_max_rate_forecast ";
 	$query.= "FROM  tbl_shift_correlations ";
-	$query.= "WHERE (fk_asset1ID=$asset1Id) AND (fk_asset2ID=$asset2Id) ";
+	$query.= "WHERE (fk_predictor_assetID=$asset1Id) AND (fk_predictand_assetID=$asset2Id) ";
 
 	$res = mysqli_query($link, $query);
 	if (!$res) die("Invalid query: ". mysqli_error());
@@ -46,32 +47,20 @@ function ratesForDatesWithShift($dates, $rates, $shift, $predictor) {
 	$details = array();
 	$continuousUpdates = 0;
 	$lastUpdateDate = "";
+	$minRateForecast = NULL;
+	$maxRateForecast = NULL;
 	while ($row = mysqli_fetch_row($res)) {
 		$details = json_decode($row[0], true);
 		$continuousUpdates = $row[1];
 		$lastUpdateDate = $row[2];
+		$minRateForecast = $row[3];
+		$maxRateForecast = $row[4];
 	}
 	mysqli_free_result($res);
 
 	$shift = $details["bestShift"];
 	$asset1Name = getName($asset1Id, $link);
 	$asset2Name = getName($asset2Id, $link);
-
-	$asset1Predictor = false;
-	$asset2Predictor = false;
-
-	$predictedAsset = $asset2Name;
-	$predictedAssetId = $asset2Id;
-	if ($shift > 0) {
-		$asset1Name.= " (predictor)";
-		$asset1Predictor = true;
-	} else if ($shift < 0) {
-		$asset2Name.= " (predictor)";
-		$asset2Predictor = true;
-
-		$predictedAsset = $asset1Name;
-		$predictedAssetId = $asset1Id;
-	}
 
 	$tableResult = "['".linkToAsset($asset1Id, $asset1Name)."','";
 	$tableResult.= linkToAsset($asset2Id, $asset2Name)."',";
@@ -111,8 +100,8 @@ function ratesForDatesWithShift($dates, $rates, $shift, $predictor) {
 
 	function generateData() {
 		var dataTable = new google.visualization.DataTable();
-		dataTable.addColumn('string', 'Asset 1');
-		dataTable.addColumn('string', 'Asset 2');
+		dataTable.addColumn('string', 'Predictor');
+		dataTable.addColumn('string', 'Predictand');
 		dataTable.addColumn('number', 'Shift (days)');
 		dataTable.addColumn('number', 'Correlation');
 		dataTable.addColumn('number', 'Cmn Dates');
@@ -130,7 +119,7 @@ function ratesForDatesWithShift($dates, $rates, $shift, $predictor) {
 		var data = google.visualization.arrayToDataTable([
 			['Date', 'rates', 'common date rates']
 <?php
-		ratesForDatesWithShift($details["dates"], $details["asset1Rates"], $shift, $asset1Predictor);
+		ratesForDatesWithShift($details["dates"], $details["predictorRates"], $shift, true);
 ?>
 		]);
 
@@ -150,7 +139,7 @@ function ratesForDatesWithShift($dates, $rates, $shift, $predictor) {
 		var data = google.visualization.arrayToDataTable([
 			['Date', 'rates', 'common date rates']
 <?php
-		ratesForDatesWithShift($details["dates"], $details["asset2Rates"], $shift, $asset2Predictor);
+		ratesForDatesWithShift($details["dates"], $details["predictandRates"], $shift, false);
 ?>
 		]);
 
@@ -179,22 +168,25 @@ function ratesForDatesWithShift($dates, $rates, $shift, $predictor) {
 	<tr><td><div id="chart1_div" style="width: 1044px; height: 350px;"></div></td></tr>
 	<tr><td><div id="chart2_div" style="width: 1044px; height: 350px;"></div></td></tr>
 <?php
-	if (!empty($details["forecast"])) {
+	if (!empty($minRateForecast) || !empty($maxRateForecast)) {
+		echo "<tr><td><hr></td></tr>";
+		echo "<tr><td><font face=\"verdana\">Forecast return/price for $asset2Name on $forecastDate (more <a href=\"./all_sc.php?id=$asset2Id\">here...</a>):</font></td></tr>";
+
 		$lastDate = end($details["dates"]);
 		$forecastDate = nextDateFrom($lastDate);
 
-		$lastPriceInfo = getLastPriceInfo($predictedAssetId, $link);
-		$return1 = $details["forecast"][0];
-		$return2 = $details["forecast"][1];
-
+		$lastPriceInfo = getLastPriceInfo($asset2Id, $link);
 		$lastPrice = (float) $lastPriceInfo["dbl_price"];
-		$price1 = nextPriceFrom($lastPrice, $return1);
-		$price2 = nextPriceFrom($lastPrice, $return2);
 
-		echo "<tr><td><hr></td></tr>";
-		echo "<tr><td><font face=\"verdana\">Forecast return/price for $predictedAsset on $forecastDate (more <a href=\"./all_sc.php?id=$predictedAssetId\">here...</a>):</font></td></tr>";
-		echo "<tr><td><font face=\"verdana\">Return = ".round($return1, 4).", Price = ".round($price1, 4)."</font></td></tr>";
-		echo "<tr><td><font face=\"verdana\">Return = ".round($return2, 4).", Price = ".round($price2, 4)."</font></td></tr>";
+		if (!empty($minRateForecast)) {
+			$price1 = nextPriceFrom($lastPrice, $minRateForecast);
+			echo "<tr><td><font face=\"verdana\">Return = ".round($minRateForecast, 4).", Price = ".round($price1, 4)."</font></td></tr>";
+		}
+
+		if (!empty($maxRateForecast)) {
+			$price2 = nextPriceFrom($lastPrice, $maxRateForecast);
+			echo "<tr><td><font face=\"verdana\">Return = ".round($maxRateForecast, 4).", Price = ".round($price2, 4)."</font></td></tr>";
+		}
 	}
 ?>
       </table></td>

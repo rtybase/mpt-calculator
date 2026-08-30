@@ -11,11 +11,11 @@ function nextDateFromDetails($details) {
 }
 
 function get1DayShiftCorrelations($assetId, $link) {
-	$query = "SELECT fk_asset1ID, fk_asset2ID, int_shift, dbl_correlation, ";
-	$query.= "txt_json, int_continuous_updates, dtm_last_update_date ";
-	$query.= "FROM tbl_shift_correlations USE INDEX (PRIMARY,fk_asset2ID) ";
-	$query.= "WHERE ((fk_asset1ID=$assetId AND int_shift=-1) OR ";
-	$query.= "(fk_asset2ID=$assetId AND int_shift=1)) ";
+	$query = "SELECT fk_predictor_assetID, int_shift, dbl_correlation, ";
+	$query.= "txt_json, int_continuous_updates, dtm_last_update_date, ";
+	$query.= "dbl_min_rate_forecast, dbl_max_rate_forecast ";
+	$query.= "FROM tbl_shift_correlations USE INDEX (fk_predictand_assetID) ";
+	$query.= "WHERE (fk_predictand_assetID=$assetId AND int_shift=1) ";
 	$query.= "AND ABS(dbl_correlation) > 0.0 ";
 	$query.= "ORDER BY ABS(dbl_correlation) DESC";
 
@@ -25,24 +25,18 @@ function get1DayShiftCorrelations($assetId, $link) {
 	$oneDayShiftCorrelations = array();
 	while ($row = mysqli_fetch_array($res)) {
 		$pAssetId = $row[0];
+		$details = json_decode($row[3], true);
 
-		if ($row[0] == $assetId) {
-			$pAssetId = $row[1];
-		}
-
-		$details = json_decode($row[4], true);
-		if (!empty($details["forecast"])) {
-			$oneDayShiftCorrelations[$pAssetId] = array();
-			$oneDayShiftCorrelations[$pAssetId]["assetName"] = getName($pAssetId, $link);
-			$oneDayShiftCorrelations[$pAssetId]["shift"] = $row[2];
-			$oneDayShiftCorrelations[$pAssetId]["correlation"] = $row[3];
-			$oneDayShiftCorrelations[$pAssetId]["common_dates"] = count($details["dates"]);
-			$oneDayShiftCorrelations[$pAssetId]["forecast_date"] = nextDateFromDetails($details);
-			$oneDayShiftCorrelations[$pAssetId]["rate1"] = $details["forecast"][0];
-			$oneDayShiftCorrelations[$pAssetId]["rate2"] = $details["forecast"][1];
-			$oneDayShiftCorrelations[$pAssetId]["continuousUpdates"] = $row[5];
-			$oneDayShiftCorrelations[$pAssetId]["lastUpdateDate"] = $row[6];
-		}
+		$oneDayShiftCorrelations[$pAssetId] = array();
+		$oneDayShiftCorrelations[$pAssetId]["assetName"] = getName($pAssetId, $link);
+		$oneDayShiftCorrelations[$pAssetId]["shift"] = $row[1];
+		$oneDayShiftCorrelations[$pAssetId]["correlation"] = $row[2];
+		$oneDayShiftCorrelations[$pAssetId]["common_dates"] = count($details["dates"]);
+		$oneDayShiftCorrelations[$pAssetId]["forecast_date"] = nextDateFromDetails($details);
+		$oneDayShiftCorrelations[$pAssetId]["continuousUpdates"] = $row[4];
+		$oneDayShiftCorrelations[$pAssetId]["lastUpdateDate"] = $row[5];
+		$oneDayShiftCorrelations[$pAssetId]["rate1"] = $row[6];
+		$oneDayShiftCorrelations[$pAssetId]["rate2"] = $row[7];
 	}
 	mysqli_free_result($res);
 
@@ -81,14 +75,16 @@ function mergeDataToTableFormat($oneDayShiftCorrelations, $lastPriceInfo, $isFor
 		$result .= "'".$value["forecast_date"]."',";
 
 		$rate1 = $value["rate1"];
-		$rate2 = $value["rate2"];
+		$result .= rateAndPrice($lastPrice, $rate1, $isForex).",";
 
-		if (abs($rate1) <= abs($rate2)) {
-			$result .= rateAndPrice($lastPrice, $rate1, $isForex).",";
+		if (!empty($value["rate2"])) {
+			$rate2 = $value["rate2"];
 			$result .= rateAndPrice($lastPrice, $rate2, $isForex).",";
 		} else {
-			$result .= rateAndPrice($lastPrice, $rate2, $isForex).",";
-			$result .= rateAndPrice($lastPrice, $rate1, $isForex).",";
+			$result .="null,null,";
+			if ($isForex) {
+				$result .="null,";
+			}
 		}
 
 		$result .= toChartNumber($value["continuousUpdates"]).",";
@@ -189,7 +185,7 @@ function getEpsPredictions($assetId, $link) {
 
 	function generateHeader1() {
 		var dataTable = new google.visualization.DataTable();
-		dataTable.addColumn('string', 'Predicting Asset');
+		dataTable.addColumn('string', 'Predictor');
 		dataTable.addColumn('number', 'Shift');
 		dataTable.addColumn('number', 'Corrltn');
 		dataTable.addColumn('number', 'Cn.Dates');

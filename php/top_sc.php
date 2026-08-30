@@ -6,16 +6,17 @@
 	header("Content-Type:text/html; charset=UTF-8");
 
 function getTopShiftCorrelations($includeFunds, $shift, $correlation, $link) {
-	$query = "SELECT a.fk_asset1ID, b.vchr_name, a.fk_asset2ID, a.int_shift, ";
+	$query = "SELECT a.fk_predictor_assetID, b.vchr_name, a.fk_predictand_assetID, a.int_shift, ";
 	$query.= "a.dbl_correlation, a.int_continuous_updates, a.dtm_last_update_date ";
-	$query.= "FROM tbl_shift_correlations a, tbl_assets b ";
-	$query.= "WHERE a.fk_asset1ID = b.int_assetID ";
-	$query.= "AND ((a.int_shift BETWEEN 1 AND $shift) OR (a.int_shift BETWEEN -".$shift." AND -1)) ";
+	$query.= "FROM tbl_shift_correlations a USE INDEX (PRIMARY, idx_shift_correlations_shift), ";
+	$query.= "tbl_assets b USE INDEX (PRIMARY, idx_tbl_assets_assetID_name_symbol_type)";
+	$query.= "WHERE a.fk_predictor_assetID = b.int_assetID ";
+	$query.= "AND (a.int_shift BETWEEN 1 AND $shift) ";
 	$query.= "AND ABS( a.dbl_correlation ) > $correlation ";
 
 	if (!$includeFunds) {
-		$query.= "AND fk_asset1ID IN (SELECT int_assetID FROM tbl_assets WHERE vchr_type not like '%Fund') ";
-		$query.= "AND fk_asset2ID IN (SELECT int_assetID FROM tbl_assets WHERE vchr_type not like '%Fund') ";
+		$query.= "AND b.vchr_type not like '%Fund' ";
+		$query.= "AND a.fk_predictand_assetID IN (SELECT int_assetID FROM tbl_assets WHERE vchr_type not like '%Fund') ";
 	}
 
 	$res = mysqli_query($link, $query);
@@ -104,8 +105,8 @@ function getTopShiftCorrelations($includeFunds, $shift, $correlation, $link) {
 
 	function generateData() {
 		var dataTable = new google.visualization.DataTable();
-		dataTable.addColumn('string', 'Asset 1');
-		dataTable.addColumn('string', 'Asset 2');
+		dataTable.addColumn('string', 'Predictor');
+		dataTable.addColumn('string', 'Predictand');
 		dataTable.addColumn('number', 'Shift (days)');
 		dataTable.addColumn('number', 'Correlation');
 		dataTable.addColumn('number', 'Cont Updates');
@@ -129,7 +130,7 @@ function getTopShiftCorrelations($includeFunds, $shift, $correlation, $link) {
 				<input type="radio" name="infu" value="false" <?php if (!$includeFunds) echo "checked";?>>
 				<font face="verdana">No</font></td></tr>
 
-			<tr><td align="right"><font face="verdana">Aboslute shift up to (+/-)</font></td>
+			<tr><td align="right"><font face="verdana">Aboslute shift up to</font></td>
 			<td align="left"><input tabindex="1" type="text" name="sft" value="<?php echo $shift;?>" size="10" /></td></tr>
 
 			<tr><td align="right"><font face="verdana">Absolute correlation &gt;</font></td>

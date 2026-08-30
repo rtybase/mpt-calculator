@@ -50,10 +50,9 @@ function getAllShiftCorrelationsFor($query, $assetId, $assetName, $predictionTex
 }
 
 function getAllPredictingShiftCorrelations($assetId, $assetName, $link) {
-	$query = "SELECT fk_asset1ID, fk_asset2ID, int_shift, dbl_correlation ";
-	$query.= "FROM tbl_shift_correlations USE INDEX (PRIMARY,fk_asset2ID) ";
-	$query.= "WHERE ((fk_asset1ID=$assetId AND (int_shift BETWEEN 1 AND 19)) OR ";
-	$query.= "(fk_asset2ID=$assetId AND (int_shift BETWEEN -19 AND -1))) ";
+	$query = "SELECT fk_predictor_assetID, fk_predictand_assetID, int_shift, dbl_correlation ";
+	$query.= "FROM tbl_shift_correlations USE INDEX (PRIMARY,fk_predictand_assetID) ";
+	$query.= "WHERE fk_predictor_assetID=$assetId AND (int_shift BETWEEN 1 AND 19) ";
 	$query.= "AND ABS(dbl_correlation) > 0.15 ";
 	$query.= "ORDER BY ABS(dbl_correlation) DESC ";
 	$query.= "LIMIT 0, 15";
@@ -62,10 +61,9 @@ function getAllPredictingShiftCorrelations($assetId, $assetName, $link) {
 }
 
 function getAllPredictedByShiftCorrelations($assetId, $assetName, $link) {
-	$query = "SELECT fk_asset1ID, fk_asset2ID, int_shift, dbl_correlation ";
-	$query.= "FROM tbl_shift_correlations USE INDEX (PRIMARY,fk_asset2ID) ";
-	$query.= "WHERE ((fk_asset1ID=$assetId AND (int_shift BETWEEN -19 AND -1)) OR ";
-	$query.= "(fk_asset2ID=$assetId AND (int_shift BETWEEN 1 AND 19))) ";
+	$query = "SELECT fk_predictor_assetID, fk_predictand_assetID, int_shift, dbl_correlation ";
+	$query.= "FROM tbl_shift_correlations USE INDEX (PRIMARY,fk_predictand_assetID) ";
+	$query.= "WHERE fk_predictand_assetID=$assetId AND (int_shift BETWEEN 1 AND 19) ";
 	$query.= "AND ABS(dbl_correlation) > 0.15 ";
 	$query.= "ORDER BY ABS(dbl_correlation) DESC ";
 	$query.= "LIMIT 0, 15 ";
@@ -160,8 +158,8 @@ function getAllPredictedByShiftCorrelations($assetId, $assetName, $link) {
 ?></font></td></tr>
 <?php showStockDetails($stockDetails); ?>
 	<tr><td><hr/></td></tr>
-	<tr><td><font face="verdana">Predicting:</font> <div id="chart1_div" style="width: 1044px;"></div></td></tr>
-	<tr><td><font face="verdana">Predicted by (more <a href="./all_sc.php?id=<?php echo $id; ?>">here...</a>):</font> <div id="chart2_div" style="width: 1044px;"></div></td></tr>
+	<tr><td><font face="verdana">As predictor:</font> <div id="chart1_div" style="width: 1044px;"></div></td></tr>
+	<tr><td><font face="verdana">As predictand (more <a href="./all_sc.php?id=<?php echo $id; ?>">here...</a>):</font> <div id="chart2_div" style="width: 1044px;"></div></td></tr>
 	<tr><td><div id='table_div' style="width: 1044px;"></div></td></tr>
       </table></td>
     </tr></table>
