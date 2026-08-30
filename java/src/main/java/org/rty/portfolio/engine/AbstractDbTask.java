@@ -14,11 +14,12 @@ public abstract class AbstractDbTask extends AbstractTask {
 		this.dbManager = Objects.requireNonNull(dbManager, "dbManager must not be null.");
 	}
 
-	protected Map<Integer, Map<String, Double>> loadAllDailyRates(int yearsBack) throws Exception {
+	protected Map<Integer, Map<String, Double>> loadAllDailyRates(int yearsBack, boolean includeDeletedAssets)
+			throws Exception {
 		say("Prepare storage... ");
 
 		final DbConnection connection = dbManager.get();
-		final Map<Integer, Map<String, Double>> result = connection.getAllDailyRates(yearsBack);
+		final Map<Integer, Map<String, Double>> result = connection.getAllDailyRates(yearsBack, includeDeletedAssets);
 		connection.close();
 
 		say(DONE);

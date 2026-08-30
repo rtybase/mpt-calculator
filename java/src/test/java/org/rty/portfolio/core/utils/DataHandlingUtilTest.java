@@ -169,6 +169,21 @@ class DataHandlingUtilTest extends CommonTestRoutines {
 		assertNull(DataHandlingUtil.getCurrentEntryOrPrevious(store, TEST_ASSET, dateFrom(15)));
 	}
 
+	@Test
+	void testValueFromReturnNullResult() {
+		assertNull(DataHandlingUtil.valueFrom(null, 1));
+		assertNull(DataHandlingUtil.valueFrom(new double[] {}, 1));
+		assertNull(DataHandlingUtil.valueFrom(new double[] { 1D }, 1));
+		assertNull(DataHandlingUtil.valueFrom(new double[] { 1D }, -1));
+	}
+
+	@Test
+	void testValueFrom() {
+		assertEquals(1D, DataHandlingUtil.valueFrom(new double[] { 1D }, 0), ERROR_TOLERANCE);
+		assertEquals(1D, DataHandlingUtil.valueFrom(new double[] { 1D, 2D }, 0), ERROR_TOLERANCE);
+		assertEquals(2D, DataHandlingUtil.valueFrom(new double[] { 1D, 2D }, 1), ERROR_TOLERANCE);
+	}
+
 	private Map<String, NavigableMap<Date, AssetPriceInfo>> newStoreWithContent() {
 		final Map<String, NavigableMap<Date, AssetPriceInfo>> store = new HashMap<>();
 

@@ -28,13 +28,13 @@ class AssetsShiftCorrelationCalculatorTest {
 
 		final AssetsCorrelationInfo result = task.call();
 
-		assertEquals(1, result.asset1Id);
-		assertEquals(2, result.asset2Id);
+		assertEquals(1, result.predictorId);
+		assertEquals(2, result.predictandId);
 		assertFalse(result.hasSufficientContent);
 		assertEquals(Integer.MIN_VALUE, result.bestShift);
 		assertTrue(Double.isNaN(result.bestCorrelation));
 
-		assertEquals("{\"asset1Id\":1,\"asset2Id\":2,\"hasSufficientContent\":false,"
+		assertEquals("{\"predictorId\":1,\"predictandId\":2,\"hasSufficientContent\":false,"
 				+ "\"bestShift\":-2147483648,\"bestCorrelation\":\"NaN\","
 				+ "\"dates\":[\"1\",\"2\"]}", result.toString());
 	}
@@ -48,19 +48,18 @@ class AssetsShiftCorrelationCalculatorTest {
 
 		final AssetsCorrelationInfo result = task.call();
 
-		assertEquals(1, result.asset1Id);
-		assertEquals(2, result.asset2Id);
+		assertEquals(2, result.predictorId);
+		assertEquals(1, result.predictandId);
 		assertTrue(result.hasSufficientContent);
-		assertEquals(-2, result.bestShift);
+		assertEquals(2, result.bestShift);
 		assertEquals(1D, result.bestCorrelation, ERROR_TOLERANCE);
 
-		assertEquals("{\"asset1Id\":1,\"asset2Id\":2,\"hasSufficientContent\":true,"
-				+ "\"bestShift\":-2,\"bestCorrelation\":1.0,"
+		assertEquals("{\"predictorId\":2,\"predictandId\":1,\"hasSufficientContent\":true,"
+				+ "\"bestShift\":2,\"bestCorrelation\":1.0,"
 				+ "\"dates\":[\"1\",\"2\",\"3\",\"4\",\"5\"],"
-				+ "\"asset1Rates\":[1.0,2.0,3.0,4.0,5.0],"
-				+ "\"asset2Rates\":[2.0,4.0,6.0,8.0,10.0]}", result.toString());
+				+ "\"predictorRates\":[2.0,4.0,6.0,8.0,10.0],"
+				+ "\"predictandRates\":[1.0,2.0,3.0,4.0,5.0]}", result.toString());
 	}
-
 
 	@Test
 	void testCalculateResultsWithThreshold() {
@@ -74,6 +73,8 @@ class AssetsShiftCorrelationCalculatorTest {
 		AssetsCorrelationInfo result = task.call();
 
 		assertTrue(result.hasSufficientContent);
+		assertEquals(1, result.predictorId);
+		assertEquals(2, result.predictandId);
 		assertEquals(2, result.bestShift);
 
 		final int threshold = -2;
@@ -84,7 +85,9 @@ class AssetsShiftCorrelationCalculatorTest {
 		result = task.call();
 
 		assertTrue(result.hasSufficientContent);
-		assertEquals(-1, result.bestShift);
+		assertEquals(2, result.predictorId);
+		assertEquals(1, result.predictandId);
+		assertEquals(1, result.bestShift);
 	}
 
 	@Test
@@ -166,7 +169,8 @@ class AssetsShiftCorrelationCalculatorTest {
 		assertEquals(4D, computationResult.valueForForecast, ERROR_TOLERANCE);
 
 		final double[] result = AssetsShiftCorrelationCalculator.calculateForecast(computationResult);
-		assertArrayEquals(new double[] { 8D, 8D }, result);
+		assertEquals(8D, result[0], ERROR_TOLERANCE);
+		assertEquals(8D, result[1], ERROR_TOLERANCE);
 	}
 
 	@Test
@@ -179,6 +183,21 @@ class AssetsShiftCorrelationCalculatorTest {
 		assertEquals(8D, computationResult.valueForForecast, ERROR_TOLERANCE);
 
 		final double[] result = AssetsShiftCorrelationCalculator.calculateForecast(computationResult);
-		assertArrayEquals(new double[] { 4D, 4D }, result);
+		assertEquals(4D, result[0], ERROR_TOLERANCE);
+		assertEquals(4D, result[1], ERROR_TOLERANCE);
+	}
+
+	@Test
+	void testForecastForNegativeShift_1() {
+		final ShiftCorrelationComputationResult computationResult = AssetsShiftCorrelationCalculator
+				.calculateCorrelationWithShift(new double[] { 0D, 1D, 2D, 3D, 4D, 5D },
+						new double[] { 2D, 4D, 6D, 7.5D, 10D, 12D }, -1);
+
+		assertEquals(0.9977067946884691D, computationResult.correlation, ERROR_TOLERANCE);
+		assertEquals(12D, computationResult.valueForForecast, ERROR_TOLERANCE);
+
+		final double[] result = AssetsShiftCorrelationCalculator.calculateForecast(computationResult);
+		assertEquals(5.853876344788695D, result[0], ERROR_TOLERANCE);
+		assertEquals(6.42599426679744D, result[1], ERROR_TOLERANCE);
 	}
 }

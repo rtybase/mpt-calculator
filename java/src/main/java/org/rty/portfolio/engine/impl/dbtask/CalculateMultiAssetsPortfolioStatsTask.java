@@ -24,7 +24,7 @@ public class CalculateMultiAssetsPortfolioStatsTask extends GenericCalculateTask
 		final Map<Integer, List<Integer>> portfolios = loadPortfolioDefinitions(connection);
 		connection.close();
 
-		final Map<Integer, Map<String, Double>> storage = loadAllDailyRates(YEARS_BACK);
+		final Map<Integer, Map<String, Double>> storage = loadAllDailyRates(YEARS_BACK, true);
 
 		say("Running calculations... ");
 		final long start = System.currentTimeMillis();

@@ -8,8 +8,8 @@ import java.util.concurrent.Callable;
 
 import org.apache.commons.math3.stat.StatUtils;
 import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
-import org.apache.commons.math3.util.Pair;
 import org.rty.portfolio.core.AssetsCorrelationInfo;
+import org.rty.portfolio.core.utils.DataHandlingUtil;
 import org.rty.portfolio.core.utils.DatesAndSetUtil;
 import org.rty.portfolio.math.Calculator;
 
@@ -38,7 +38,8 @@ public class AssetsShiftCorrelationCalculator implements Callable<AssetsCorrelat
 		final Set<String> dates = DatesAndSetUtil
 				.computeCommonValues(List.of(asset1Rates.keySet(), asset2Rates.keySet()));
 
-		Pair<Integer, Double> result = new Pair<>(Integer.MIN_VALUE, Double.NaN);
+		int bestShift = Integer.MIN_VALUE;
+		double bestCorrelation = Double.NaN;
 		boolean hasSufficientContent = false;
 		double[] asset1CommonRates = null;
 		double[] asset2CommonRates = null;
@@ -51,32 +52,49 @@ public class AssetsShiftCorrelationCalculator implements Callable<AssetsCorrelat
 			final ShiftCorrelationComputationResult computationResult = computeBestCorrelation(asset1CommonRates,
 					asset2CommonRates,
 					shiftThreshold);
-			result = new Pair<>(computationResult.shift, computationResult.correlation);
+
+			bestShift = computationResult.shift;
+			bestCorrelation = computationResult.correlation;
 			hasSufficientContent = true;
 
 			forecast = calculateForecast(computationResult);
 		}
 
+		if (bestShift < 0 && bestShift != Integer.MIN_VALUE) {
+			return new AssetsCorrelationInfo(asset2Id,
+					asset1Id,
+					hasSufficientContent,
+					Math.absExact(bestShift),
+					bestCorrelation,
+					dates,
+					asset2CommonRates,
+					asset1CommonRates,
+					DataHandlingUtil.valueFrom(forecast, 0),
+					DataHandlingUtil.valueFrom(forecast, 1));
+		}
+
 		return new AssetsCorrelationInfo(asset1Id,
 				asset2Id,
 				hasSufficientContent,
-				result.getFirst(),
-				result.getSecond(),
+				bestShift,
+				bestCorrelation,
 				dates,
 				asset1CommonRates,
 				asset2CommonRates,
-				forecast);
+				DataHandlingUtil.valueFrom(forecast, 0),
+				DataHandlingUtil.valueFrom(forecast, 1));
 	}
 
-	private static ShiftCorrelationComputationResult computeBestCorrelation(double[] asset1Values, double[] asset2Values, int shiftThreshold) {
-		final int shitRange = asset1Values.length / 2;
+	private static ShiftCorrelationComputationResult computeBestCorrelation(double[] asset1CommonRates,
+			double[] asset2CommonRates, int shiftThreshold) {
+		final int shitRange = asset1CommonRates.length / 2;
 
 		double maxAbsCorrelation = Double.MIN_VALUE;
 		ShiftCorrelationComputationResult bestResult = null;
 
 		for (int i = -shitRange; i <= shitRange; i++) {
-			final ShiftCorrelationComputationResult result = calculateCorrelationWithShift(asset1Values,
-					asset2Values, i);
+			final ShiftCorrelationComputationResult result = calculateCorrelationWithShift(asset1CommonRates,
+					asset2CommonRates, i);
 
 			if (result.absCorrelation > maxAbsCorrelation) {
 				maxAbsCorrelation = result.absCorrelation;
@@ -185,12 +203,11 @@ public class AssetsShiftCorrelationCalculator implements Callable<AssetsCorrelat
 		final double varianceX = StatUtils.populationVariance(fullX);
 		final double varianceY = StatUtils.populationVariance(y);
 
-		final double c_2 = varianceX * (n - 1) * square(correlation);
-		final double c = Math.sqrt(c_2);
+		final double c = correlation * Math.sqrt(n - 1) * Math.sqrt(varianceX);
 		final double k = pretendCovariance(x, meanX, y, meanY);
 
 		final double diffX = extraX - meanX;
-		final double diffXandCSquare = square(diffX) - c_2;
+		final double diffXandCSquare = square(diffX) - square(c);
 
 		final double delta = square(k) + n * varianceY * diffXandCSquare;
 		final double deltaSqrt = tryExtractSqrt(delta);
@@ -202,7 +219,26 @@ public class AssetsShiftCorrelationCalculator implements Callable<AssetsCorrelat
 		final double y1 = meanY + (-k * diffX - c * deltaSqrt) / diffXandCSquare;
 		final double y2 = meanY + (-k * diffX + c * deltaSqrt) / diffXandCSquare;
 
-		return new double[] { y1, y2 };
+		final boolean y1_good = checkSolutionIsGood(y1, diffX, c, k, meanY);
+		final boolean y2_good = checkSolutionIsGood(y2, diffX, c, k, meanY);
+
+		if (y1_good && y2_good) {
+			if (Math.abs(y1 - meanY) < Math.abs(y2 - meanY)) {
+				return new double[] { y1, y2 };
+			} else {
+				return new double[] { y2, y1 };
+			}
+		} else if (y1_good) {
+			return new double[] { y1 };
+		} else if (y2_good) {
+			return new double[] { y2 };
+		}
+
+		return null;
+	}
+
+	private static boolean checkSolutionIsGood(double solution, double diffX, double c, double k, double meanY) {
+		return ((k + diffX * (solution - meanY)) / c) >= 0D;
 	}
 
 	private static double pretendCovariance(double[] x, double meanX, double[] y, double meanY) {

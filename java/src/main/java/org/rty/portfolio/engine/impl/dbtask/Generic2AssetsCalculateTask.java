@@ -19,7 +19,7 @@ public abstract class Generic2AssetsCalculateTask<T> extends GenericCalculateTas
 
 	@Override
 	public final void execute(Map<String, String> params) throws Exception {
-		Map<Integer, Map<String, Double>> storage = loadAllDailyRates(yearsBack);
+		Map<Integer, Map<String, Double>> storage = loadAllDailyRates(yearsBack, false);
 		say("Prepare indexes... ");
 		int[] indexes = DatesAndSetUtil.getIndexesFrom(storage);
 		say(DONE);

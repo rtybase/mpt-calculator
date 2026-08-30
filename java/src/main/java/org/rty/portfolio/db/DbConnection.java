@@ -367,21 +367,28 @@ public class DbConnection {
 	 */
 	public 	int[] addBulkShiftCorrelations(List<AssetsCorrelationInfo> assetsShiftCorrelations) throws Exception {
 		try (PreparedStatement pStmt = connection.prepareStatement(
-				"INSERT INTO tbl_shift_correlations (fk_asset1ID, fk_asset2ID, int_shift, dbl_correlation, dtm_last_update_date, txt_json)"
-						+ " VALUES (?,?,?,?, now(),?)"
-						+ " ON DUPLICATE KEY UPDATE"
-						+ "	int_shift=VALUES(int_shift),"
-						+ "	dbl_correlation=VALUES(dbl_correlation),"
-						+ "	txt_json=VALUES(txt_json),"
-						+ " dtm_last_update_date=now(),"
-						+ " int_continuous_updates=int_continuous_updates + 1")) {
+				"INSERT INTO tbl_shift_correlations (fk_predictor_assetID, fk_predictand_assetID,"
+				+ " int_shift, dbl_correlation,"
+				+ " dbl_min_rate_forecast, dbl_max_rate_forecast,"
+				+ " dtm_last_update_date, txt_json)"
+					+ " VALUES (?,?,?,?,?,?, now(),?)"
+					+ " ON DUPLICATE KEY UPDATE"
+					+ "	int_shift=VALUES(int_shift),"
+					+ "	dbl_correlation=VALUES(dbl_correlation),"
+					+ " dbl_min_rate_forecast=VALUES(dbl_min_rate_forecast),"
+					+ " dbl_max_rate_forecast=VALUES(dbl_max_rate_forecast),"
+					+ "	txt_json=VALUES(txt_json),"
+					+ " dtm_last_update_date=now(),"
+					+ " int_continuous_updates=int_continuous_updates + 1")) {
 
 			for (AssetsCorrelationInfo assetsShiftCorrelation : assetsShiftCorrelations) {
-				pStmt.setInt(1, assetsShiftCorrelation.asset1Id);
-				pStmt.setInt(2, assetsShiftCorrelation.asset2Id);
+				pStmt.setInt(1, assetsShiftCorrelation.predictorId);
+				pStmt.setInt(2, assetsShiftCorrelation.predictandId);
 				pStmt.setInt(3, assetsShiftCorrelation.bestShift);
 				pStmt.setDouble(4, assetsShiftCorrelation.bestCorrelation);
-				pStmt.setString(5, assetsShiftCorrelation.toString());
+				setDoubleValueOrNull(pStmt, 5, assetsShiftCorrelation.minRateForecast);
+				setDoubleValueOrNull(pStmt, 6, assetsShiftCorrelation.maxRateForecast);
+				pStmt.setString(7, assetsShiftCorrelation.toString());
 				pStmt.addBatch();
 			}
 
@@ -454,14 +461,21 @@ public class DbConnection {
 	 * Returns all the daily rates for all the assets. Key is the assetId. Value is
 	 * a map where key is the date and value is rate on that date.
 	 */
-	public Map<Integer, Map<String, Double>> getAllDailyRates(int yearsBack) throws Exception {
+	public Map<Integer, Map<String, Double>> getAllDailyRates(int yearsBack, boolean includeDeletedAssets)
+			throws Exception {
 		Preconditions.checkArgument(yearsBack > 0, "yearsBack must be > 0!");
+
+		final String sqlCommand = String.format(
+				"select p.fk_assetID, p.dtm_date, p.dbl_return"
+						+ " from tbl_prices p, tbl_assets a"
+						+ " where a.int_assetID = p.fk_assetID"
+						+ " AND p.dtm_date between (NOW() - INTERVAL ? YEAR) and NOW()"
+						+ "%s",
+				includeDeletedAssets ? "" : " AND a.bln_deleted=0");
 
 		final Map<Integer, Map<String, Double>> storage = new HashMap<>();
 
-		try (PreparedStatement pStmt = connection.prepareStatement("select fk_assetID, dtm_date, dbl_return"
-				+ " from tbl_prices"
-				+ " where dtm_date between (NOW() - INTERVAL ? YEAR) and NOW()")) {
+		try (PreparedStatement pStmt = connection.prepareStatement(sqlCommand)) {
 			pStmt.setInt(1, yearsBack);
 
 			try (ResultSet rs = pStmt.executeQuery()) {

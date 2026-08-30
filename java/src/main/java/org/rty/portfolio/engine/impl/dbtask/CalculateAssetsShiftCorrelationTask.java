@@ -34,15 +34,15 @@ public class CalculateAssetsShiftCorrelationTask extends Generic2AssetsCalculate
 		}
 
 		if (Math.absExact(result.bestShift) > SHIFT_THRESHOLD) {
-			say("Skipping assetId1/assetId2 {}/{} - shift {} is too wide.", result.asset1Id,
-					result.asset2Id,
+			say("Skipping assetId1/assetId2 {}/{} - shift {} is too wide.", result.predictorId,
+					result.predictandId,
 					result.bestShift);
 			return false;
 		}
 
 		if (result.bestShift == 0) {
-			say("Skipping assetId1/assetId2 {}/{} - shift is {}.", result.asset1Id,
-					result.asset2Id,
+			say("Skipping assetId1/assetId2 {}/{} - shift is {}.", result.predictorId,
+					result.predictandId,
 					result.bestShift);
 			return false;
 		}

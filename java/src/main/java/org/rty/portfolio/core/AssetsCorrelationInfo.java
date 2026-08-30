@@ -10,34 +10,36 @@ public class AssetsCorrelationInfo {
 	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
 	static {
-		OBJECT_MAPPER.setSerializationInclusion(Include.NON_NULL);
+		OBJECT_MAPPER.setDefaultPropertyInclusion(Include.NON_NULL);
 	}
 
-	public final int asset1Id;
-	public final int asset2Id;
+	public final int predictorId;
+	public final int predictandId;
 	public final boolean hasSufficientContent;
 	public final int bestShift;
 	public final double bestCorrelation;
+	public final Double minRateForecast;
+	public final Double maxRateForecast;
 
 	public final Set<String> dates;
-	public final double[] asset1Rates;
-	public final double[] asset2Rates;
+	public final double[] predictorRates;
+	public final double[] predictandRates;
 
-	public final double[] forecast;
-
-	public AssetsCorrelationInfo(int asset1Id, int asset2Id, boolean hasSufficientContent, int bestShift,
-			double bestCorrelation, Set<String> date, double[] asset1Rates, double[] asset2Rates, double[] forecast) {
-		this.asset1Id = asset1Id;
-		this.asset2Id = asset2Id;
+	public AssetsCorrelationInfo(int predictorId, int predictandId, boolean hasSufficientContent, int bestShift,
+			double bestCorrelation, Set<String> date, double[] predictorRates, double[] predictandRates,
+			Double minRateForecast, Double maxRateForecast) {
+		this.predictorId = predictorId;
+		this.predictandId = predictandId;
 		this.hasSufficientContent = hasSufficientContent;
 		this.bestShift = bestShift;
 		this.bestCorrelation = bestCorrelation;
 
 		this.dates = date;
-		this.asset1Rates = asset1Rates;
-		this.asset2Rates = asset2Rates;
+		this.predictorRates = predictorRates;
+		this.predictandRates = predictandRates;
 
-		this.forecast = forecast;
+		this.minRateForecast = minRateForecast;
+		this.maxRateForecast = maxRateForecast;
 	}
 
 	@Override

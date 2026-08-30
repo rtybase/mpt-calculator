@@ -144,4 +144,12 @@ public final class DataHandlingUtil {
 
 		return nextEntry.getValue();
 	}
+
+	public static Double valueFrom(double[] values, int index) {
+		if (values != null && index >= 0 && values.length > index) {
+			return values[index];
+		}
+
+		return null;
+	}
 }

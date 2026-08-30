@@ -209,16 +209,18 @@ CREATE INDEX idx_correlations_asset2ID_portret
 ON tbl_correlations (fk_asset2ID, dbl_portret);
 
 create table tbl_shift_correlations (
-	fk_asset1ID int(10) unsigned NOT NULL,
-	fk_asset2ID int(10) unsigned NOT NULL,
+	fk_predictor_assetID int(10) unsigned NOT NULL,
+	fk_predictand_assetID int(10) unsigned NOT NULL,
 	int_shift int(10) NOT NULL,
 	dbl_correlation DOUBLE NOT NULL,
+	dbl_min_rate_forecast DOUBLE,
+	dbl_max_rate_forecast DOUBLE,
 	int_continuous_updates int(10) NOT NULL default 0,
 	dtm_last_update_date DATE NOT NULL,
 	txt_json text NOT NULL,
-	primary key(fk_asset1ID,fk_asset2ID),
-	foreign key(fk_asset1ID) references tbl_assets (int_assetID),
-	foreign key(fk_asset2ID) references tbl_assets (int_assetID)
+	primary key(fk_predictor_assetID, fk_predictand_assetID),
+	foreign key(fk_predictor_assetID) references tbl_assets (int_assetID),
+	foreign key(fk_predictand_assetID) references tbl_assets (int_assetID)
 ) ENGINE = InnoDB DEFAULT CHARSET=utf8;
 
 CREATE INDEX idx_shift_correlations_shift
