@@ -92,7 +92,7 @@ public final class DatesAndSetUtil {
 	}
 
 	public static String dateToStr(Date value) {
-		final Instant instant = value.toInstant();
+		final Instant instant = toJavaDate(value).toInstant();
 		return CSV_SCAN_DATE_FORMAT_WRITE.format(instant.atZone(ZoneId.systemDefault()));
 	}
 
