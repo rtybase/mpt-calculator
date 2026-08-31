@@ -53,7 +53,7 @@ function rateAndPrice($lastPrice, $rate, $isForex) {
 	return $result;
 }
 
-function mergeDataToTableFormat($oneDayShiftCorrelations, $lastPriceInfo, $isForex) {
+function mergeDataToTableFormat($assetId, $oneDayShiftCorrelations, $lastPriceInfo, $isForex) {
 	global $VOLATILITY_ROUND_PRECISION;
 
 	$lastPrice = (float) $lastPriceInfo["dbl_price"];
@@ -85,7 +85,8 @@ function mergeDataToTableFormat($oneDayShiftCorrelations, $lastPriceInfo, $isFor
 
 		$result .= toChartNumber($value["continuousUpdates"]).",";
 		$result .= "'".$value["lastUpdateDate"]."',";
-		$result .= "'".$value["lastCommonDate"]."']";
+		$result .= "'".$value["lastCommonDate"]."',";
+		$result .= "'<a href=\"./show_sc.php?asset1=".$key."&asset2=".$assetId."\">details...</a>']";
 
 		$i++;
 	}
@@ -140,7 +141,7 @@ function getEpsPredictions($assetId, $link) {
 	$oneDayShiftCorrelations = get1DayShiftCorrelations($id, $link);
 	$lastPriceInfo = getLastPriceInfo($id, $link);
 
-	$oneDayPredictions = mergeDataToTableFormat($oneDayShiftCorrelations, $lastPriceInfo, $isForex);
+	$oneDayPredictions = mergeDataToTableFormat($id, $oneDayShiftCorrelations, $lastPriceInfo, $isForex);
 	$epsPredictions = getEpsPredictions($id, $link);
 ?>
 <!doctype html>
@@ -209,6 +210,7 @@ function getEpsPredictions($assetId, $link) {
 		dataTable.addColumn('number', 'Cnt.Upds');
 		dataTable.addColumn('string', 'Lst.Upd');
 		dataTable.addColumn('string', 'Lst.Cmn.D');
+		dataTable.addColumn('string', 'More');
 		return dataTable;
 	}
 
