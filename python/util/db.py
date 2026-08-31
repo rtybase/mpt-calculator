@@ -1,12 +1,15 @@
 import mysql.connector
 
-db_conection = mysql.connector.connect(
-  host="x.x.x.x",
-  user="",
-  password="",
-  database="",
-  charset="utf8"
-)
+def connect():
+    return mysql.connector.connect(
+        host="x.x.x.x",
+        user="",
+        password="",
+        database="",
+        charset="utf8"
+    )
+
+db_conection = connect()
 
 def asset_id_from_symbol(symbol):
     asset_id = -1
@@ -18,4 +21,3 @@ def asset_id_from_symbol(symbol):
             asset_id = row[0]
 
     return asset_id
-

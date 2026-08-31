@@ -14,6 +14,7 @@ java -Xmx512m -jar portfolio-0.0.1-SNAPSHOT.jar CalculateAssetStatsTask
 	-jar portfolio-0.0.1-SNAPSHOT.jar CalculateAssetsShiftCorrelationTask -max_conn=3
 
 python clean.py ALL
+python copy_shift_pred.py
 
 java -Xmx2048m -jar portfolio-0.0.1-SNAPSHOT.jar CalculateMultiAssetsPortfolioStatsTask
 

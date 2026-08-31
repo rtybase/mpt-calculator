@@ -227,6 +227,20 @@ create table tbl_shift_correlations (
 CREATE INDEX idx_shift_correlations_shift
 ON tbl_shift_correlations (int_shift);
 
+create table tbl_shift_correlations_history (
+	fk_predictor_assetID int(10) unsigned NOT NULL,
+	fk_predictand_assetID int(10) unsigned NOT NULL,
+	dtm_last_common_date DATE NOT NULL,
+	dtm_forecast_date DATE NOT NULL,
+	dbl_correlation DOUBLE NOT NULL,
+	dbl_min_rate_forecast DOUBLE,
+	dbl_max_rate_forecast DOUBLE,
+	primary key(fk_predictor_assetID, fk_predictand_assetID, dtm_last_common_date),
+	unique (fk_predictor_assetID, fk_predictand_assetID, dtm_forecast_date),
+	foreign key(fk_predictor_assetID) references tbl_assets (int_assetID),
+	foreign key(fk_predictand_assetID) references tbl_assets (int_assetID)
+) ENGINE = InnoDB DEFAULT CHARSET=utf8;
+
 create table tbl_custom_portfolios (
 	int_portfolioID int(10) unsigned NOT NULL auto_increment,
 	vchr_name varchar(100) not null,

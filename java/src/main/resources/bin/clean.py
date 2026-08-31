@@ -27,7 +27,10 @@ SHIFT_CORR_DATA = {
 OPTIMISE = {
     "WHAT": "OPTIMISE-BIG-TABLES",
     "SQL": """OPTIMIZE TABLE
-	tbl_prices, tbl_shift_correlations, tbl_correlations"""
+	tbl_prices,
+	tbl_correlations,
+	tbl_shift_correlations,
+	tbl_shift_correlations_history"""
 }
 
 SCOPES = {
