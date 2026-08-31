@@ -7,7 +7,7 @@
 
 function getTopShiftCorrelations($includeFunds, $shift, $correlation, $link) {
 	$query = "SELECT a.fk_predictor_assetID, b.vchr_name, a.fk_predictand_assetID, a.int_shift, ";
-	$query.= "a.dbl_correlation, a.int_continuous_updates, a.dtm_last_update_date ";
+	$query.= "a.dbl_correlation, a.int_continuous_updates, a.dtm_last_update_date, dtm_last_common_date ";
 	$query.= "FROM tbl_shift_correlations a USE INDEX (PRIMARY, idx_shift_correlations_shift), ";
 	$query.= "tbl_assets b USE INDEX (PRIMARY, idx_tbl_assets_assetID_name_symbol_type)";
 	$query.= "WHERE a.fk_predictor_assetID = b.int_assetID ";
@@ -38,6 +38,7 @@ function getTopShiftCorrelations($includeFunds, $shift, $correlation, $link) {
 
 		$ret[$i]["continuousUpdates"] = $row[5];
 		$ret[$i]["lastUpdateDate"] = $row[6];
+		$ret[$i]["lastCommonDate"] = $row[7];
 
 		$i++;
 	}
@@ -73,6 +74,7 @@ function getTopShiftCorrelations($includeFunds, $shift, $correlation, $link) {
 		$tableResult.= toChartNumber(round($value["correlation"], 5)).",";
 		$tableResult.= toChartNumber($value["continuousUpdates"]).",";
 		$tableResult.= "'".$value["lastUpdateDate"]."',";
+		$tableResult.= "'".$value["lastCommonDate"]."',";
 		$tableResult.= "'<a href=\"./show_sc.php?asset1=".$value["asset1Id"]."&asset2=".$value["asset2Id"]."\">details...</a>']";
 		$i++;
 	}
@@ -111,6 +113,7 @@ function getTopShiftCorrelations($includeFunds, $shift, $correlation, $link) {
 		dataTable.addColumn('number', 'Correlation');
 		dataTable.addColumn('number', 'Cont Updates');
 		dataTable.addColumn('string', 'Last Update');
+		dataTable.addColumn('string', 'Last Cmn Date');
 		dataTable.addColumn('string', 'More');
 		return dataTable;
 	}

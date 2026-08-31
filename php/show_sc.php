@@ -37,7 +37,7 @@ function ratesForDatesWithShift($dates, $rates, $shift, $predictor) {
 	$link = connect("portfolio");
 
 	$query = "SELECT txt_json, int_continuous_updates, dtm_last_update_date, ";
-	$query.= "dbl_min_rate_forecast, dbl_max_rate_forecast ";
+	$query.= "dbl_min_rate_forecast, dbl_max_rate_forecast, dtm_last_common_date ";
 	$query.= "FROM  tbl_shift_correlations ";
 	$query.= "WHERE (fk_predictor_assetID=$asset1Id) AND (fk_predictand_assetID=$asset2Id) ";
 
@@ -47,6 +47,7 @@ function ratesForDatesWithShift($dates, $rates, $shift, $predictor) {
 	$details = array();
 	$continuousUpdates = 0;
 	$lastUpdateDate = "";
+	$lastCommonDate = "";
 	$minRateForecast = NULL;
 	$maxRateForecast = NULL;
 	while ($row = mysqli_fetch_row($res)) {
@@ -55,6 +56,7 @@ function ratesForDatesWithShift($dates, $rates, $shift, $predictor) {
 		$lastUpdateDate = $row[2];
 		$minRateForecast = $row[3];
 		$maxRateForecast = $row[4];
+		$lastCommonDate = $row[5];
 	}
 	mysqli_free_result($res);
 
@@ -69,7 +71,8 @@ function ratesForDatesWithShift($dates, $rates, $shift, $predictor) {
 	$tableResult.= toChartNumber(count($details["dates"])).",";
 
 	$tableResult.= toChartNumber($continuousUpdates).",";
-	$tableResult.= "'".$lastUpdateDate."']";
+	$tableResult.= "'".$lastUpdateDate."',";
+	$tableResult.= "'".$lastCommonDate."']";
 ?>
 <!doctype html>
 <html>
@@ -107,6 +110,7 @@ function ratesForDatesWithShift($dates, $rates, $shift, $predictor) {
 		dataTable.addColumn('number', 'Cmn Dates');
 		dataTable.addColumn('number', 'Cont Updates');
 		dataTable.addColumn('string', 'Last Update');
+		dataTable.addColumn('string', 'Last Cmn Date');
 		return dataTable;
 	}
 
@@ -169,8 +173,7 @@ function ratesForDatesWithShift($dates, $rates, $shift, $predictor) {
 	<tr><td><div id="chart2_div" style="width: 1044px; height: 350px;"></div></td></tr>
 <?php
 	if (!empty($minRateForecast) || !empty($maxRateForecast)) {
-		$lastDate = end($details["dates"]);
-		$forecastDate = nextDateFrom($lastDate);
+		$forecastDate = nextDateFrom($lastCommonDate);
 
 		echo "<tr><td><hr></td></tr>";
 		echo "<tr><td><font face=\"verdana\">Forecast return/price for $asset2Name on $forecastDate (more <a href=\"./all_sc.php?id=$asset2Id\">here...</a>):</font></td></tr>";

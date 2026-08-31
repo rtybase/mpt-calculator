@@ -5,15 +5,10 @@
 	include_once("./lib/funcs.php");
 	header("Content-Type:text/html; charset=UTF-8");
 
-function nextDateFromDetails($details) {
-	$lastDate = end($details["dates"]);
-	return nextDateFrom($lastDate);
-}
-
 function get1DayShiftCorrelations($assetId, $link) {
 	$query = "SELECT fk_predictor_assetID, int_shift, dbl_correlation, ";
 	$query.= "txt_json, int_continuous_updates, dtm_last_update_date, ";
-	$query.= "dbl_min_rate_forecast, dbl_max_rate_forecast ";
+	$query.= "dbl_min_rate_forecast, dbl_max_rate_forecast, dtm_last_common_date ";
 	$query.= "FROM tbl_shift_correlations USE INDEX (fk_predictand_assetID) ";
 	$query.= "WHERE (fk_predictand_assetID=$assetId AND int_shift=1) ";
 	$query.= "AND ABS(dbl_correlation) > 0.0 ";
@@ -32,9 +27,10 @@ function get1DayShiftCorrelations($assetId, $link) {
 		$oneDayShiftCorrelations[$pAssetId]["shift"] = $row[1];
 		$oneDayShiftCorrelations[$pAssetId]["correlation"] = $row[2];
 		$oneDayShiftCorrelations[$pAssetId]["common_dates"] = count($details["dates"]);
-		$oneDayShiftCorrelations[$pAssetId]["forecast_date"] = nextDateFromDetails($details);
+		$oneDayShiftCorrelations[$pAssetId]["forecast_date"] = nextDateFrom($row[8]);
 		$oneDayShiftCorrelations[$pAssetId]["continuousUpdates"] = $row[4];
 		$oneDayShiftCorrelations[$pAssetId]["lastUpdateDate"] = $row[5];
+		$oneDayShiftCorrelations[$pAssetId]["lastCommonDate"] = $row[8];
 		$oneDayShiftCorrelations[$pAssetId]["rate1"] = $row[6];
 		$oneDayShiftCorrelations[$pAssetId]["rate2"] = $row[7];
 	}
@@ -88,7 +84,8 @@ function mergeDataToTableFormat($oneDayShiftCorrelations, $lastPriceInfo, $isFor
 		}
 
 		$result .= toChartNumber($value["continuousUpdates"]).",";
-		$result .= "'".$value["lastUpdateDate"]."']";
+		$result .= "'".$value["lastUpdateDate"]."',";
+		$result .= "'".$value["lastCommonDate"]."']";
 
 		$i++;
 	}
@@ -209,8 +206,9 @@ function getEpsPredictions($assetId, $link) {
 	}
 ?>
 
-		dataTable.addColumn('number', 'Cnt.Upts');
-		dataTable.addColumn('string', 'Lst.Upt');
+		dataTable.addColumn('number', 'Cnt.Upds');
+		dataTable.addColumn('string', 'Lst.Upd');
+		dataTable.addColumn('string', 'Lst.Cmn.D');
 		return dataTable;
 	}
 
