@@ -7,9 +7,14 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.base.Preconditions;
 
 public class ConcurrentTaskExecutorWithBatching<T> implements AutoCloseable {
+	private static final Logger LOGGER = LoggerFactory.getLogger(ConcurrentTaskExecutorWithBatching.class.getSimpleName());
+
 	private final ExecutorService executor;
 	private final List<Callable<T>> tasksToExecute;
 	private final ExceptionThrowingConsumer<List<T>> batchCompletionRoutine;
@@ -77,7 +82,11 @@ public class ConcurrentTaskExecutorWithBatching<T> implements AutoCloseable {
 			List<T> results = new ArrayList<>(tasks.size());
 
 			for (Callable<T> task : tasks) {
-				results.add(task.call());
+				try {
+					results.add(task.call());
+				} catch (Exception ex) {
+					LOGGER.error("Error ...", ex);
+				}
 			}
 
 			batchCompletionRoutine.accept(results);

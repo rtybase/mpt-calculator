@@ -2,12 +2,11 @@ package org.rty.portfolio.engine.impl.transform;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
 import java.util.Iterator;
 import java.util.Map;
 
 import org.rty.portfolio.core.AssetPriceInfo;
-import org.rty.portfolio.core.utils.ToEntityConvertorsUtil;
+import org.rty.portfolio.core.utils.DatesAndSetUtil;
 import org.rty.portfolio.engine.AbstractTask;
 import org.rty.portfolio.io.CsvWriter;
 import org.rty.portfolio.math.Calculator;
@@ -20,7 +19,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 public class TransformStdLifeJsonDataTask extends AbstractTask {
 	private static final String NO_DATA = "-";
 	private static final String MAIN_FIELD = "aaData";
-	private static final SimpleDateFormat SCAN_INPUT_DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy");
 
 	private static final int ASSET_NAME = 0;
 	private static final int ASSET_PRICE = 2;
@@ -107,6 +105,6 @@ public class TransformStdLifeJsonDataTask extends AbstractTask {
 				Calculator.calculateRate(currentPrice, previousProce),
 				null,
 				null,
-				ToEntityConvertorsUtil.toDate(dataNode.get(PRICE_DATE).asText(), SCAN_INPUT_DATE_FORMAT));
+				DatesAndSetUtil.toDate(dataNode.get(PRICE_DATE).asText(), DatesAndSetUtil.SCAN_INPUT_DATE_FORMAT));
 	}
 }

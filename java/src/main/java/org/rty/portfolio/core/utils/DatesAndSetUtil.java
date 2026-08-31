@@ -1,10 +1,11 @@
 package org.rty.portfolio.core.utils;
 
-import java.text.SimpleDateFormat;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -14,10 +15,21 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public final class DatesAndSetUtil {
-	public static final SimpleDateFormat CSV_SCAN_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+	private static final Logger LOGGER = LoggerFactory.getLogger(DatesAndSetUtil.class.getSimpleName());
+
+	public static final DateTimeFormatter CSV_SCAN_DATE_FORMAT_WRITE = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+	public static final DateTimeFormatter CSV_SCAN_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-M-d");
+	public static final DateTimeFormatter EPS_DATE_FORMAT = DateTimeFormatter.ofPattern("M/d/yyyy");
+	public static final DateTimeFormatter SCAN_INPUT_DATE_FORMAT = DateTimeFormatter.ofPattern("d-M-yyyy");
+
 	private static final int MIN_COMMON_DATE = 5;
 
 	private DatesAndSetUtil() {
@@ -28,13 +40,13 @@ public final class DatesAndSetUtil {
 		return dates.size() >= MIN_COMMON_DATE;
 	}
 
-	public static <T> Set<T> computeCommonValues(List<Set<T>> sets) {
+	public static <T> SortedSet<T> computeCommonValues(List<Set<T>> sets) {
 		if (sets.isEmpty()) {
-			return Collections.emptySet();
+			return Collections.emptySortedSet();
 		}
 
 		if (sets.size() == 1) {
-			return sets.get(0);
+			return new TreeSet<>(sets.get(0));
 		}
 
 		Set<T> result = new HashSet<>(sets.get(0));
@@ -42,7 +54,7 @@ public final class DatesAndSetUtil {
 			result.retainAll(sets.get(i));
 
 			if (result.isEmpty()) {
-				return Collections.emptySet();
+				return Collections.emptySortedSet();
 			}
 		}
 
@@ -80,7 +92,23 @@ public final class DatesAndSetUtil {
 	}
 
 	public static String dateToStr(Date value) {
-		return CSV_SCAN_DATE_FORMAT.format(value);
+		final Instant instant = value.toInstant();
+		return CSV_SCAN_DATE_FORMAT_WRITE.format(instant.atZone(ZoneId.systemDefault()));
+	}
+
+	public static Date toDate(String value) {
+		return toDate(value, DatesAndSetUtil.CSV_SCAN_DATE_FORMAT);
+	}
+
+	public static Date toDate(String value, DateTimeFormatter format) {
+		try {
+			final LocalDate localDate = LocalDate.parse(value, format);
+			return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+		} catch (DateTimeParseException ex) {
+			LOGGER.error("Failed to parse '{}' value, returning null!", value, ex);
+		}
+
+		return null;
 	}
 
 	public static Optional<Date> findClosestDate(Date toDate, Collection<Date> datesToCheck, int maxDaysToTolerate) {

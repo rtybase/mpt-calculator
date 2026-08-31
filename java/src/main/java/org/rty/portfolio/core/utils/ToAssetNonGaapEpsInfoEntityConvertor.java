@@ -102,7 +102,7 @@ public class ToAssetNonGaapEpsInfoEntityConvertor {
 	}
 
 	private Date findCorrectedEpsDate(String assetName, String[] line) {
-		final Date epsDate = ToEntityConvertorsUtil.toDate(line[epsDateColumnIndex].trim());
+		final Date epsDate = DatesAndSetUtil.toDate(line[epsDateColumnIndex].trim());
 
 		final Optional<Date> epsDateCorrected = DatesAndSetUtil.findClosestDate(epsDate, getDatesFor(assetName),
 				MAX_DAYS_TOLERANCE);

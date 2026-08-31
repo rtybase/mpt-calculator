@@ -1,8 +1,5 @@
 package org.rty.portfolio.core.utils;
 
-import java.text.ParsePosition;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Set;
 
 import org.rty.portfolio.core.AssetDividendInfo;
@@ -13,8 +10,6 @@ public final class ToEntityConvertorsUtil {
 	static final String NA_VALUE = "N/A";
 	static final String NO_VALUE_S = "-";
 	static final String NO_VALUE_D = "--";
-
-	static final SimpleDateFormat EPS_DATE_FORMAT = new SimpleDateFormat("MM/dd/yyyy");
 
 	private static final Set<String> NO_VALUES = Set.of(NO_VALUE_S, NO_VALUE_D);
 	private static final int EPS_VALUE_COLUMN = 1;
@@ -33,14 +28,6 @@ public final class ToEntityConvertorsUtil {
 
 	private ToEntityConvertorsUtil() {}
 
-	public static Date toDate(String value) {
-		return toDate(value, DatesAndSetUtil.CSV_SCAN_DATE_FORMAT);
-	}
-
-	public static Date toDate(String value, SimpleDateFormat format) {
-		return format.parse(value, new ParsePosition(0));
-	}
-
 	public static AssetPriceInfo toAssetPriceInfoEntity(String assetName, String[] line) {
 		return new AssetPriceInfo(assetName,
 				Double.parseDouble(line[PRICE_VALUE_COLUMN].trim()),
@@ -48,20 +35,20 @@ public final class ToEntityConvertorsUtil {
 				Double.parseDouble(line[PRICE_RATE_OF_CHANGE_COLUMN].trim()),
 				valueOrDefaultFrom(line, PRICE_VOLUME_COLUMN, null),
 				valueOrDefaultFrom(line, PRICE_VOLUME_CHANGE_RATE_COLUMN, null),
-				toDate(line[PRICE_DATE_COLUMN].trim()));
+				DatesAndSetUtil.toDate(line[PRICE_DATE_COLUMN].trim()));
 	}
 
 	public static AssetEpsInfo toAssetEpsInfoEntity(String assetName, String[] line) {
 		return new AssetEpsInfo(assetName,
 				Double.parseDouble(line[EPS_VALUE_COLUMN].trim()),
 				possiblyDoubleFromString(line[EPS_PREDICTED_COLUMN].trim()),
-				toDate(line[EPS_DATE_COLUMN].trim(), EPS_DATE_FORMAT));
+				DatesAndSetUtil.toDate(line[EPS_DATE_COLUMN].trim(), DatesAndSetUtil.EPS_DATE_FORMAT));
 	}
 
 	public static AssetDividendInfo toAssetDividendInfo(String assetName, String[] line) {
 		return new AssetDividendInfo(assetName,
 				Double.parseDouble(line[DIVIDEND_PAY_COLUMN].trim()),
-				ToEntityConvertorsUtil.toDate(line[DIVIDEND_DATE_COLUMN].trim()));
+				DatesAndSetUtil.toDate(line[DIVIDEND_DATE_COLUMN].trim()));
 	}
 
 	public static Double valueOrDefaultFrom(String[] line, int valueIndex, Double defaultValue) {

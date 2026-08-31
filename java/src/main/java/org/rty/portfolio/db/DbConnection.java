@@ -369,14 +369,15 @@ public class DbConnection {
 		try (PreparedStatement pStmt = connection.prepareStatement(
 				"INSERT INTO tbl_shift_correlations (fk_predictor_assetID, fk_predictand_assetID,"
 				+ " int_shift, dbl_correlation,"
-				+ " dbl_min_rate_forecast, dbl_max_rate_forecast,"
+				+ " dbl_min_rate_forecast, dbl_max_rate_forecast, dtm_last_common_date,"
 				+ " dtm_last_update_date, txt_json)"
-					+ " VALUES (?,?,?,?,?,?, now(),?)"
+					+ " VALUES (?,?,?,?,?,?,?, now(),?)"
 					+ " ON DUPLICATE KEY UPDATE"
 					+ "	int_shift=VALUES(int_shift),"
 					+ "	dbl_correlation=VALUES(dbl_correlation),"
 					+ " dbl_min_rate_forecast=VALUES(dbl_min_rate_forecast),"
 					+ " dbl_max_rate_forecast=VALUES(dbl_max_rate_forecast),"
+					+ " dtm_last_common_date=VALUES(dtm_last_common_date),"
 					+ "	txt_json=VALUES(txt_json),"
 					+ " dtm_last_update_date=now(),"
 					+ " int_continuous_updates=int_continuous_updates + 1")) {
@@ -388,7 +389,8 @@ public class DbConnection {
 				pStmt.setDouble(4, assetsShiftCorrelation.bestCorrelation);
 				setDoubleValueOrNull(pStmt, 5, assetsShiftCorrelation.minRateForecast);
 				setDoubleValueOrNull(pStmt, 6, assetsShiftCorrelation.maxRateForecast);
-				pStmt.setString(7, assetsShiftCorrelation.toString());
+				setDdateValueOrNull(pStmt, 7, assetsShiftCorrelation.lastCommonDate);
+				pStmt.setString(8, assetsShiftCorrelation.toString());
 				pStmt.addBatch();
 			}
 
@@ -765,11 +767,20 @@ public class DbConnection {
 		return assetId;
 	}
 
-	private static void setDoubleValueOrNull(PreparedStatement pStmt, int parameterIdex, Double value) throws Exception {
+	private static void setDoubleValueOrNull(PreparedStatement pStmt, int parameterIdex, Double value)
+			throws Exception {
 		if (value == null) {
 			pStmt.setNull(parameterIdex, java.sql.Types.NULL);
 		} else {
 			pStmt.setDouble(parameterIdex, value);
+		}
+	}
+
+	private static void setDdateValueOrNull(PreparedStatement pStmt, int parameterIdex, Date value) throws Exception {
+		if (value == null) {
+			pStmt.setNull(parameterIdex, java.sql.Types.NULL);
+		} else {
+			pStmt.setDate(parameterIdex, new java.sql.Date(value.getTime()));
 		}
 	}
 

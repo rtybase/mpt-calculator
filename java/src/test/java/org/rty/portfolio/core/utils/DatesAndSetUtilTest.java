@@ -116,6 +116,42 @@ class DatesAndSetUtilTest extends CommonTestRoutines {
 	}
 
 	@Test
+	void testDefaultToDate_1() {
+		final Date result = DatesAndSetUtil.toDate("2025-07-17");
+		assertEquals(D_2025_07_17, result);
+	}
+
+	@Test
+	void testDefaultToDate_2() {
+		final Date result = DatesAndSetUtil.toDate("2025-7-17");
+		assertEquals(D_2025_07_17, result);
+	}
+
+	@Test
+	void testToDateWithFormat_1() {
+		final Date result = DatesAndSetUtil.toDate("07/17/2025", DatesAndSetUtil.EPS_DATE_FORMAT);
+		assertEquals(D_2025_07_17, result);
+	}
+
+	@Test
+	void testToDateWithFormat_2() {
+		final Date result = DatesAndSetUtil.toDate("7/17/2025", DatesAndSetUtil.EPS_DATE_FORMAT);
+		assertEquals(D_2025_07_17, result);
+	}
+
+	@Test
+	void testToDateWithFormat_3() {
+		final Date result = DatesAndSetUtil.toDate("17-07-2025", DatesAndSetUtil.SCAN_INPUT_DATE_FORMAT);
+		assertEquals(D_2025_07_17, result);
+	}
+
+	@Test
+	void testToDateWithFormat_4() {
+		final Date result = DatesAndSetUtil.toDate("17-7-2025", DatesAndSetUtil.SCAN_INPUT_DATE_FORMAT);
+		assertEquals(D_2025_07_17, result);
+	}
+
+	@Test
 	void testFindClosestDateWithEmptyCollection() {
 		Optional<Date> result = DatesAndSetUtil.findClosestDate(D_2025_07_17, List.of(), 3);
 

@@ -411,7 +411,7 @@ public class TransformEpsDataForTrainingTask extends AbstractDbTask {
 						Double.parseDouble(line[1].trim()),
 						ToEntityConvertorsUtil.possiblyDoubleFromString(line[2].trim()),
 						Integer.parseInt(line[3].trim()),
-						ToEntityConvertorsUtil.toDate(line[5].trim()));
+						DatesAndSetUtil.toDate(line[5].trim()));
 			}
 
 			@Override

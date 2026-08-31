@@ -19,7 +19,9 @@ EMPTY_FIN_DATA = {
 SHIFT_CORR_DATA = {
     "WHAT": "OUTDATED-SHIFT-CORR-DATA",
     "SQL": """delete FROM tbl_shift_correlations WHERE 
-	dtm_last_update_date <= (NOW() - INTERVAL 1 DAY)"""
+	dtm_last_update_date <= (NOW() - INTERVAL 1 DAY)
+	OR dtm_last_common_date <= (NOW() - INTERVAL 7 DAY)
+	OR dtm_last_common_date is NULL"""
 }
 
 OPTIMISE = {

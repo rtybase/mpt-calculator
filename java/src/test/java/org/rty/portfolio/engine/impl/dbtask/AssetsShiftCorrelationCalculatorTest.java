@@ -11,9 +11,10 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.rty.portfolio.core.AssetsCorrelationInfo;
+import org.rty.portfolio.core.utils.CommonTestRoutines;
 import org.rty.portfolio.engine.impl.dbtask.AssetsShiftCorrelationCalculator.ShiftCorrelationComputationResult;
 
-class AssetsShiftCorrelationCalculatorTest {
+class AssetsShiftCorrelationCalculatorTest extends CommonTestRoutines {
 	private static final double[] TEST_ARRAY1 = new double[] { 1D, 2D, 3D };
 	private static final double[] TEST_ARRAY2 = new double[] { 2D, 4D, 6D };
 
@@ -33,6 +34,7 @@ class AssetsShiftCorrelationCalculatorTest {
 		assertFalse(result.hasSufficientContent);
 		assertEquals(Integer.MIN_VALUE, result.bestShift);
 		assertTrue(Double.isNaN(result.bestCorrelation));
+		assertNull(result.lastCommonDate);
 
 		assertEquals("{\"predictorId\":1,\"predictandId\":2,\"hasSufficientContent\":false,"
 				+ "\"bestShift\":-2147483648,\"bestCorrelation\":\"NaN\","
@@ -53,6 +55,7 @@ class AssetsShiftCorrelationCalculatorTest {
 		assertTrue(result.hasSufficientContent);
 		assertEquals(2, result.bestShift);
 		assertEquals(1D, result.bestCorrelation, ERROR_TOLERANCE);
+		assertNull(result.lastCommonDate);
 
 		assertEquals("{\"predictorId\":2,\"predictandId\":1,\"hasSufficientContent\":true,"
 				+ "\"bestShift\":2,\"bestCorrelation\":1.0,"
@@ -63,12 +66,13 @@ class AssetsShiftCorrelationCalculatorTest {
 
 	@Test
 	void testCalculateResultsWithThreshold() {
-		final Map<String, Double> map1 = Map.of("1", 1D, "2", 2D, "3", 3D, "4", 4D, "5", 5D);
-		final Map<String, Double> map2 = Map.of("1", 10D, "2", 10.1D, "3", 1D, "4", 1.1D, "5", 1.2D);
+		final Map<String, Double> map1 = Map.of("2025-07-01", 1D, "2025-07-02", 2D, "2025-07-03", 3D, "2025-07-04", 4D,
+				"2025-07-05", 5D);
+		final Map<String, Double> map2 = Map.of("2025-07-01", 10D, "2025-07-02", 10.1D, "2025-07-03", 1D, "2025-07-04",
+				1.1D, "2025-07-05", 1.2D);
 
-		AssetsShiftCorrelationCalculator task = new AssetsShiftCorrelationCalculator(
-				Map.of(1, map1, 2, map2),
-				1, 2, Integer.MAX_VALUE);
+		AssetsShiftCorrelationCalculator task = new AssetsShiftCorrelationCalculator(Map.of(1, map1, 2, map2), 1, 2,
+				Integer.MAX_VALUE);
 
 		AssetsCorrelationInfo result = task.call();
 
@@ -76,11 +80,10 @@ class AssetsShiftCorrelationCalculatorTest {
 		assertEquals(1, result.predictorId);
 		assertEquals(2, result.predictandId);
 		assertEquals(2, result.bestShift);
+		assertEquals(dateFrom(5), result.lastCommonDate);
 
 		final int threshold = -2;
-		task = new AssetsShiftCorrelationCalculator(
-				Map.of(1, map1, 2, map2),
-				1, 2, threshold);
+		task = new AssetsShiftCorrelationCalculator(Map.of(1, map1, 2, map2), 1, 2, threshold);
 
 		result = task.call();
 
@@ -88,6 +91,7 @@ class AssetsShiftCorrelationCalculatorTest {
 		assertEquals(2, result.predictorId);
 		assertEquals(1, result.predictandId);
 		assertEquals(1, result.bestShift);
+		assertEquals(dateFrom(5), result.lastCommonDate);
 	}
 
 	@Test

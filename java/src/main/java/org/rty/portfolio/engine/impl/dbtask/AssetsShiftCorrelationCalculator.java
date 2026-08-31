@@ -1,9 +1,10 @@
 package org.rty.portfolio.engine.impl.dbtask;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.SortedSet;
 import java.util.concurrent.Callable;
 
 import org.apache.commons.math3.stat.StatUtils;
@@ -35,7 +36,7 @@ public class AssetsShiftCorrelationCalculator implements Callable<AssetsCorrelat
 		final Map<String, Double> asset1Rates = storage.get(asset1Id);
 		final Map<String, Double> asset2Rates = storage.get(asset2Id);
 
-		final Set<String> dates = DatesAndSetUtil
+		final SortedSet<String> dates = DatesAndSetUtil
 				.computeCommonValues(List.of(asset1Rates.keySet(), asset2Rates.keySet()));
 
 		int bestShift = Integer.MIN_VALUE;
@@ -44,6 +45,7 @@ public class AssetsShiftCorrelationCalculator implements Callable<AssetsCorrelat
 		double[] asset1CommonRates = null;
 		double[] asset2CommonRates = null;
 		double[] forecast = null;
+		Date lastCommonDate = null;
 
 		if (DatesAndSetUtil.hasSufficientContent(dates)) {
 			asset1CommonRates = DatesAndSetUtil.getValuesByIndex(dates, asset1Rates);
@@ -58,6 +60,7 @@ public class AssetsShiftCorrelationCalculator implements Callable<AssetsCorrelat
 			hasSufficientContent = true;
 
 			forecast = calculateForecast(computationResult);
+			lastCommonDate = DatesAndSetUtil.toDate(dates.last());
 		}
 
 		if (bestShift < 0 && bestShift != Integer.MIN_VALUE) {
@@ -70,7 +73,8 @@ public class AssetsShiftCorrelationCalculator implements Callable<AssetsCorrelat
 					asset2CommonRates,
 					asset1CommonRates,
 					DataHandlingUtil.valueFrom(forecast, 0),
-					DataHandlingUtil.valueFrom(forecast, 1));
+					DataHandlingUtil.valueFrom(forecast, 1),
+					lastCommonDate);
 		}
 
 		return new AssetsCorrelationInfo(asset1Id,
@@ -82,7 +86,8 @@ public class AssetsShiftCorrelationCalculator implements Callable<AssetsCorrelat
 				asset1CommonRates,
 				asset2CommonRates,
 				DataHandlingUtil.valueFrom(forecast, 0),
-				DataHandlingUtil.valueFrom(forecast, 1));
+				DataHandlingUtil.valueFrom(forecast, 1),
+				lastCommonDate);
 	}
 
 	private static ShiftCorrelationComputationResult computeBestCorrelation(double[] asset1CommonRates,

@@ -215,6 +215,7 @@ create table tbl_shift_correlations (
 	dbl_correlation DOUBLE NOT NULL,
 	dbl_min_rate_forecast DOUBLE,
 	dbl_max_rate_forecast DOUBLE,
+	dtm_last_common_date DATE,
 	int_continuous_updates int(10) NOT NULL default 0,
 	dtm_last_update_date DATE NOT NULL,
 	txt_json text NOT NULL,

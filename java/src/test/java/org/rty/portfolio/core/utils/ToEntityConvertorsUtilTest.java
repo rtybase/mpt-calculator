@@ -3,8 +3,6 @@ package org.rty.portfolio.core.utils;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-import java.util.Date;
-
 import org.junit.jupiter.api.Test;
 import org.rty.portfolio.core.AssetDividendInfo;
 import org.rty.portfolio.core.AssetEpsInfo;
@@ -15,18 +13,6 @@ class ToEntityConvertorsUtilTest extends CommonTestRoutines {
 	private static final String[] TEST_LINE_WITH_NO = new String[] { TEST_ASSET, "3.65", ToEntityConvertorsUtil.NO_VALUE_S, "07/17/2025" };
 
 	private static final String[] TEST_DIVIDEND_LINE = new String[] { TEST_ASSET, "3.65", "2025-07-17" };
-
-	@Test
-	void testDefaultToDate() {
-		final Date result = ToEntityConvertorsUtil.toDate("2025-07-17");
-		assertEquals(D_2025_07_17, result);
-	}
-
-	@Test
-	void testToDateWithFormat() {
-		final Date result = ToEntityConvertorsUtil.toDate("07/17/2025", ToEntityConvertorsUtil.EPS_DATE_FORMAT);
-		assertEquals(D_2025_07_17, result);
-	}
 
 	@Test
 	void testToAssetPriceInfoEntity() {

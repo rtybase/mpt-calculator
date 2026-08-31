@@ -1,5 +1,6 @@
 package org.rty.portfolio.core;
 
+import java.util.Date;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -20,6 +21,7 @@ public class AssetsCorrelationInfo {
 	public final double bestCorrelation;
 	public final Double minRateForecast;
 	public final Double maxRateForecast;
+	public final Date lastCommonDate;
 
 	public final Set<String> dates;
 	public final double[] predictorRates;
@@ -27,7 +29,7 @@ public class AssetsCorrelationInfo {
 
 	public AssetsCorrelationInfo(int predictorId, int predictandId, boolean hasSufficientContent, int bestShift,
 			double bestCorrelation, Set<String> date, double[] predictorRates, double[] predictandRates,
-			Double minRateForecast, Double maxRateForecast) {
+			Double minRateForecast, Double maxRateForecast, Date lastCommonDate) {
 		this.predictorId = predictorId;
 		this.predictandId = predictandId;
 		this.hasSufficientContent = hasSufficientContent;
@@ -40,6 +42,7 @@ public class AssetsCorrelationInfo {
 
 		this.minRateForecast = minRateForecast;
 		this.maxRateForecast = maxRateForecast;
+		this.lastCommonDate = lastCommonDate;
 	}
 
 	@Override

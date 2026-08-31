@@ -1,6 +1,5 @@
 package org.rty.portfolio.engine.impl.transform;
 
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -12,7 +11,7 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.rty.portfolio.core.AssetPriceInfo;
 import org.rty.portfolio.core.AssetPriceInfoAccumulator;
-import org.rty.portfolio.core.utils.ToEntityConvertorsUtil;
+import org.rty.portfolio.core.utils.DatesAndSetUtil;
 import org.rty.portfolio.engine.AbstractTask;
 import org.rty.portfolio.io.CsvWriter;
 import org.xml.sax.SAXException;
@@ -24,7 +23,6 @@ import org.xml.sax.helpers.DefaultHandler;
  *
  */
 public class TransformEcbRatesTask extends AbstractTask {
-	private static final SimpleDateFormat SCAN_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 	private static final String BASE_CURRENCY = "EUR";
 	private static final List<String> CURRENCIES = Arrays.asList("USD", "GBP");
 
@@ -65,7 +63,7 @@ public class TransformEcbRatesTask extends AbstractTask {
 					String rate = attributes.getValue("rate");
 
 					if (dateValue != null) {
-						date = ToEntityConvertorsUtil.toDate(dateValue, SCAN_DATE_FORMAT);
+						date = DatesAndSetUtil.toDate(dateValue, DatesAndSetUtil.CSV_SCAN_DATE_FORMAT);
 					}
 
 					if (currency != null && rate != null && date != null) {

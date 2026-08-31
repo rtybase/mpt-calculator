@@ -126,7 +126,7 @@ public class ToAssetFinancialInfoEntityConvertor {
 			throw new IllegalArgumentException(String.format("Empty date found!"));
 		}
 
-		final Date parsedDate = ToEntityConvertorsUtil.toDate(strDate, ToEntityConvertorsUtil.EPS_DATE_FORMAT);
+		final Date parsedDate = DatesAndSetUtil.toDate(strDate, DatesAndSetUtil.EPS_DATE_FORMAT);
 		final Optional<Date> correctedDate = DatesAndSetUtil.findClosestDate(parsedDate, STANDARD_QUORTER_ENDS,
 				MAX_DAYS_TOLERANCE);
 
