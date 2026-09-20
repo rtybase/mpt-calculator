@@ -5,7 +5,7 @@ import datetime
 import util.db
 import util.dates
 
-BAD_VALUES = ["-", "N/A"]
+BAD_VALUES = ["-", "N/A", ""]
 
 def save_to_db(symbol, fscore, date):
     print(f"-- adding ('{symbol}', {fscore}, {date})", flush=True)

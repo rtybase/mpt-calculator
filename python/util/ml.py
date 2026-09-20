@@ -17,16 +17,16 @@ MODELS = {}
 DTR_DS2_ARGS = {'max_depth': 5, 'min_samples_leaf': 30, 'min_samples_split': 2,\
 	'criterion': 'absolute_error', 'random_state': 42}
 
-DTR_DS1_ARGS = {'max_depth': 6, 'min_samples_leaf': 33, 'min_samples_split': 2,\
+DTR_DS1_ARGS = {'max_depth': 6, 'min_samples_leaf': 34, 'min_samples_split': 2,\
 	'criterion': 'absolute_error', 'random_state': 42}
 
 RFR_DS2_ARGS = {'max_depth': 5, 'min_samples_leaf': 7,\
-        'min_samples_split': 2, 'n_estimators': 300,\
+        'min_samples_split': 2, 'n_estimators': 250,\
         'criterion': 'absolute_error', 'random_state': 42,\
         'oob_score': True, 'n_jobs': -1}
 
-RFR_DS1_ARGS = {'max_depth': 5, 'min_samples_leaf': 21,\
-        'min_samples_split': 2, 'n_estimators': 300,\
+RFR_DS1_ARGS = {'max_depth': 5, 'min_samples_leaf': 29,\
+        'min_samples_split': 2, 'n_estimators': 400,\
         'criterion': 'absolute_error', 'random_state': 42,\
         'oob_score': True, 'n_jobs': -1}
 
