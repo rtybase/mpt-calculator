@@ -12,7 +12,8 @@ function getDividends($link) {
 	$query.= "  SELECT fk_assetID, MAX( dtm_date ) dtm_date ";
 	$query.= "  FROM tbl_dividends GROUP BY fk_assetID) b ";
 	$query.= "ON a.fk_assetID = b.fk_assetID AND a.dtm_date = b.dtm_date ";
-	$query.= "INNER JOIN tbl_assets c ON a.fk_assetID = c.int_assetID";
+	$query.= "INNER JOIN tbl_assets c ON a.fk_assetID = c.int_assetID ";
+	$query.= "WHERE a.dtm_date >= (NOW() - INTERVAL 6 MONTH)";
 
 	$res = mysqli_query($link, $query);
 	if (!$res) die("Invalid query: ". mysqli_error());
@@ -113,7 +114,7 @@ function addLatestPrices($link, $dividendsData) {
       <td valign="top"><?php showMenu(); ?></td>
       <td><table align="center" border="0">
 	<tr><td align="left">
-		<font face="verdana">Dividends details for <?php echo $i; ?> assets:</font>
+		<font face="verdana">Dividends details for <?php echo $i; ?> assets, last 6 months:</font>
 	</td></tr>
 	<tr><td><hr/></td></tr>
 	<tr><td><div id='table_div' style="width: 1044px;"></div></td></tr>
