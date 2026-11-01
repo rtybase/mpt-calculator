@@ -17,6 +17,7 @@ public class LoadAssetFinancialInfoToDbTask extends GenericLoadToDbTask<AssetFin
 	private static final int NO_OF_COLUMNS = 9;
 
 	private ToAssetFinancialInfoEntityConvertor convertor;
+	private boolean overrideExistingData;
 
 	public LoadAssetFinancialInfoToDbTask(DbManager dbManager) throws Exception {
 		super(dbManager, NO_OF_COLUMNS, true);
@@ -25,13 +26,14 @@ public class LoadAssetFinancialInfoToDbTask extends GenericLoadToDbTask<AssetFin
 	@Override
 	public void execute(Map<String, String> parameters) throws Exception {
 		convertor = new ToAssetFinancialInfoEntityConvertor(isTrue(parameters, INPUT_DIV_BY_1000_PARAM));
+		overrideExistingData = isTrue(parameters, OVERRIDE_EXISTING_DATA);
 
 		super.execute(parameters);
 	}
 
 	@Override
 	protected List<String> saveResults(List<AssetFinancialInfo> dataToAdd, DbConnection connection) throws Exception {
-		return connection.addBulkFinancialInfo(dataToAdd);
+		return connection.addBulkFinancialInfo(dataToAdd, overrideExistingData);
 	}
 
 	@Override

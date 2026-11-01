@@ -280,12 +280,11 @@ public class DbConnection {
 	 * Adds financial data to DB.
 	 * 
 	 */
-	public 	List<String> addBulkFinancialInfo(List<AssetFinancialInfo> assetFinancialInfo) throws Exception {
+	public List<String> addBulkFinancialInfo(List<AssetFinancialInfo> assetFinancialInfo, boolean overrideExistingData) throws Exception {
 		final List<String> failedResults = new ArrayList<>(assetFinancialInfo.size());
 		final List<String> possiblyGoodResults = new ArrayList<>(assetFinancialInfo.size());
 
-		try (PreparedStatement pStmt = connection.prepareStatement(
-				"INSERT INTO tbl_finances_quarter (vchr_symbol, dtm_date,"
+		final String sqlCommand = "INSERT INTO tbl_finances_quarter (vchr_symbol, dtm_date,"
 				+ "dbl_total_current_assets, dbl_total_current_liabilities,"
 				+ "dbl_total_assets, dbl_total_liabilities,"
 				+ "dbl_total_equity,"
@@ -293,14 +292,16 @@ public class DbConnection {
 				+ "dbl_share_issued)"
 				+ " VALUES (?,?,?,?,?,?,?,?,?,?)"
 				+ " ON DUPLICATE KEY UPDATE"
-				+ "	dbl_total_current_assets=COALESCE(VALUES(dbl_total_current_assets), dbl_total_current_assets),"
-				+ "	dbl_total_current_liabilities=COALESCE(VALUES(dbl_total_current_liabilities), dbl_total_current_liabilities),"
-				+ "	dbl_total_assets=COALESCE(VALUES(dbl_total_assets), dbl_total_assets),"
-				+ "	dbl_total_liabilities=COALESCE(VALUES(dbl_total_liabilities), dbl_total_liabilities),"
-				+ "	dbl_total_equity=COALESCE(VALUES(dbl_total_equity), dbl_total_equity),"
-				+ "	dbl_net_cash_flow_operating=COALESCE(VALUES(dbl_net_cash_flow_operating), dbl_net_cash_flow_operating),"
-				+ "	dbl_capital_expenditures=COALESCE(VALUES(dbl_capital_expenditures), dbl_capital_expenditures),"
-				+ "	dbl_share_issued=COALESCE(VALUES(dbl_share_issued), dbl_share_issued)")) {
+				+ "	dbl_total_current_assets=%s,".formatted(updateCommand("dbl_total_current_assets", overrideExistingData))
+				+ "	dbl_total_current_liabilities=%s,".formatted(updateCommand("dbl_total_current_liabilities", overrideExistingData))
+				+ "	dbl_total_assets=%s,".formatted(updateCommand("dbl_total_assets", overrideExistingData))
+				+ "	dbl_total_liabilities=%s,".formatted(updateCommand("dbl_total_liabilities", overrideExistingData))
+				+ "	dbl_total_equity=%s,".formatted(updateCommand("dbl_total_equity", overrideExistingData))
+				+ "	dbl_net_cash_flow_operating=%s,".formatted(updateCommand("dbl_net_cash_flow_operating", overrideExistingData))
+				+ "	dbl_capital_expenditures=%s,".formatted(updateCommand("dbl_capital_expenditures", overrideExistingData))
+				+ "	dbl_share_issued=%s".formatted(updateCommand("dbl_share_issued", overrideExistingData));
+
+		try (PreparedStatement pStmt = connection.prepareStatement(sqlCommand)) {
 
 			for (AssetFinancialInfo financialInfo : assetFinancialInfo) {
 				possiblyGoodResults.add(financialInfo.assetName);
@@ -802,5 +803,13 @@ public class DbConnection {
 		}
 
 		return value;
+	}
+
+	private static String updateCommand(String column, boolean overrideExistingData) {
+		if (overrideExistingData) {
+			return "COALESCE(VALUES(%s), %s)".formatted(column, column);
+		}
+
+		return "COALESCE(%s, VALUES(%s))".formatted(column, column);
 	}
 }

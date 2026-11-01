@@ -18,6 +18,7 @@ public abstract class AbstractTask implements Task {
 	public static final String CONVERT_TO_CSV_PARAM = "-to_csv";
 	public static final String IGNORE_TABLE_HEADERS_PARAM = "-ignore_table_headers";
 	public static final String INPUT_DIV_BY_1000_PARAM = "-div_1000";
+	public static final String OVERRIDE_EXISTING_DATA = "-override";
 	public static final String MAX_CONNECTIONS_PARAM = "-max_conn";
 
 	public static final String INPUT_FILE_PARAM = "-file";
