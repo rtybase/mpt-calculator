@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.rty.portfolio.core.utils.ConcurrentTaskExecutorWithBatching;
+import org.rty.portfolio.core.utils.RetryPolicy;
 import org.rty.portfolio.core.utils.ConcurrentTaskExecutorWithBatching.ExceptionThrowingConsumer;
 import org.rty.portfolio.db.DbConnection;
 import org.rty.portfolio.db.DbManager;
@@ -52,7 +53,7 @@ public abstract class GenericCalculateTask<T> extends AbstractDbTask {
 		connection.setAutoCommit(false);
 
 		try {
-			final int[] executionResults = saveResults(resultsToSave, connection);
+			final int[] executionResults = RetryPolicy.execute(() -> saveResults(resultsToSave, connection));
 			connection.commit();
 
 			for (int i = 0; i < executionResults.length; i++) {
@@ -61,7 +62,7 @@ public abstract class GenericCalculateTask<T> extends AbstractDbTask {
 					totalFail.incrementAndGet();
 				}
 			}
-		} catch (Exception ex) {
+		} catch (Throwable ex) {
 			ex.printStackTrace();
 		} finally {
 			connection.setAutoCommit(true);
