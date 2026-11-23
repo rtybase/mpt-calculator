@@ -37,7 +37,7 @@ load_fscore () {
 		fi
 
 		rm -rf "$out_file"
-		sleep $(( ( RANDOM % 7 )  + 15 ))
+		sleep $(( ( RANDOM % 5 )  + 7 ))
 	fi
 }
 
