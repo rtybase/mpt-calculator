@@ -68,10 +68,18 @@ LISTS = {
 		) f ON e.vchr_symbol = f.vchr_symbol
 		AND e.dtm_date = f.dtm_date
 		WHERE (e.dtm_date <
-			(STR_TO_DATE(CONCAT(YEAR(NOW()), '-', MONTH(NOW()), '-01'), '%Y-%m-%d') - INTERVAL 3 MONTH)
+		(STR_TO_DATE(CONCAT(YEAR(NOW()), '-', MONTH(NOW()), '-01'), '%Y-%m-%d') - INTERVAL 3 MONTH)
 		OR e.dbl_share_issued IS NULL)
 		AND e.vchr_symbol in (SELECT vchr_symbol FROM tbl_assets
-			WHERE vchr_symbol IS NOT NULL AND bln_deleted=0)"""
+			WHERE vchr_symbol IS NOT NULL AND bln_deleted=0)""",
+    "FIN-Q-N": """SELECT B.vchr_symbol, B.vchr_symbol FROM (
+			select vchr_symbol, max(dtm_date) as m_dtm_date
+			from tbl_finances_quarter
+			GROUP BY vchr_symbol
+		) A, tbl_finances_quarter B
+		WHERE A.vchr_symbol = B.vchr_symbol 
+		and A.m_dtm_date = B.dtm_date
+		and B.dbl_share_issued is null"""
 }
 
 if len(sys.argv) > 1:
