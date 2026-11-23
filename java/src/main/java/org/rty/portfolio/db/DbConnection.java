@@ -29,6 +29,7 @@ import org.rty.portfolio.core.PortfolioStatistics;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 public class DbConnection {
@@ -280,26 +281,12 @@ public class DbConnection {
 	 * Adds financial data to DB.
 	 * 
 	 */
-	public List<String> addBulkFinancialInfo(List<AssetFinancialInfo> assetFinancialInfo, boolean overrideExistingData) throws Exception {
+	public List<String> addBulkFinancialInfo(List<AssetFinancialInfo> assetFinancialInfo, boolean overrideExistingData,
+			boolean overrideSharesIssuedOnly) throws Exception {
 		final List<String> failedResults = new ArrayList<>(assetFinancialInfo.size());
 		final List<String> possiblyGoodResults = new ArrayList<>(assetFinancialInfo.size());
 
-		final String sqlCommand = "INSERT INTO tbl_finances_quarter (vchr_symbol, dtm_date,"
-				+ "dbl_total_current_assets, dbl_total_current_liabilities,"
-				+ "dbl_total_assets, dbl_total_liabilities,"
-				+ "dbl_total_equity,"
-				+ "dbl_net_cash_flow_operating, dbl_capital_expenditures,"
-				+ "dbl_share_issued)"
-				+ " VALUES (?,?,?,?,?,?,?,?,?,?)"
-				+ " ON DUPLICATE KEY UPDATE"
-				+ "	dbl_total_current_assets=%s,".formatted(updateCommand("dbl_total_current_assets", overrideExistingData))
-				+ "	dbl_total_current_liabilities=%s,".formatted(updateCommand("dbl_total_current_liabilities", overrideExistingData))
-				+ "	dbl_total_assets=%s,".formatted(updateCommand("dbl_total_assets", overrideExistingData))
-				+ "	dbl_total_liabilities=%s,".formatted(updateCommand("dbl_total_liabilities", overrideExistingData))
-				+ "	dbl_total_equity=%s,".formatted(updateCommand("dbl_total_equity", overrideExistingData))
-				+ "	dbl_net_cash_flow_operating=%s,".formatted(updateCommand("dbl_net_cash_flow_operating", overrideExistingData))
-				+ "	dbl_capital_expenditures=%s,".formatted(updateCommand("dbl_capital_expenditures", overrideExistingData))
-				+ "	dbl_share_issued=%s".formatted(updateCommand("dbl_share_issued", overrideExistingData));
+		final String sqlCommand = generateSqlForBulkFinancialInfo(overrideExistingData, overrideSharesIssuedOnly);
 
 		try (PreparedStatement pStmt = connection.prepareStatement(sqlCommand)) {
 
@@ -713,6 +700,34 @@ public class DbConnection {
 		}
 
 		return Collections.unmodifiableMap(storage);
+	}
+
+	@VisibleForTesting
+	static String generateSqlForBulkFinancialInfo(boolean overrideExistingData, boolean overrideSharesIssuedOnly) {
+		return "INSERT INTO tbl_finances_quarter (vchr_symbol,dtm_date,"
+				+ "dbl_total_current_assets,dbl_total_current_liabilities,"
+				+ "dbl_total_assets,dbl_total_liabilities,"
+				+ "dbl_total_equity,"
+				+ "dbl_net_cash_flow_operating,dbl_capital_expenditures,"
+				+ "dbl_share_issued)"
+				+ " VALUES (?,?,?,?,?,?,?,?,?,?)"
+				+ " ON DUPLICATE KEY UPDATE"
+				+ " dbl_total_current_assets=%s,".formatted(
+						updateCommand("dbl_total_current_assets", overrideExistingData && !overrideSharesIssuedOnly))
+				+ " dbl_total_current_liabilities=%s,".formatted(
+						updateCommand("dbl_total_current_liabilities", overrideExistingData && !overrideSharesIssuedOnly))
+				+ " dbl_total_assets=%s,".formatted(
+						updateCommand("dbl_total_assets", overrideExistingData && !overrideSharesIssuedOnly))
+				+ " dbl_total_liabilities=%s,".formatted(
+						updateCommand("dbl_total_liabilities", overrideExistingData && !overrideSharesIssuedOnly))
+				+ " dbl_total_equity=%s,".formatted(
+						updateCommand("dbl_total_equity", overrideExistingData && !overrideSharesIssuedOnly))
+				+ " dbl_net_cash_flow_operating=%s,".formatted(
+						updateCommand("dbl_net_cash_flow_operating", overrideExistingData && !overrideSharesIssuedOnly))
+				+ " dbl_capital_expenditures=%s,".formatted(
+						updateCommand("dbl_capital_expenditures", overrideExistingData && !overrideSharesIssuedOnly))
+				+ " dbl_share_issued=%s".formatted(
+						updateCommand("dbl_share_issued", overrideExistingData));
 	}
 
 	private final void addResultToStorage(final Map<Integer, Map<String, Double>> storage, ResultSet rs)
