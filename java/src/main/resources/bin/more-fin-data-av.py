@@ -7,8 +7,12 @@ import time
 from datetime import datetime
 
 CACHE_DIR = "temp"
-API_KEY = "YOUR_API_KEY_HERE"
+API_KEY = ""
 BASE_URL = "https://www.alphavantage.co/query"
+
+def error(msg):
+    print(msg, file=sys.stderr)
+    sys.exit(1)
 
 def cache_filename(function, symbol):
     symbol = symbol.upper()
@@ -50,16 +54,13 @@ def fetch_av(function, symbol):
     # Fail fast on Alpha Vantage quota/rate limiting
     #
     if "Note" in data:
-        print(f"ERROR: Alpha Vantage quota/rate limit hit:\n{data['Note']}")
-        sys.exit(1)
+        error(f"ERROR: Alpha Vantage quota/rate limit hit:\n{data['Note']}")
 
     if "Information" in data:
-        print(f"ERROR: Alpha Vantage returned:\n{data['Information']}")
-        sys.exit(1)
+        error(f"ERROR: Alpha Vantage returned:\n{data['Information']}")
 
     if "Error Message" in data:
-        print(f"ERROR: Alpha Vantage returned:\n{data['Error Message']}")
-        sys.exit(1)
+        error(f"ERROR: Alpha Vantage returned:\n{data['Error Message']}")
 
     # Cache successful response
     with open(cache_file, "w", encoding="utf-8") as f:
@@ -116,11 +117,11 @@ def merge_by_fiscal_date(cashflow, shares, balance):
     return merged
 
 
-if len(sys.argv) < 2:
-    print("Usage: python script.py SYMBOL")
-    sys.exit(1)
+if len(sys.argv) < 3:
+    error("Usage: python script.py SYMBOL API-KEY")
 
 symbol = sys.argv[1].upper()
+API_KEY = sys.argv[2]
 
 #print(f"Fetching Alpha Vantage data for {symbol}...")
 
